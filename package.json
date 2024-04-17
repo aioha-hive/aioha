@@ -1,0 +1,24 @@
+{
+  "name": "aioha",
+  "version": "0.0.1",
+  "description": "All-In-One Hive Authentication API",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/crypto-js": "^4.2.2",
+    "@types/uuid": "^9.0.8",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "assert": "^2.1.0",
+    "crypto-js": "^4.2.0",
+    "hivesigner": "^3.3.4",
+    "keychain-sdk": "^0.6.1",
+    "uuid": "^9.0.1"
+  }
+}
