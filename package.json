@@ -4,6 +4,7 @@
   "description": "All-In-One Hive Authentication API",
   "main": "dist/index.js",
   "scripts": {
+    "build": "webpack",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -12,7 +13,10 @@
   "devDependencies": {
     "@types/crypto-js": "^4.2.2",
     "@types/uuid": "^9.0.8",
-    "typescript": "^5.4.5"
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.4.5",
+    "webpack": "^5.91.0",
+    "webpack-cli": "^5.1.4"
   },
   "dependencies": {
     "assert": "^2.1.0",
