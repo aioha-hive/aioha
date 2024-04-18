@@ -1,8 +1,8 @@
-import { HiveAuth } from './providers/hiveauth'
-import { HiveSigner } from './providers/hivesigner'
-import { Keychain } from './providers/keychain'
+import { HiveAuth } from './providers/hiveauth.js'
+import { HiveSigner } from './providers/hivesigner.js'
+import { Keychain } from './providers/keychain.js'
 import { ClientConfig as HiveSignerOptions } from 'hivesigner/lib/types/client-config.interface.js'
-import { HiveAuthOptions } from './types'
+import { HiveAuthOptions } from './types.js'
 
 export class Aioha {
   providers: {
