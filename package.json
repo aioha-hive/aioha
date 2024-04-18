@@ -3,8 +3,10 @@
   "version": "0.0.1",
   "description": "All-In-One Hive Authentication API",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "build": "webpack",
+    "build": "tsc",
+    "webpack": "webpack",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
