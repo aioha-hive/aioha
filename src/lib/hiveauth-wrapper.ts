@@ -40,18 +40,16 @@ const HAS_options: HAS_options_type = {
   host: HAS_SERVER
 }
 
-type AppMetaType = {
+export type AppMetaType = {
   name: string
   description: string
   icon?: string
 }
 
+export type KeyType = 'posting' | 'active'
 type ChallengeDataType = {
-  key_type: 'posting' | 'active'
-  challenge: {
-    login: string
-    ts: number
-  }
+  key_type: KeyType
+  challenge: string
 }
 
 let HAS_connected = false
@@ -201,13 +199,22 @@ async function checkConnection(uuid?: string) {
 }
 
 export class Auth {
-  username: string
+  username?: string
+  appMeta: AppMetaType
   expire?: number
   key?: string
-  constructor(username: string, expire?: number, key?: string) {
+
+  constructor(appMetadata: AppMetaType) {
+    assert(appMetadata && appMetadata.name && typeof appMetadata.name == 'string', 'missing or invalid app metadata name')
+    this.appMeta = appMetadata
+  }
+
+  getAppMetadata() {
+    return this.appMeta
+  }
+
+  setUsername(username: string) {
     this.username = username
-    if (expire) this.expire = expire
-    if (key) this.key = key
   }
 }
 
@@ -248,20 +255,15 @@ export default {
    * @param {string} auth.username
    * @param {number=} auth.expire
    * @param {string=} auth.key
-   * @param {Object} app_data
-   * @param {string} app_data.name - Application name
-   * @param {string} app_data.description - Application description
-   * @param {string} app_data.icon - URL of application icon
    * @param {Object} challenge_data - (optional)
    * @param {string} challenge_data.key_type - key type required to sign the challenge (posting, acive, memo)
    * @param {string} challenge_data.challenge - a string to be signed
    * @param {Object} cbWait - (optional) callback method to notify the app about pending request
    */
-  authenticate: function (auth: Auth, app_data: AppMetaType, challenge_data: ChallengeDataType, cbWait?: Function) {
+  authenticate: function (auth: Auth, username: string, challenge_data: ChallengeDataType, cbWait?: Function) {
     return new Promise(async (resolve, reject) => {
       try {
-        assert(auth && auth.username && typeof auth.username == 'string', 'missing or invalid auth.username')
-        assert(app_data && app_data.name && typeof app_data.name == 'string', 'missing or invalid app_data.name')
+        assert(typeof username == 'string' && username.length >= 3, 'missing or invalid auth.username')
         assert(
           !challenge_data || (challenge_data.key_type && typeof challenge_data.key_type == 'string'),
           'missing or invalid challenge_data.key_type'
@@ -274,13 +276,16 @@ export default {
 
         // initialize key to encrypt communication with PKSA
         const auth_key = auth.key || uuidv4()
-        const data = CryptoJS.AES.encrypt(JSON.stringify({ app: app_data, challenge: challenge_data }), auth_key).toString()
+        const data = CryptoJS.AES.encrypt(
+          JSON.stringify({ app: auth.getAppMetadata(), challenge: challenge_data }),
+          auth_key
+        ).toString()
         const payload: {
           cmd: CMD
           account: string
           data: string
           auth_key?: string
-        } = { cmd: CMD.AUTH_REQ, account: auth.username, data: data }
+        } = { cmd: CMD.AUTH_REQ, account: username, data: data }
         // NOTE:    If the PKSA runs in "service" mode, we can pass the encryption key with the auth_req
         //          When the PKSA will process the "auth_req", it will bypass the offline reading of the encryption key
         if (HAS_options.auth_key_secret) {
@@ -324,6 +329,7 @@ export default {
                   clearInterval(wait)
                   if (trace) console.log(`auth_ack found: ${JSON.stringify(req_ack)}`)
                   // update credentials with the PKSA expiration and encryption key
+                  auth.setUsername(username)
                   auth.expire = ack_data.data.expire
                   auth.key = auth_key
                   resolve(req_ack)
@@ -368,7 +374,7 @@ export default {
    * @param {Array} ops
    * @param {Object} cbWait - (optional) callback method to notify the app about pending request
    */
-  broadcast: function (auth: Auth, key_type: 'posting' | 'active', ops: any, cbWait?: Function) {
+  broadcast: function (auth: Auth, key_type: KeyType, ops: any, cbWait?: Function) {
     return new Promise(async (resolve, reject) => {
       assert(auth, 'missing auth')
       assert(auth.username && typeof auth.username == 'string', 'missing or invalid username')
