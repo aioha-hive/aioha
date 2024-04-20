@@ -48,7 +48,7 @@ export class Keychain extends AiohaProvider {
     }
   }
 
-  static async isInstalled(): Promise<boolean> {
-    return await new KeychainSDK(window).isKeychainInstalled()
+  static isInstalled(): Promise<boolean> {
+    return new KeychainSDK(window).isKeychainInstalled()
   }
 }

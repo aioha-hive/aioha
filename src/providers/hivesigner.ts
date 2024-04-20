@@ -14,6 +14,7 @@ export class HiveSigner extends AiohaProvider {
     const login = this.provider.login({
       state: options.hivesignerState ?? ''
     })
+    // TODO: oauth2 callback
     return {
       provider: 'hivesigner',
       success: true
@@ -34,6 +35,7 @@ export class HiveSigner extends AiohaProvider {
         provider: 'hivesigner',
         success: true,
         message: 'Memo decoded successfully',
+        username: username,
         result: result.memoDecoded
       }
     } catch {

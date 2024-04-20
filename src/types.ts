@@ -24,5 +24,6 @@ export interface LoginResult {
   error?: string
   result?: string
   message?: string
+  username?: string
   publicKey?: string
 }

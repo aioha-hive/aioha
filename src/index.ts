@@ -18,8 +18,8 @@ export class Aioha {
     this.providers = {}
   }
 
-  registerKeychain(): boolean {
-    if (!Keychain.isInstalled()) return false
+  async registerKeychain(): Promise<boolean> {
+    if (!(await Keychain.isInstalled())) return false
     this.providers.keychain = new Keychain()
     return true
   }
@@ -38,6 +38,14 @@ export class Aioha {
    */
   getProviders() {
     return Object.keys(this.providers)
+  }
+
+  getCurrentProvider() {
+    return this.currentProvider
+  }
+
+  getCurrentUser() {
+    return this.user
   }
 
   async login(provider: Providers, username: string, options: LoginOptions): Promise<LoginResult> {
