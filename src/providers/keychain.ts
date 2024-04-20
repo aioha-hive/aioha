@@ -13,10 +13,16 @@ export class Keychain extends AiohaProvider {
   }
 
   async login(username: string, options: LoginOptions): Promise<LoginResult> {
+    if (!options || !options.keychain)
+      return {
+        provider: 'keychain',
+        success: false,
+        error: 'keyType options are required'
+      }
     const login = await this.provider.login({
       username: username,
       message: options.msg,
-      method: options.keychainAuthType!,
+      method: options.keychain.keyType,
       title: this.loginTitle
     })
     return {
@@ -35,10 +41,16 @@ export class Keychain extends AiohaProvider {
         success: false,
         error: 'message to decode must start with #'
       }
+    else if (!options || !options.keychain)
+      return {
+        provider: 'keychain',
+        success: false,
+        error: 'keyType options are required'
+      }
     const login = await this.provider.decode({
       username: username,
       message: options.msg,
-      method: options.keychainAuthType!
+      method: options.keychain.keyType
     })
     return {
       provider: 'keychain',

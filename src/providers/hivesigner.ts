@@ -11,8 +11,13 @@ export class HiveSigner extends AiohaProvider {
   }
 
   async login(username: string, options: LoginOptions): Promise<LoginResult> {
+    if (!options || !options.hivesigner)
+      return {
+        success: false,
+        error: 'hivesigner options are required'
+      }
     const login = this.provider.login({
-      state: options.hivesignerState ?? ''
+      state: options.hivesigner.state ?? ''
     })
     // TODO: oauth2 callback
     return {
@@ -48,6 +53,7 @@ export class HiveSigner extends AiohaProvider {
   }
 
   getLoginURL(options: LoginOptions) {
-    return this.provider.getLoginURL(options.hivesignerState ?? '')
+    if (!options || !options.hivesigner) throw new Error('Hivesigner options are required')
+    return this.provider.getLoginURL(options.hivesigner.state ?? '')
   }
 }

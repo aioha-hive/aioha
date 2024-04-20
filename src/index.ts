@@ -64,11 +64,6 @@ export class Aioha {
         success: false,
         error: 'options are required'
       }
-    if (provider === 'keychain' && (!options || !options.keychainAuthType))
-      return {
-        success: false,
-        error: 'keychainAuthType options are required'
-      }
     const result = await this.providers[provider]!.login(username, options)
     this.user = username
     this.currentProvider = provider

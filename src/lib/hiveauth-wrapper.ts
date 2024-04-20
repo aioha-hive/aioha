@@ -260,7 +260,7 @@ export default {
    * @param {string} challenge_data.challenge - a string to be signed
    * @param {Object} cbWait - (optional) callback method to notify the app about pending request
    */
-  authenticate: function (auth: Auth, username: string, challenge_data: ChallengeDataType, cbWait?: Function) {
+  authenticate: function (auth: Auth, username: string, challenge_data: ChallengeDataType, cbWait?: (evt: MessageType) => any) {
     return new Promise(async (resolve, reject) => {
       try {
         assert(typeof username == 'string' && username.length >= 3, 'missing or invalid auth.username')
@@ -374,7 +374,7 @@ export default {
    * @param {Array} ops
    * @param {Object} cbWait - (optional) callback method to notify the app about pending request
    */
-  broadcast: function (auth: Auth, key_type: KeyType, ops: any, cbWait?: Function) {
+  broadcast: function (auth: Auth, key_type: KeyType, ops: any, cbWait?: (evt: MessageType) => any) {
     return new Promise(async (resolve, reject) => {
       assert(auth, 'missing auth')
       assert(auth.username && typeof auth.username == 'string', 'missing or invalid username')
@@ -459,7 +459,7 @@ export default {
    * @param {string} challenge_data.challenge - a string to be signed
    * @param {Object} cbWait - (optional) callback method to notify the app about pending request
    */
-  challenge: function (auth: Auth, challenge_data: ChallengeDataType, cbWait?: Function) {
+  challenge: function (auth: Auth, challenge_data: ChallengeDataType, cbWait?: (evt: MessageType) => any) {
     return new Promise(async (resolve, reject) => {
       assert(auth, 'missing auth')
       assert(auth.username && typeof auth.username == 'string', 'missing or invalid username')
