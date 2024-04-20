@@ -55,7 +55,7 @@ type ChallengeDataType = {
 let HAS_connected = false
 let HAS_timeout = 60 * 1000 // default request expiration timeout (60 seconds)
 
-type MessageType = {
+export type MessageType = {
   cmd: CMD
   uuid: string
   data: string

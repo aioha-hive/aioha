@@ -1,9 +1,6 @@
 import { KeychainKeyTypes } from 'keychain-sdk'
 import { KeyType as HaKeyType } from './lib/hiveauth-wrapper'
-
-export interface HiveAuthOptions {
-  username: string
-}
+import { MessageType as HaMsgType } from './lib/hiveauth-wrapper'
 
 export interface KeychainOptions {
   loginTitle: string
@@ -18,6 +15,7 @@ export interface LoginOptions {
   }
   hiveauth?: {
     authType: HaKeyType
+    cbWait?: (evt: HaMsgType) => any
   }
   keychain?: {
     keyType: KeychainKeyTypes

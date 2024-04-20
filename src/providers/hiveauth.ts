@@ -25,10 +25,15 @@ export class HiveAuth extends AiohaProvider {
         error: 'hiveauth options must be present'
       }
     try {
-      const login = await HaWrapper.authenticate(this.provider, username, {
-        key_type: options.hiveauth.authType,
-        challenge: options.msg ?? ''
-      })
+      const login = await HaWrapper.authenticate(
+        this.provider,
+        username,
+        {
+          key_type: options.hiveauth.authType,
+          challenge: options.msg ?? ''
+        },
+        options.hiveauth.cbWait
+      )
       return {
         provider: 'hiveauth',
         success: true,
