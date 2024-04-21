@@ -11,7 +11,7 @@ export type Providers = 'keychain' | 'hivesigner' | 'hiveauth'
 export interface LoginOptions {
   msg?: string
   hivesigner?: {
-    state: string
+    state?: string
   }
   hiveauth?: {
     authType: HaKeyType

@@ -54,7 +54,7 @@ export class Aioha {
         success: false,
         error: provider + ' provider is not registered'
       }
-    if (!username)
+    if (provider !== 'hivesigner' && !username)
       return {
         success: false,
         error: 'username is required'
