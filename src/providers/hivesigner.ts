@@ -5,6 +5,7 @@ import { LoginOptions, LoginResult } from '../types.js'
 
 export class HiveSigner extends AiohaProvider {
   protected provider: Client
+
   constructor(options: ClientConfig) {
     super()
     if (!options.callbackURL?.startsWith(window.location.origin))
@@ -22,7 +23,8 @@ export class HiveSigner extends AiohaProvider {
           clearInterval(hsInterval)
           token = localStorage.getItem('hivesignerToken')
           loggedInUser = localStorage.getItem('hivesignerUsername')
-          if (token && loggedInUser)
+          if (token && loggedInUser) {
+            this.provider.setAccessToken(token)
             rs({
               provider: 'hivesigner',
               success: true,
@@ -30,7 +32,7 @@ export class HiveSigner extends AiohaProvider {
               result: token,
               username: loggedInUser
             })
-          else
+          } else
             rs({
               provider: 'hivesigner',
               success: false,
@@ -56,7 +58,7 @@ export class HiveSigner extends AiohaProvider {
         provider: 'hivesigner',
         success: true,
         message: 'Memo decoded successfully',
-        username: username,
+        username: login.username,
         result: result.memoDecoded
       }
     } catch {
