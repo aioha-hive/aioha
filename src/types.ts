@@ -15,7 +15,7 @@ export interface LoginOptions {
   }
   hiveauth?: {
     authType: HaKeyType
-    cbWait?: (evt: HaMsgType) => any
+    cbWait?: (payload: string, evt: HaMsgType) => any
   }
   keychain?: {
     keyType: KeychainKeyTypes

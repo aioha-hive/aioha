@@ -274,7 +274,12 @@ export default {
    * @param {string} challenge_data.challenge - a string to be signed
    * @param {Object} cbWait - (optional) callback method to notify the app about pending request
    */
-  authenticate: function (auth: Auth, username: string, challenge_data: ChallengeDataType, cbWait?: (evt: MessageType) => any) {
+  authenticate: function (
+    auth: Auth,
+    username: string,
+    challenge_data: ChallengeDataType,
+    cbWait?: (payload: string, evt: MessageType) => any
+  ) {
     return new Promise<AuthAckDataType>(async (resolve, reject) => {
       try {
         assert(typeof username == 'string' && username.length >= 3, 'missing or invalid auth.username')
@@ -324,7 +329,15 @@ export default {
                 // provide the PKSA encryption key to the App for it to build the auth_payload
                 req.key = auth_key
                 // call app back to notify about pending request and authentication payload
-                if (cbWait) cbWait(req)
+                if (cbWait) {
+                  const payload = {
+                    account: username,
+                    uuid: uuid,
+                    key: auth_key,
+                    host: HAS_SERVER
+                  }
+                  cbWait('has://auth_req/' + window.btoa(JSON.stringify(payload)), req)
+                }
               } else if (err) {
                 if (trace) console.log(`error found: ${JSON.stringify(err)}`)
                 reject(err)
