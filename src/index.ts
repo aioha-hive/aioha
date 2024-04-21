@@ -67,6 +67,8 @@ export class Aioha {
     const result = await this.providers[provider]!.login(username, options)
     this.user = username
     this.currentProvider = provider
+    localStorage.setItem('aiohaUsername', this.user)
+    localStorage.setItem('aiohaProvider', this.currentProvider)
     return result
   }
 
@@ -75,5 +77,16 @@ export class Aioha {
     await this.providers[this.currentProvider]!.logout()
     delete this.user
     delete this.currentProvider
+    localStorage.removeItem('aiohaUsername')
+    localStorage.removeItem('aiohaProvider')
+  }
+
+  loadAuth(): boolean {
+    const user = localStorage.getItem('aiohaUsername')
+    const provider = localStorage.getItem('aiohaProvider') as Providers | null
+    if (!provider || !user || !this.providers[provider] || !this.providers[provider]!.loadAuth()) return false
+    this.user = user
+    this.currentProvider = provider
+    return true
   }
 }

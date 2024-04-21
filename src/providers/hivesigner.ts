@@ -83,4 +83,15 @@ export class HiveSigner extends AiohaProvider {
   getLoginURL(options: LoginOptions, username?: string) {
     return this.provider.getLoginURL((options && options.hivesigner && options.hivesigner.state) ?? '', username)
   }
+
+  loadAuth(): boolean {
+    const token = localStorage.getItem('hivesignerToken')
+    const exp = localStorage.getItem('hivesignerExpiry')
+    const loggedInUser = localStorage.getItem('hivesignerUsername')
+    if (!token || !exp || !loggedInUser) return false
+    const expSeconds = parseInt(exp)
+    if (isNaN(expSeconds) || new Date().getTime() / 1000 >= expSeconds) return false
+    this.provider.setAccessToken(token)
+    return true
+  }
 }

@@ -34,6 +34,8 @@ export class HiveAuth extends AiohaProvider {
         },
         options.hiveauth.cbWait
       )
+      localStorage.setItem('hiveauthKey', this.provider.key!)
+      localStorage.setItem('hiveauthExp', this.provider.expire!.toString())
       return {
         provider: 'hiveauth',
         success: true,
@@ -56,5 +58,18 @@ export class HiveAuth extends AiohaProvider {
 
   async logout(): Promise<void> {
     this.provider.logout()
+    localStorage.removeItem('hiveauthKey')
+    localStorage.removeItem('hiveauthExp')
+  }
+
+  loadAuth(): boolean {
+    const key = localStorage.getItem('hiveauthKey')
+    const exp = localStorage.getItem('hiveauthExp')
+    if (!key || !exp) return false
+    const expMs = parseInt(exp)
+    if (isNaN(expMs) || new Date().getTime() >= expMs) return false
+    this.provider.key = key
+    this.provider.expire = expMs
+    return true
   }
 }

@@ -8,4 +8,5 @@ export abstract class AiohaProvider {
   abstract login(username: string, options: LoginOptions): Promise<LoginResult>
   abstract loginAndDecryptMemo(username: string, options: LoginOptions): Promise<LoginResult>
   abstract logout(): Promise<void>
+  abstract loadAuth(): boolean
 }

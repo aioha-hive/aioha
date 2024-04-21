@@ -64,6 +64,11 @@ export class Keychain extends AiohaProvider {
     // keychain technically does not establish an ongoing connection to the app, so we do nothing here
   }
 
+  loadAuth(): boolean {
+    // no provider specific auth persistence details to load
+    return true
+  }
+
   static isInstalled(): Promise<boolean> {
     return new KeychainSDK(window).isKeychainInstalled()
   }
