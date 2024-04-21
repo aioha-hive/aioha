@@ -69,4 +69,11 @@ export class Aioha {
     this.currentProvider = provider
     return result
   }
+
+  async logout(): Promise<void> {
+    if (!this.user || !this.currentProvider) throw new Error('Not logged in')
+    await this.providers[this.currentProvider]!.logout()
+    delete this.user
+    delete this.currentProvider
+  }
 }

@@ -224,6 +224,12 @@ export class Auth {
   setUsername(username: string) {
     this.username = username
   }
+
+  logout() {
+    delete this.username
+    delete this.expire
+    delete this.key
+  }
 }
 
 export default {

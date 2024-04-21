@@ -60,6 +60,10 @@ export class Keychain extends AiohaProvider {
     }
   }
 
+  async logout(): Promise<void> {
+    // keychain technically does not establish an ongoing connection to the app, so we do nothing here
+  }
+
   static isInstalled(): Promise<boolean> {
     return new KeychainSDK(window).isKeychainInstalled()
   }

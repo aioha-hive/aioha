@@ -70,6 +70,16 @@ export class HiveSigner extends AiohaProvider {
     }
   }
 
+  async logout(): Promise<void> {
+    try {
+      await this.provider.revokeToken()
+      localStorage.removeItem('hivesignerToken')
+      localStorage.removeItem('hivesignerExpiry')
+      localStorage.removeItem('hivesignerUsername')
+      this.provider.removeAccessToken()
+    } catch {}
+  }
+
   getLoginURL(options: LoginOptions, username?: string) {
     return this.provider.getLoginURL((options && options.hivesigner && options.hivesigner.state) ?? '', username)
   }
