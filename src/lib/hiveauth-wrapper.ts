@@ -67,6 +67,14 @@ let messages: MessageType[] = []
 let wsHAS: WebSocket | null
 let trace = false
 
+type AuthAckDataType = {
+  challenge: {
+    challenge: string
+    pubkey: string
+  }
+  expire: number
+}
+
 function getMessage(type: CMD, uuid?: string) {
   // Clean expired requests
   messages = messages.filter((o) => !o.expire || o.expire >= Date.now())
@@ -261,7 +269,7 @@ export default {
    * @param {Object} cbWait - (optional) callback method to notify the app about pending request
    */
   authenticate: function (auth: Auth, username: string, challenge_data: ChallengeDataType, cbWait?: (evt: MessageType) => any) {
-    return new Promise(async (resolve, reject) => {
+    return new Promise<AuthAckDataType>(async (resolve, reject) => {
       try {
         assert(typeof username == 'string' && username.length >= 3, 'missing or invalid auth.username')
         assert(
@@ -324,17 +332,20 @@ export default {
               if (req_ack) {
                 try {
                   // Try to decrypt and parse payload data
-                  const ack_data = JSON.parse(CryptoJS.AES.decrypt(req_ack.data, auth_key).toString(CryptoJS.enc.Utf8))
+                  const ack_data: AuthAckDataType = JSON.parse(
+                    CryptoJS.AES.decrypt(req_ack.data, auth_key).toString(CryptoJS.enc.Utf8)
+                  )
                   // authentication approved
                   clearInterval(wait)
                   if (trace) console.log(`auth_ack found: ${JSON.stringify(req_ack)}`)
                   // update credentials with the PKSA expiration and encryption key
                   auth.setUsername(username)
-                  auth.expire = ack_data.data.expire
+                  auth.expire = ack_data.expire
                   auth.key = auth_key
-                  resolve(req_ack)
+                  resolve(ack_data)
                 } catch (e) {
                   // Decryption failed - ignore message
+                  reject(e)
                 }
               } else if (req_nack) {
                 // validate uuid

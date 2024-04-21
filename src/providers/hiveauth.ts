@@ -37,9 +37,9 @@ export class HiveAuth extends AiohaProvider {
       return {
         provider: 'hiveauth',
         success: true,
-        message: '',
-        result: (login as any).data.challenge.challenge,
-        publicKey: (login as any).data.challenge.pubkey
+        message: 'Login Success',
+        result: login.challenge.challenge,
+        publicKey: login.challenge.pubkey
       }
     } catch (e) {
       return {
