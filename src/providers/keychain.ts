@@ -19,10 +19,16 @@ export class Keychain extends AiohaProvider {
         success: false,
         error: 'keyType options are required'
       }
+    else if (!(await Keychain.isInstalled()))
+      return {
+        provider: 'keychain',
+        success: false,
+        error: 'Keychain extension is not installed'
+      }
     const login = await this.provider.login({
       username: username,
       message: options.msg,
-      method: options.keychain.keyType,
+      method: Keychain.mapAiohaKeyTypes(options.keychain.keyType),
       title: this.loginTitle
     })
     return {
@@ -47,10 +53,16 @@ export class Keychain extends AiohaProvider {
         success: false,
         error: 'keyType options are required'
       }
+    else if (!(await Keychain.isInstalled()))
+      return {
+        provider: 'keychain',
+        success: false,
+        error: 'Keychain extension is not installed'
+      }
     const login = await this.provider.decode({
       username: username,
       message: options.msg,
-      method: options.keychain.keyType
+      method: Keychain.mapAiohaKeyTypes(options.keychain.keyType)
     })
     return {
       provider: 'keychain',

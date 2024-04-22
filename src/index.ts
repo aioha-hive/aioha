@@ -18,10 +18,8 @@ export class Aioha {
     this.providers = {}
   }
 
-  async registerKeychain(): Promise<boolean> {
-    if (!(await Keychain.isInstalled())) return false
+  registerKeychain() {
     this.providers.keychain = new Keychain()
-    return true
   }
 
   registerHiveSigner(options: HiveSignerOptions) {
