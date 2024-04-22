@@ -1,6 +1,6 @@
-import { KeychainSDK } from 'keychain-sdk'
+import { KeychainKeyTypes, KeychainSDK } from 'keychain-sdk'
 import { AiohaProvider } from './provider.js'
-import { KeychainOptions, LoginOptions, LoginResult } from '../types.js'
+import { KeyTypes, KeychainOptions, LoginOptions, LoginResult, OperationResult } from '../types.js'
 
 export class Keychain extends AiohaProvider {
   protected provider: KeychainSDK
@@ -71,5 +71,30 @@ export class Keychain extends AiohaProvider {
 
   static isInstalled(): Promise<boolean> {
     return new KeychainSDK(window).isKeychainInstalled()
+  }
+
+  static mapAiohaKeyTypes(keyType: KeyTypes): KeychainKeyTypes {
+    switch (keyType) {
+      case 'posting':
+        return KeychainKeyTypes.posting
+      case 'active':
+        return KeychainKeyTypes.active
+      case 'memo':
+        return KeychainKeyTypes.memo
+    }
+  }
+
+  async decryptMemo(username: string, memo: string, keyType: KeyTypes): Promise<OperationResult> {
+    const kcKeyType = Keychain.mapAiohaKeyTypes(keyType)
+    const decoded = await this.provider.decode({
+      username,
+      message: memo,
+      method: kcKeyType
+    })
+    return {
+      success: decoded.success,
+      error: decoded.error ? decoded.message : null,
+      result: decoded.result as unknown as string
+    }
   }
 }

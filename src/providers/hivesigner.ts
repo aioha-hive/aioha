@@ -1,7 +1,7 @@
 import hivesigner, { Client } from 'hivesigner'
 import { ClientConfig } from 'hivesigner/lib/types/client-config.interface.js'
 import { AiohaProvider } from './provider.js'
-import { LoginOptions, LoginResult } from '../types.js'
+import { KeyTypes, LoginOptions, LoginResult, OperationResult } from '../types.js'
 
 export class HiveSigner extends AiohaProvider {
   protected provider: Client
@@ -52,21 +52,19 @@ export class HiveSigner extends AiohaProvider {
       }
     const login = await this.login(username, options)
     if (!login.success) return login
-    try {
-      const result = await this.provider.decode(options.msg)
+    const result = await this.decryptMemo(username, options.msg, 'posting')
+    if (result.success)
       return {
         provider: 'hivesigner',
         success: true,
         message: 'Memo decoded successfully',
         username: login.username,
-        result: result.memoDecoded
+        result: result.result
       }
-    } catch {
-      return {
-        provider: 'hivesigner',
-        error: 'Failed to decode memo',
-        success: false
-      }
+    return {
+      provider: 'hivesigner',
+      error: result.error!,
+      success: false
     }
   }
 
@@ -93,5 +91,24 @@ export class HiveSigner extends AiohaProvider {
     if (isNaN(expSeconds) || new Date().getTime() / 1000 >= expSeconds) return false
     this.provider.setAccessToken(token)
     return true
+  }
+
+  async decryptMemo(username: string, memo: string, keyType: KeyTypes): Promise<OperationResult> {
+    if (keyType !== 'posting')
+      return {
+        success: false,
+        error: 'Memo must be decrypted using @hivesigner account posting key'
+      }
+    const decoded = await this.provider.decode(memo)
+    if (decoded.memoDecoded)
+      return {
+        success: true,
+        result: decoded.memoDecoded
+      }
+    else
+      return {
+        success: false,
+        error: 'Failed to decrypt memo'
+      }
   }
 }

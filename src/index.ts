@@ -2,7 +2,7 @@ import { HiveAuth } from './providers/hiveauth.js'
 import { HiveSigner } from './providers/hivesigner.js'
 import { Keychain } from './providers/keychain.js'
 import { ClientConfig as HiveSignerOptions } from 'hivesigner/lib/types/client-config.interface.js'
-import { LoginOptions, LoginResult, Providers } from './types.js'
+import { KeyTypes, LoginOptions, LoginResult, OperationResult, Providers } from './types.js'
 import { AppMetaType } from './lib/hiveauth-wrapper.js'
 
 export class Aioha {
@@ -48,6 +48,10 @@ export class Aioha {
     return this.user
   }
 
+  isLoggedIn() {
+    return this.user && this.currentProvider
+  }
+
   async login(provider: Providers, username: string, options: LoginOptions): Promise<LoginResult> {
     if (!this.providers[provider])
       return {
@@ -88,5 +92,10 @@ export class Aioha {
     this.user = user
     this.currentProvider = provider
     return true
+  }
+
+  async decryptMemo(memo: string, keyType: KeyTypes): Promise<OperationResult> {
+    if (!this.isLoggedIn()) throw new Error('Not logged in')
+    return await this.providers[this.getCurrentProvider()!]!.decryptMemo(this.getCurrentUser()!, memo, keyType)
   }
 }

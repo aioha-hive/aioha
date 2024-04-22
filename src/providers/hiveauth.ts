@@ -1,6 +1,6 @@
 import HaWrapper, { Auth, AppMetaType } from '../lib/hiveauth-wrapper.js'
 import { AiohaProvider } from './provider.js'
-import { LoginOptions, LoginResult } from '../types.js'
+import { LoginOptions, LoginResult, OperationResult } from '../types.js'
 
 const HiveAuthError = (e: any) => {
   if (e.toString() === 'Error: expired') return 'HiveAuth authentication request expired'
@@ -71,5 +71,12 @@ export class HiveAuth extends AiohaProvider {
     this.provider.key = key
     this.provider.expire = expMs
     return true
+  }
+
+  async decryptMemo(): Promise<OperationResult> {
+    return {
+      success: false,
+      error: 'Memo cryptography operations are currently unavailable in HiveAuth'
+    }
   }
 }
