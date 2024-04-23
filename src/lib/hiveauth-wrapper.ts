@@ -46,7 +46,7 @@ export type AppMetaType = {
   icon?: string
 }
 
-export type KeyType = 'posting' | 'active'
+export type KeyType = 'posting' | 'active' | 'memo'
 type ChallengeDataType = {
   key_type: KeyType
   challenge: string

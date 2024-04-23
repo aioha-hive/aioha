@@ -6,7 +6,7 @@ export interface KeychainOptions {
 }
 
 export type Providers = 'keychain' | 'hivesigner' | 'hiveauth'
-export type KeyTypes = 'posting' | 'active' | 'memo'
+export type KeyTypes = HaKeyType
 
 export interface LoginOptions {
   msg?: string
@@ -36,4 +36,6 @@ export interface OperationResult {
   success: boolean
   error?: string | null
   result?: string
+  message?: string
+  publicKey?: string
 }
