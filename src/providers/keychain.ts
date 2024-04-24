@@ -109,4 +109,19 @@ export class Keychain extends AiohaProvider {
       result: decoded.result as unknown as string
     }
   }
+
+  async signMessage(username: string, message: string, keyType: KeyTypes): Promise<OperationResult> {
+    const kcKeyType = Keychain.mapAiohaKeyTypes(keyType)
+    const signBuf = await this.provider.signBuffer({
+      username,
+      message,
+      method: kcKeyType
+    })
+    return {
+      success: signBuf.success,
+      message: signBuf.message,
+      result: signBuf.result as unknown as string,
+      publicKey: signBuf.publicKey
+    }
+  }
 }

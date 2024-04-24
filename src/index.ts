@@ -46,8 +46,8 @@ export class Aioha {
     return this.user
   }
 
-  isLoggedIn() {
-    return this.user && this.currentProvider
+  isLoggedIn(): boolean {
+    return !!this.user && !!this.currentProvider
   }
 
   async login(provider: Providers, username: string, options: LoginOptions): Promise<LoginResult> {
@@ -86,14 +86,27 @@ export class Aioha {
   loadAuth(): boolean {
     const user = localStorage.getItem('aiohaUsername')
     const provider = localStorage.getItem('aiohaProvider') as Providers | null
-    if (!provider || !user || !this.providers[provider] || !this.providers[provider]!.loadAuth()) return false
+    if (!provider || !user || !this.providers[provider] || !this.providers[provider]!.loadAuth(user)) return false
     this.user = user
     this.currentProvider = provider
     return true
   }
 
   async decryptMemo(memo: string, keyType: KeyTypes): Promise<OperationResult> {
-    if (!this.isLoggedIn()) throw new Error('Not logged in')
+    if (!this.isLoggedIn())
+      return {
+        success: false,
+        error: 'Not logged in'
+      }
     return await this.providers[this.getCurrentProvider()!]!.decryptMemo(this.getCurrentUser()!, memo, keyType)
+  }
+
+  async signMessage(message: string, keyType: KeyTypes): Promise<OperationResult> {
+    if (!this.isLoggedIn())
+      return {
+        success: false,
+        error: 'Not logged in'
+      }
+    return await this.providers[this.getCurrentProvider()!]!.signMessage(this.getCurrentUser()!, message, keyType)
   }
 }

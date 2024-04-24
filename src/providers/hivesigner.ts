@@ -111,4 +111,11 @@ export class HiveSigner extends AiohaProvider {
         error: 'Failed to decrypt memo'
       }
   }
+
+  async signMessage(): Promise<OperationResult> {
+    return {
+      success: false,
+      error: 'message signing is unsupported with HiveSigner provider'
+    }
+  }
 }

@@ -1,6 +1,6 @@
 import HaWrapper, { Auth, AppMetaType } from '../lib/hiveauth-wrapper.js'
 import { AiohaProvider } from './provider.js'
-import { LoginOptions, LoginResult, OperationResult } from '../types.js'
+import { KeyTypes, LoginOptions, LoginResult, OperationResult } from '../types.js'
 
 const HiveAuthError = (e: any) => {
   if (e.toString() === 'Error: expired') return 'HiveAuth authentication request expired'
@@ -34,6 +34,7 @@ export class HiveAuth extends AiohaProvider {
         },
         options.hiveauth.cbWait
       )
+      if (this.provider.token) localStorage.setItem('hiveauthToken', this.provider.token)
       localStorage.setItem('hiveauthKey', this.provider.key!)
       localStorage.setItem('hiveauthExp', this.provider.expire!.toString())
       return {
@@ -58,18 +59,22 @@ export class HiveAuth extends AiohaProvider {
 
   async logout(): Promise<void> {
     this.provider.logout()
+    localStorage.removeItem('hiveauthToken')
     localStorage.removeItem('hiveauthKey')
     localStorage.removeItem('hiveauthExp')
   }
 
-  loadAuth(): boolean {
+  loadAuth(username: string): boolean {
+    const token = localStorage.getItem('hiveauthToken')
     const key = localStorage.getItem('hiveauthKey')
     const exp = localStorage.getItem('hiveauthExp')
     if (!key || !exp) return false
     const expMs = parseInt(exp)
     if (isNaN(expMs) || new Date().getTime() >= expMs) return false
+    this.provider.username = username
     this.provider.key = key
     this.provider.expire = expMs
+    if (token) this.provider.token = token
     return true
   }
 
@@ -77,6 +82,26 @@ export class HiveAuth extends AiohaProvider {
     return {
       success: false,
       error: 'Memo cryptography operations are currently unavailable in HiveAuth'
+    }
+  }
+
+  async signMessage(username: string, message: string, keyType: KeyTypes): Promise<OperationResult> {
+    try {
+      const signed = await HaWrapper.challenge(this.provider, {
+        key_type: keyType,
+        challenge: message
+      })
+      return {
+        success: true,
+        message: 'Message signed successfully',
+        result: signed.challenge,
+        publicKey: signed.pubkey
+      }
+    } catch (e) {
+      return {
+        success: false,
+        error: HiveAuthError(e)
+      }
     }
   }
 }

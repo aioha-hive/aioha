@@ -67,14 +67,15 @@ let messages: MessageType[] = []
 let wsHAS: WebSocket | null
 let trace = false
 
-type AuthAckDataType = {
-  challenge: {
-    challenge: string
-    pubkey: string
-  }
-  expire: number
+type ChallengeResult = {
+  challenge: string
+  pubkey: string
 }
-
+type AuthAckDataType = {
+  challenge: ChallengeResult
+  expire: number
+  token: string
+}
 function getMessage(type: CMD, uuid?: string) {
   // Clean expired requests
   messages = messages.filter((o) => !o.expire || o.expire >= Date.now())
@@ -211,6 +212,7 @@ export class Auth {
   appMeta: AppMetaType
   expire?: number
   key?: string
+  token?: string
 
   constructor(appMetadata: AppMetaType) {
     assert(appMetadata && appMetadata.name && typeof appMetadata.name == 'string', 'missing or invalid app metadata name')
@@ -296,7 +298,7 @@ export default {
         // initialize key to encrypt communication with PKSA
         const auth_key = auth.key || uuidv4()
         const data = CryptoJS.AES.encrypt(
-          JSON.stringify({ app: auth.getAppMetadata(), challenge: challenge_data }),
+          JSON.stringify({ app: auth.getAppMetadata(), challenge: challenge_data, token: auth.token }),
           auth_key
         ).toString()
         const payload: {
@@ -304,7 +306,8 @@ export default {
           account: string
           data: string
           auth_key?: string
-        } = { cmd: CMD.AUTH_REQ, account: username, data: data }
+          token?: string
+        } = { cmd: CMD.AUTH_REQ, account: username, data: data, token: auth.token }
         // NOTE:    If the PKSA runs in "service" mode, we can pass the encryption key with the auth_req
         //          When the PKSA will process the "auth_req", it will bypass the offline reading of the encryption key
         if (HAS_options.auth_key_secret) {
@@ -359,6 +362,7 @@ export default {
                   if (trace) console.log(`auth_ack found: ${JSON.stringify(req_ack)}`)
                   // update credentials with the PKSA expiration and encryption key
                   auth.setUsername(username)
+                  auth.token = ack_data.token
                   auth.expire = ack_data.expire
                   auth.key = auth_key
                   resolve(ack_data)
@@ -397,7 +401,7 @@ export default {
    * Sends a broadcast request to the server
    * @param {Object} auth
    * @param {string} auth.username
-   * TODO -
+   * @param {string} auth.token
    * @param {number=} auth.expire
    * @param {string=} auth.key
    * @param {string} key_type
@@ -409,6 +413,7 @@ export default {
       assert(auth, 'missing auth')
       assert(auth.username && typeof auth.username == 'string', 'missing or invalid username')
       assert(auth.key && typeof auth.key == 'string', 'missing or invalid encryption key')
+      assert(auth.token && typeof auth.token == 'string', 'missing or invalid token')
       assert(ops && Array.isArray(ops) && ops.length > 0, 'missing or invalid ops')
       assert(await checkConnection(), 'not connected to server')
 
@@ -418,7 +423,7 @@ export default {
         auth.key
       ).toString()
       // Send the sign request to the HAS
-      const payload = { cmd: CMD.SIGN_REQ, account: auth.username, data: data }
+      const payload = { cmd: CMD.SIGN_REQ, account: auth.username, data: data, token: auth.token }
       send(JSON.stringify(payload))
       let expire = Date.now() + HAS_timeout
       let uuid: string
@@ -481,7 +486,7 @@ export default {
    * Sends a challenge request to the server
    * @param {Object} auth
    * @param {string} auth.username
-   * TODO -
+   * @param {string} auth.token
    * @param {number=} auth.expire
    * @param {string=} auth.key
    * @param {Object} challenge_data
@@ -490,10 +495,11 @@ export default {
    * @param {Object} cbWait - (optional) callback method to notify the app about pending request
    */
   challenge: function (auth: Auth, challenge_data: ChallengeDataType, cbWait?: (evt: MessageType) => any) {
-    return new Promise(async (resolve, reject) => {
+    return new Promise<ChallengeResult>(async (resolve, reject) => {
       assert(auth, 'missing auth')
       assert(auth.username && typeof auth.username == 'string', 'missing or invalid username')
       assert(auth.key && typeof auth.key == 'string', 'missing or invalid encryption key')
+      assert(auth.token && typeof auth.token == 'string', 'missing or invalid token')
       assert(
         challenge_data && challenge_data.key_type && typeof challenge_data.key_type == 'string',
         'missing or invalid challenge_data.key_type'
@@ -506,7 +512,7 @@ export default {
       // Encrypt the challenge data with the key we provided to the PKSA
       const data = CryptoJS.AES.encrypt(JSON.stringify(challenge_data), auth.key).toString()
       // Send the challenge request to the HAS
-      const payload = { cmd: CMD.CHALLENGE_REQ, account: auth.username, data: data }
+      const payload = { cmd: CMD.CHALLENGE_REQ, account: auth.username, data: data, token: auth.token }
       send(JSON.stringify(payload))
       let expire = Date.now() + HAS_timeout
       let uuid: string
@@ -542,11 +548,13 @@ export default {
               // request approved
               try {
                 // Try to decrypt and parse payload data
-                req_ack.data = JSON.parse(CryptoJS.AES.decrypt(req_ack.data, auth.key!).toString(CryptoJS.enc.Utf8))
+                const result: ChallengeResult = JSON.parse(
+                  CryptoJS.AES.decrypt(req_ack.data, auth.key!).toString(CryptoJS.enc.Utf8)
+                )
                 // challenge approved
                 clearInterval(wait)
                 if (trace) console.log(`challenge_ack found: ${JSON.stringify(req_ack)}`)
-                resolve(req_ack)
+                resolve(result)
               } catch (e) {
                 // Decryption failed - ignore message
               }
