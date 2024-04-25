@@ -34,7 +34,7 @@ export interface LoginResult {
 
 export interface OperationResult {
   success: boolean
-  error?: string | null
+  error?: string
   result?: string
   message?: string
   publicKey?: string

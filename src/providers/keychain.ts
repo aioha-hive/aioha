@@ -105,7 +105,7 @@ export class Keychain extends AiohaProvider {
     })
     return {
       success: decoded.success,
-      error: decoded.error ? decoded.message : null,
+      error: decoded.error ? decoded.message : undefined,
       result: decoded.result as unknown as string
     }
   }
