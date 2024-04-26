@@ -5,6 +5,11 @@ import { ClientConfig as HiveSignerOptions } from 'hivesigner/lib/types/client-c
 import { KeyTypes, LoginOptions, LoginResult, OperationResult, Providers } from './types.js'
 import { AppMetaType } from './lib/hiveauth-wrapper.js'
 
+const notLoggedInResult: OperationResult = {
+  success: false,
+  error: 'Not logged in'
+}
+
 export class Aioha {
   providers: {
     keychain?: Keychain
@@ -93,20 +98,56 @@ export class Aioha {
   }
 
   async decryptMemo(memo: string, keyType: KeyTypes): Promise<OperationResult> {
-    if (!this.isLoggedIn())
-      return {
-        success: false,
-        error: 'Not logged in'
-      }
+    if (!this.isLoggedIn()) return notLoggedInResult
     return await this.providers[this.getCurrentProvider()!]!.decryptMemo(this.getCurrentUser()!, memo, keyType)
   }
 
   async signMessage(message: string, keyType: KeyTypes): Promise<OperationResult> {
-    if (!this.isLoggedIn())
-      return {
-        success: false,
-        error: 'Not logged in'
-      }
+    if (!this.isLoggedIn()) return notLoggedInResult
     return await this.providers[this.getCurrentProvider()!]!.signMessage(this.getCurrentUser()!, message, keyType)
+  }
+
+  async signTx(tx: any, keyType: KeyTypes): Promise<OperationResult> {
+    if (!this.isLoggedIn()) return notLoggedInResult
+    return await this.providers[this.getCurrentProvider()!]!.signTx(this.getCurrentUser()!, tx, keyType)
+  }
+
+  async signAndBroadcastTx(tx: any[], keyType: KeyTypes): Promise<OperationResult> {
+    if (!this.isLoggedIn()) return notLoggedInResult
+    return await this.providers[this.getCurrentProvider()!]!.signAndBroadcastTx(this.getCurrentUser()!, tx, keyType)
+  }
+}
+
+const getPrefix = (head_block_id: string) => {
+  // Buffer.from(props.head_block_id, 'hex').readUInt32LE(4)
+  const buffer = new Uint8Array(head_block_id.match(/[\da-f]{2}/gi)!.map((h) => parseInt(h, 16)))
+  const dataView = new DataView(buffer.buffer)
+  const result = dataView.getUint32(4, true) // true for little endian
+  return result
+}
+
+export const constructTxHeader = async (ops: any[], api: string = 'https://techcoderx.com', expiry: number = 600000) => {
+  const propsReq = await fetch(api, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'database_api.get_dynamic_global_properties',
+      params: {}
+    })
+  })
+  const propsResp = await propsReq.json()
+  if (propsResp.error) throw new Error(propsResp)
+  const props = propsResp.result
+  // TODO: fix tx expiration errors
+  return {
+    ref_block_num: props.head_block_number & 0xffff,
+    ref_block_prefix: getPrefix(props.head_block_id),
+    expiration: new Date(new Date(props.time + 'Z').getTime() + expiry).toISOString().slice(0, -5),
+    operations: ops,
+    extensions: []
   }
 }

@@ -408,8 +408,8 @@ export default {
    * @param {Array} ops
    * @param {Object} cbWait - (optional) callback method to notify the app about pending request
    */
-  broadcast: function (auth: Auth, key_type: KeyType, ops: any, cbWait?: (evt: MessageType) => any) {
-    return new Promise(async (resolve, reject) => {
+  signTx: function (auth: Auth, key_type: KeyType, ops: any, broadcast: boolean, cbWait?: (evt: MessageType) => any) {
+    return new Promise<MessageType>(async (resolve, reject) => {
       assert(auth, 'missing auth')
       assert(auth.username && typeof auth.username == 'string', 'missing or invalid username')
       assert(auth.key && typeof auth.key == 'string', 'missing or invalid encryption key')
@@ -419,7 +419,7 @@ export default {
 
       // Encrypt the ops with the key we provided to the PKSA
       const data = CryptoJS.AES.encrypt(
-        JSON.stringify({ key_type: key_type, ops: ops, broadcast: true, nonce: Date.now() }),
+        JSON.stringify({ key_type: key_type, ops: ops, broadcast, nonce: Date.now() }),
         auth.key
       ).toString()
       // Send the sign request to the HAS

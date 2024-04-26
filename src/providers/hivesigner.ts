@@ -1,7 +1,8 @@
 import hivesigner, { Client } from 'hivesigner'
 import { ClientConfig } from 'hivesigner/lib/types/client-config.interface.js'
 import { AiohaProvider } from './provider.js'
-import { KeyTypes, LoginOptions, LoginResult, OperationResult } from '../types.js'
+import { KeyTypes, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types.js'
+import { KeyType } from '../lib/hiveauth-wrapper.js'
 
 export class HiveSigner extends AiohaProvider {
   protected provider: Client
@@ -116,6 +117,29 @@ export class HiveSigner extends AiohaProvider {
     return {
       success: false,
       error: 'message signing is unsupported with HiveSigner provider'
+    }
+  }
+
+  async signTx(username: string, tx: any, keyType: KeyType): Promise<OperationResult> {
+    return {
+      success: false,
+      error: 'tx signing without broadcast is currently unsupported with HiveSigner provider'
+    }
+  }
+
+  async signAndBroadcastTx(username: string, tx: any[], keyType: KeyType): Promise<SignOperationResult> {
+    try {
+      const broadcasted = await this.provider.broadcast(tx)
+      return {
+        success: true,
+        message: 'The transaction has been broadcasted successfully.',
+        result: broadcasted.result.id
+      }
+    } catch (e) {
+      return {
+        success: false,
+        error: (e as any).error_description ?? 'Failed to broadcast tx due to unknown error'
+      }
     }
   }
 }

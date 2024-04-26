@@ -1,6 +1,6 @@
-import HaWrapper, { Auth, AppMetaType } from '../lib/hiveauth-wrapper.js'
+import HaWrapper, { Auth, AppMetaType, KeyType } from '../lib/hiveauth-wrapper.js'
 import { AiohaProvider } from './provider.js'
-import { KeyTypes, LoginOptions, LoginResult, OperationResult } from '../types.js'
+import { KeyTypes, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types.js'
 
 const HiveAuthError = (e: any) => {
   if (e.toString() === 'Error: expired') return 'HiveAuth authentication request expired'
@@ -96,6 +96,34 @@ export class HiveAuth extends AiohaProvider {
         message: 'Message signed successfully',
         result: signed.challenge,
         publicKey: signed.pubkey
+      }
+    } catch (e) {
+      return {
+        success: false,
+        error: HiveAuthError(e)
+      }
+    }
+  }
+
+  async signTx(username: string, tx: any, keyType: KeyType): Promise<OperationResult> {
+    // the HiveAuth sign tx without broadcast implementation at protocol level is not the same as keychain
+    // as it only accepts array of tx operations as inputs without tx headers which is not very useful when
+    // trying to sign a multisig transaction.
+    return {
+      success: false,
+      error: 'Not implemented'
+    }
+  }
+
+  async signAndBroadcastTx(username: string, tx: any[], keyType: KeyType): Promise<SignOperationResult> {
+    try {
+      const broadcasted = await HaWrapper.signTx(this.provider, keyType, tx, true, (msg) => {
+        console.log('Please approve tx in HiveAuth PKSA, uuid: ' + msg.uuid)
+      })
+      return {
+        success: true,
+        message: 'The transaction has been broadcasted successfully.',
+        result: broadcasted.data
       }
     } catch (e) {
       return {

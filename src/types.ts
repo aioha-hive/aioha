@@ -32,10 +32,17 @@ export interface LoginResult {
   publicKey?: string
 }
 
-export interface OperationResult {
+interface OperationBaseResult {
   success: boolean
   error?: string
-  result?: string
   message?: string
+}
+
+export interface OperationResult extends OperationBaseResult {
+  result?: string
   publicKey?: string
+}
+
+export interface SignOperationResult extends OperationBaseResult {
+  result?: any
 }

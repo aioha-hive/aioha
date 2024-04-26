@@ -1,6 +1,7 @@
 import { KeychainKeyTypes, KeychainSDK } from 'keychain-sdk'
 import { AiohaProvider } from './provider.js'
-import { KeyTypes, KeychainOptions, LoginOptions, LoginResult, OperationResult } from '../types.js'
+import { KeyTypes, KeychainOptions, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types.js'
+import { KeyType } from '../lib/hiveauth-wrapper.js'
 
 export class Keychain extends AiohaProvider {
   protected provider: KeychainSDK
@@ -117,11 +118,54 @@ export class Keychain extends AiohaProvider {
       message,
       method: kcKeyType
     })
+    if (!signBuf.success)
+      return {
+        success: false,
+        error: signBuf.error
+      }
     return {
       success: signBuf.success,
       message: signBuf.message,
       result: signBuf.result as unknown as string,
       publicKey: signBuf.publicKey
+    }
+  }
+
+  async signTx(username: string, tx: any, keyType: KeyType): Promise<SignOperationResult> {
+    const kcKeyType = Keychain.mapAiohaKeyTypes(keyType)
+    const signedTx = await this.provider.signTx({
+      username,
+      tx,
+      method: kcKeyType
+    })
+    if (!signedTx.success)
+      return {
+        success: false,
+        error: signedTx.error
+      }
+    return {
+      success: signedTx.success,
+      message: signedTx.message,
+      result: signedTx.result
+    }
+  }
+
+  async signAndBroadcastTx(username: string, tx: any[], keyType: KeyType): Promise<SignOperationResult> {
+    const kcKeyType = Keychain.mapAiohaKeyTypes(keyType)
+    const broadcastedTx = await this.provider.broadcast({
+      username,
+      operations: tx,
+      method: kcKeyType
+    })
+    if (!broadcastedTx.success)
+      return {
+        success: false,
+        error: broadcastedTx.error
+      }
+    return {
+      success: broadcastedTx.success,
+      message: broadcastedTx.message,
+      result: broadcastedTx.result!.id
     }
   }
 }

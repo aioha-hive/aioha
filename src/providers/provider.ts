@@ -1,4 +1,4 @@
-import { KeyTypes, LoginOptions, LoginResult, OperationResult } from '../types'
+import { KeyTypes, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types'
 
 export abstract class AiohaProvider {
   protected provider: any
@@ -16,4 +16,8 @@ export abstract class AiohaProvider {
 
   // sign message
   abstract signMessage(username: string, message: string, keyType: KeyTypes): Promise<OperationResult>
+
+  // sign and optionally broadcast generic transaction
+  abstract signTx(username: string, tx: any, keyType: KeyTypes): Promise<SignOperationResult>
+  abstract signAndBroadcastTx(username: string, tx: any[], keyType: KeyTypes): Promise<SignOperationResult>
 }
