@@ -4,13 +4,12 @@ import { AiohaProvider } from './provider.js'
 import { KeyTypes, KeychainOptions, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types.js'
 import assert from 'assert'
 
-export class Keychain extends AiohaProvider {
-  protected provider: KeychainSDK
+export class Keychain implements AiohaProvider {
+  private provider: KeychainSDK
   private loginTitle: string = 'Login'
   private username?: string
 
   constructor(options?: KeychainOptions) {
-    super()
     this.provider = new KeychainSDK(window)
     if (options && options.loginTitle) this.loginTitle = options.loginTitle
   }

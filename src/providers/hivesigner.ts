@@ -22,11 +22,10 @@ const authorizedOps = [
   'account_update2'
 ]
 
-export class HiveSigner extends AiohaProvider {
-  protected provider: Client
+export class HiveSigner implements AiohaProvider {
+  private provider: Client
 
   constructor(options: ClientConfig) {
-    super()
     if (!options.callbackURL?.startsWith(window.location.origin))
       throw new Error('callback URL must be in the same domain or subdomain as the current page')
     this.provider = new hivesigner.Client(options)

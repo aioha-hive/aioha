@@ -9,11 +9,10 @@ const HiveAuthError = (e: any) => {
   else if (e.cmd === 'auth_err' || e.cmd === 'sign_err') return e.error
 }
 
-export class HiveAuth extends AiohaProvider {
-  protected provider: Auth
+export class HiveAuth implements AiohaProvider {
+  private provider: Auth
 
   constructor(options: AppMetaType) {
-    super()
     this.provider = new Auth(options)
   }
 
