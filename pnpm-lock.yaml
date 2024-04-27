@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@hiveio/dhive':
+    specifier: ^1.2.8
+    version: 1.2.8
   assert:
     specifier: ^2.1.0
     version: 2.1.0

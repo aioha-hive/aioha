@@ -1,8 +1,14 @@
 import hivesigner, { Client } from 'hivesigner'
+import { Operation, Transaction } from '@hiveio/dhive'
 import { ClientConfig } from 'hivesigner/lib/types/client-config.interface.js'
 import { AiohaProvider } from './provider.js'
 import { KeyTypes, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types.js'
 import { KeyType } from '../lib/hiveauth-wrapper.js'
+
+interface HiveSignerError {
+  error: 'unauthorized_client' | 'unauthorized_access' | 'invalid_grant' | 'invalid_scope' | 'server_error'
+  error_description: string
+}
 
 export class HiveSigner extends AiohaProvider {
   protected provider: Client
@@ -120,14 +126,14 @@ export class HiveSigner extends AiohaProvider {
     }
   }
 
-  async signTx(username: string, tx: any, keyType: KeyType): Promise<OperationResult> {
+  async signTx(username: string, tx: Transaction, keyType: KeyType): Promise<OperationResult> {
     return {
       success: false,
       error: 'tx signing without broadcast is currently unsupported with HiveSigner provider'
     }
   }
 
-  async signAndBroadcastTx(username: string, tx: any[], keyType: KeyType): Promise<SignOperationResult> {
+  async signAndBroadcastTx(username: string, tx: Operation[], keyType: KeyType): Promise<SignOperationResult> {
     try {
       const broadcasted = await this.provider.broadcast(tx)
       return {
@@ -136,9 +142,10 @@ export class HiveSigner extends AiohaProvider {
         result: broadcasted.result.id
       }
     } catch (e) {
+      const error = e as HiveSignerError
       return {
         success: false,
-        error: (e as any).error_description ?? 'Failed to broadcast tx due to unknown error'
+        error: error.error_description ?? 'Failed to broadcast tx due to unknown error'
       }
     }
   }

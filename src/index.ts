@@ -1,3 +1,4 @@
+import { Operation, Transaction } from '@hiveio/dhive'
 import { HiveAuth } from './providers/hiveauth.js'
 import { HiveSigner } from './providers/hivesigner.js'
 import { Keychain } from './providers/keychain.js'
@@ -107,12 +108,12 @@ export class Aioha {
     return await this.providers[this.getCurrentProvider()!]!.signMessage(this.getCurrentUser()!, message, keyType)
   }
 
-  async signTx(tx: any, keyType: KeyTypes): Promise<OperationResult> {
+  async signTx(tx: Transaction, keyType: KeyTypes): Promise<OperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
     return await this.providers[this.getCurrentProvider()!]!.signTx(this.getCurrentUser()!, tx, keyType)
   }
 
-  async signAndBroadcastTx(tx: any[], keyType: KeyTypes): Promise<OperationResult> {
+  async signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<OperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
     return await this.providers[this.getCurrentProvider()!]!.signAndBroadcastTx(this.getCurrentUser()!, tx, keyType)
   }

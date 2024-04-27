@@ -1,4 +1,5 @@
 import { KeychainKeyTypes, KeychainRequestResponse, KeychainSDK } from 'keychain-sdk'
+import { Operation, Transaction } from '@hiveio/dhive'
 import { AiohaProvider } from './provider.js'
 import { KeyTypes, KeychainOptions, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types.js'
 
@@ -130,7 +131,7 @@ export class Keychain extends AiohaProvider {
     }
   }
 
-  async signTx(username: string, tx: any, keyType: KeyTypes): Promise<SignOperationResult> {
+  async signTx(username: string, tx: Transaction, keyType: KeyTypes): Promise<SignOperationResult> {
     const kcKeyType = Keychain.mapAiohaKeyTypes(keyType)
     const signedTx = await this.provider.signTx({
       username,
@@ -149,7 +150,7 @@ export class Keychain extends AiohaProvider {
     }
   }
 
-  async signAndBroadcastTx(username: string, tx: any[], keyType: KeyTypes): Promise<SignOperationResult> {
+  async signAndBroadcastTx(username: string, tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult> {
     const kcKeyType = Keychain.mapAiohaKeyTypes(keyType)
     try {
       const broadcastedTx = await this.provider.broadcast({

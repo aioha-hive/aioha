@@ -21,6 +21,7 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
+    "@hiveio/dhive": "^1.2.8",
     "assert": "^2.1.0",
     "crypto-js": "^4.2.0",
     "hivesigner": "^3.3.4",

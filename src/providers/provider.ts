@@ -1,3 +1,4 @@
+import { Operation, Transaction } from '@hiveio/dhive'
 import { KeyTypes, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types'
 
 export abstract class AiohaProvider {
@@ -18,6 +19,6 @@ export abstract class AiohaProvider {
   abstract signMessage(username: string, message: string, keyType: KeyTypes): Promise<OperationResult>
 
   // sign and optionally broadcast generic transaction
-  abstract signTx(username: string, tx: any, keyType: KeyTypes): Promise<SignOperationResult>
-  abstract signAndBroadcastTx(username: string, tx: any[], keyType: KeyTypes): Promise<SignOperationResult>
+  abstract signTx(username: string, tx: Transaction, keyType: KeyTypes): Promise<SignOperationResult>
+  abstract signAndBroadcastTx(username: string, tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult>
 }
