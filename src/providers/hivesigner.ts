@@ -1,4 +1,5 @@
 import hivesigner, { Client } from 'hivesigner'
+import { encodeOps } from 'hive-uri'
 import { Operation, Transaction } from '@hiveio/dhive'
 import { ClientConfig } from 'hivesigner/lib/types/client-config.interface.js'
 import { AiohaProvider } from './provider.js'
@@ -9,6 +10,17 @@ interface HiveSignerError {
   error: 'unauthorized_client' | 'unauthorized_access' | 'invalid_grant' | 'invalid_scope' | 'server_error'
   error_description: string
 }
+
+// https://github.com/ecency/hivesigner-api/blob/9fa9f51f319b5d9f9d86a4a028fcdf71b10b7836/config.json
+const authorizedOps = [
+  'vote',
+  'comment',
+  'delete_comment',
+  'comment_options',
+  'custom_json',
+  'claim_reward_balance',
+  'account_update2'
+]
 
 export class HiveSigner extends AiohaProvider {
   protected provider: Client
@@ -134,6 +146,7 @@ export class HiveSigner extends AiohaProvider {
   }
 
   async signAndBroadcastTx(username: string, tx: Operation[], keyType: KeyType): Promise<SignOperationResult> {
+    for (let i in tx) if (!authorizedOps.includes(tx[i][0])) return await this.signTxInWindow(tx)
     try {
       const broadcasted = await this.provider.broadcast(tx)
       return {
@@ -143,10 +156,37 @@ export class HiveSigner extends AiohaProvider {
       }
     } catch (e) {
       const error = e as HiveSignerError
+      if (error.error === 'invalid_scope') return await this.signTxInWindow(tx)
       return {
         success: false,
         error: error.error_description ?? 'Failed to broadcast tx due to unknown error'
       }
     }
+  }
+
+  async signTxInWindow(ops: Operation[]): Promise<SignOperationResult> {
+    return new Promise<SignOperationResult>((rs) => {
+      const signUrl =
+        encodeOps(ops).replace('hive://', 'https://hivesigner.com/') +
+        `?redirect_uri=${encodeURIComponent(this.provider.callbackURL)}`
+      const hsWindow = window.open(signUrl)
+      let hsInterval = setInterval(() => {
+        if (hsWindow && hsWindow.closed) {
+          clearInterval(hsInterval)
+          const txid = localStorage.getItem('hivesignerTxId')
+          if (txid) {
+            rs({
+              success: true,
+              message: 'The transaction has been broadcasted successfully.',
+              result: txid
+            })
+          } else
+            rs({
+              success: false,
+              error: 'Failed to broadcast transaction.'
+            })
+        }
+      }, 1000)
+    })
   }
 }
