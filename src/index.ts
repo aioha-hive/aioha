@@ -73,7 +73,7 @@ export class Aioha {
         error: 'options are required'
       }
     const result = await this.providers[provider]!.login(username, options)
-    this.user = username
+    this.user = result.username ?? username
     this.currentProvider = provider
     localStorage.setItem('aiohaUsername', this.user)
     localStorage.setItem('aiohaProvider', this.currentProvider)
@@ -100,22 +100,22 @@ export class Aioha {
 
   async decryptMemo(memo: string, keyType: KeyTypes): Promise<OperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.providers[this.getCurrentProvider()!]!.decryptMemo(this.getCurrentUser()!, memo, keyType)
+    return await this.providers[this.getCurrentProvider()!]!.decryptMemo(memo, keyType)
   }
 
   async signMessage(message: string, keyType: KeyTypes): Promise<OperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.providers[this.getCurrentProvider()!]!.signMessage(this.getCurrentUser()!, message, keyType)
+    return await this.providers[this.getCurrentProvider()!]!.signMessage(message, keyType)
   }
 
   async signTx(tx: Transaction, keyType: KeyTypes): Promise<OperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.providers[this.getCurrentProvider()!]!.signTx(this.getCurrentUser()!, tx, keyType)
+    return await this.providers[this.getCurrentProvider()!]!.signTx(tx, keyType)
   }
 
   async signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<OperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.providers[this.getCurrentProvider()!]!.signAndBroadcastTx(this.getCurrentUser()!, tx, keyType)
+    return await this.providers[this.getCurrentProvider()!]!.signAndBroadcastTx(tx, keyType)
   }
 }
 

@@ -2,10 +2,12 @@ import { KeychainKeyTypes, KeychainRequestResponse, KeychainSDK } from 'keychain
 import { Operation, Transaction } from '@hiveio/dhive'
 import { AiohaProvider } from './provider.js'
 import { KeyTypes, KeychainOptions, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types.js'
+import assert from 'assert'
 
 export class Keychain extends AiohaProvider {
   protected provider: KeychainSDK
   private loginTitle: string = 'Login'
+  private username?: string
 
   constructor(options?: KeychainOptions) {
     super()
@@ -32,6 +34,7 @@ export class Keychain extends AiohaProvider {
       method: Keychain.mapAiohaKeyTypes(options.keychain.keyType),
       title: this.loginTitle
     })
+    if (login.success) this.username = username
     return {
       provider: 'keychain',
       success: login.success,
@@ -65,6 +68,7 @@ export class Keychain extends AiohaProvider {
       message: options.msg,
       method: Keychain.mapAiohaKeyTypes(options.keychain.keyType)
     })
+    if (login.success) this.username = username
     return {
       provider: 'keychain',
       success: login.success,
@@ -74,11 +78,11 @@ export class Keychain extends AiohaProvider {
   }
 
   async logout(): Promise<void> {
-    // keychain technically does not establish an ongoing connection to the app, so we do nothing here
+    delete this.username
   }
 
-  loadAuth(): boolean {
-    // no provider specific auth persistence details to load
+  loadAuth(username: string): boolean {
+    this.username = username
     return true
   }
 
@@ -97,10 +101,11 @@ export class Keychain extends AiohaProvider {
     }
   }
 
-  async decryptMemo(username: string, memo: string, keyType: KeyTypes): Promise<OperationResult> {
+  async decryptMemo(memo: string, keyType: KeyTypes): Promise<OperationResult> {
+    assert(typeof this.username === 'string')
     const kcKeyType = Keychain.mapAiohaKeyTypes(keyType)
     const decoded = await this.provider.decode({
-      username,
+      username: this.username,
       message: memo,
       method: kcKeyType
     })
@@ -111,10 +116,11 @@ export class Keychain extends AiohaProvider {
     }
   }
 
-  async signMessage(username: string, message: string, keyType: KeyTypes): Promise<OperationResult> {
+  async signMessage(message: string, keyType: KeyTypes): Promise<OperationResult> {
+    assert(typeof this.username === 'string')
     const kcKeyType = Keychain.mapAiohaKeyTypes(keyType)
     const signBuf = await this.provider.signBuffer({
-      username,
+      username: this.username,
       message,
       method: kcKeyType
     })
@@ -131,10 +137,11 @@ export class Keychain extends AiohaProvider {
     }
   }
 
-  async signTx(username: string, tx: Transaction, keyType: KeyTypes): Promise<SignOperationResult> {
+  async signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResult> {
+    assert(typeof this.username === 'string')
     const kcKeyType = Keychain.mapAiohaKeyTypes(keyType)
     const signedTx = await this.provider.signTx({
-      username,
+      username: this.username,
       tx,
       method: kcKeyType
     })
@@ -150,11 +157,12 @@ export class Keychain extends AiohaProvider {
     }
   }
 
-  async signAndBroadcastTx(username: string, tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult> {
+  async signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult> {
+    assert(typeof this.username === 'string')
     const kcKeyType = Keychain.mapAiohaKeyTypes(keyType)
     try {
       const broadcastedTx = await this.provider.broadcast({
-        username,
+        username: this.username,
         operations: tx,
         method: kcKeyType
       })

@@ -85,7 +85,7 @@ export class HiveAuth extends AiohaProvider {
     }
   }
 
-  async signMessage(username: string, message: string, keyType: KeyTypes): Promise<OperationResult> {
+  async signMessage(message: string, keyType: KeyTypes): Promise<OperationResult> {
     try {
       const signed = await HaWrapper.challenge(this.provider, {
         key_type: keyType,
@@ -105,7 +105,7 @@ export class HiveAuth extends AiohaProvider {
     }
   }
 
-  async signTx(username: string, tx: any, keyType: KeyType): Promise<OperationResult> {
+  async signTx(tx: any, keyType: KeyType): Promise<OperationResult> {
     // the HiveAuth sign tx without broadcast implementation at protocol level is not the same as keychain
     // as it only accepts array of tx operations as inputs without tx headers which is not very useful when
     // trying to sign a multisig transaction.
@@ -115,7 +115,7 @@ export class HiveAuth extends AiohaProvider {
     }
   }
 
-  async signAndBroadcastTx(username: string, tx: any[], keyType: KeyType): Promise<SignOperationResult> {
+  async signAndBroadcastTx(tx: any[], keyType: KeyType): Promise<SignOperationResult> {
     try {
       const broadcasted = await HaWrapper.signTx(this.provider, keyType, tx, true, (msg) => {
         console.log('Please approve tx in HiveAuth PKSA, uuid: ' + msg.uuid)

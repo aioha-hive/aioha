@@ -71,7 +71,7 @@ export class HiveSigner extends AiohaProvider {
       }
     const login = await this.login(username, options)
     if (!login.success) return login
-    const result = await this.decryptMemo(username, options.msg, 'posting')
+    const result = await this.decryptMemo(options.msg, 'posting')
     if (result.success)
       return {
         provider: 'hivesigner',
@@ -112,7 +112,7 @@ export class HiveSigner extends AiohaProvider {
     return true
   }
 
-  async decryptMemo(username: string, memo: string, keyType: KeyTypes): Promise<OperationResult> {
+  async decryptMemo(memo: string, keyType: KeyTypes): Promise<OperationResult> {
     if (keyType !== 'posting')
       return {
         success: false,
@@ -138,14 +138,14 @@ export class HiveSigner extends AiohaProvider {
     }
   }
 
-  async signTx(username: string, tx: Transaction, keyType: KeyType): Promise<OperationResult> {
+  async signTx(tx: Transaction, keyType: KeyType): Promise<OperationResult> {
     return {
       success: false,
       error: 'tx signing without broadcast is currently unsupported with HiveSigner provider'
     }
   }
 
-  async signAndBroadcastTx(username: string, tx: Operation[], keyType: KeyType): Promise<SignOperationResult> {
+  async signAndBroadcastTx(tx: Operation[], keyType: KeyType): Promise<SignOperationResult> {
     for (let i in tx) if (!authorizedOps.includes(tx[i][0])) return await this.signTxInWindow(tx)
     try {
       const broadcasted = await this.provider.broadcast(tx)

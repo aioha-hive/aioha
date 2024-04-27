@@ -13,12 +13,12 @@ export abstract class AiohaProvider {
   abstract loadAuth(username: string): boolean
 
   // memo
-  abstract decryptMemo(username: string, memo: string, keyType: KeyTypes): Promise<OperationResult>
+  abstract decryptMemo(memo: string, keyType: KeyTypes): Promise<OperationResult>
 
   // sign message
-  abstract signMessage(username: string, message: string, keyType: KeyTypes): Promise<OperationResult>
+  abstract signMessage(message: string, keyType: KeyTypes): Promise<OperationResult>
 
   // sign and optionally broadcast generic transaction
-  abstract signTx(username: string, tx: Transaction, keyType: KeyTypes): Promise<SignOperationResult>
-  abstract signAndBroadcastTx(username: string, tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult>
+  abstract signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResult>
+  abstract signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult>
 }
