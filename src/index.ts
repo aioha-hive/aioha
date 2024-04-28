@@ -3,7 +3,7 @@ import { HiveAuth } from './providers/hiveauth.js'
 import { HiveSigner } from './providers/hivesigner.js'
 import { Keychain } from './providers/keychain.js'
 import { ClientConfig as HiveSignerOptions } from 'hivesigner/lib/types/client-config.interface.js'
-import { KeyTypes, LoginOptions, LoginResult, OperationResult, Providers } from './types.js'
+import { KeyTypes, LoginOptions, LoginResult, OperationResult, SignOperationResult, Providers } from './types.js'
 import { AppMetaType } from './lib/hiveauth-wrapper.js'
 
 const notLoggedInResult: OperationResult = {
@@ -116,6 +116,21 @@ export class Aioha {
   async signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<OperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
     return await this.providers[this.getCurrentProvider()!]!.signAndBroadcastTx(tx, keyType)
+  }
+
+  async vote(author: string, permlink: string, weight: number): Promise<SignOperationResult> {
+    if (!this.isLoggedIn()) return notLoggedInResult
+    else if (!author || !permlink)
+      return {
+        success: false,
+        error: 'Author and permlink must be a valid string'
+      }
+    else if (typeof weight !== 'number' || weight < -10000 || weight > 10000)
+      return {
+        success: false,
+        error: 'Weight must be between -10000 and 10000'
+      }
+    return await this.providers[this.getCurrentProvider()!]!.vote(author, permlink, weight)
   }
 }
 

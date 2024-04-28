@@ -1,7 +1,15 @@
 import { KeychainKeyTypes, KeychainRequestResponse, KeychainSDK } from 'keychain-sdk'
 import { Operation, Transaction } from '@hiveio/dhive'
 import { AiohaProvider } from './provider.js'
-import { KeyTypes, KeychainOptions, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types.js'
+import {
+  CommentOptions,
+  KeyTypes,
+  KeychainOptions,
+  LoginOptions,
+  LoginResult,
+  OperationResult,
+  SignOperationResult
+} from '../types.js'
 import assert from 'assert'
 
 export class Keychain implements AiohaProvider {
@@ -165,21 +173,62 @@ export class Keychain implements AiohaProvider {
         operations: tx,
         method: kcKeyType
       })
-      if (!broadcastedTx.success)
-        return {
-          success: false,
-          error: broadcastedTx.message
-        }
-      return {
-        success: broadcastedTx.success,
-        message: broadcastedTx.message,
-        result: broadcastedTx.result!.id
-      }
+      return this.txResult(broadcastedTx)
     } catch (e) {
       return {
         success: false,
         error: (e as KeychainRequestResponse).message
       }
     }
+  }
+
+  txResult(tx: KeychainRequestResponse): SignOperationResult {
+    if (!tx.success)
+      return {
+        success: false,
+        error: tx.message
+      }
+    return {
+      success: tx.success,
+      message: tx.message,
+      result: tx.result!.id
+    }
+  }
+
+  async vote(author: string, permlink: string, weight: number): Promise<SignOperationResult> {
+    assert(typeof this.username === 'string')
+    const tx = await this.provider.vote({
+      username: this.username,
+      author,
+      permlink,
+      weight
+    })
+    return this.txResult(tx)
+  }
+
+  async comment(
+    pa: string | null,
+    pp: string | null,
+    author: string,
+    permlink: string,
+    title: string,
+    body: string,
+    json: string | object,
+    options?: CommentOptions | undefined
+  ): Promise<SignOperationResult> {
+    throw new Error('Method not implemented.')
+  }
+
+  async deleteComment(author: string, permlink: string): Promise<SignOperationResult> {
+    throw new Error('Method not implemented.')
+  }
+
+  async customJSON(
+    required_auths: string[],
+    required_posting_auths: string[],
+    id: string,
+    json: string | object
+  ): Promise<SignOperationResult> {
+    throw new Error('Method not implemented.')
   }
 }

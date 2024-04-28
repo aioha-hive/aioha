@@ -3,8 +3,10 @@ import { encodeOps } from 'hive-uri'
 import { Operation, Transaction } from '@hiveio/dhive'
 import { ClientConfig } from 'hivesigner/lib/types/client-config.interface.js'
 import { AiohaProvider } from './provider.js'
-import { KeyTypes, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types.js'
+import { KeyTypes, LoginOptions, LoginResult, OperationResult, SignOperationResult, CommentOptions } from '../types.js'
 import { KeyType } from '../lib/hiveauth-wrapper.js'
+import assert from 'assert'
+import { createVote } from '../opbuilder.js'
 
 interface HiveSignerError {
   error: 'unauthorized_client' | 'unauthorized_access' | 'invalid_grant' | 'invalid_scope' | 'server_error'
@@ -24,6 +26,7 @@ const authorizedOps = [
 
 export class HiveSigner implements AiohaProvider {
   private provider: Client
+  private username?: string
 
   constructor(options: ClientConfig) {
     if (!options.callbackURL?.startsWith(window.location.origin))
@@ -43,6 +46,7 @@ export class HiveSigner implements AiohaProvider {
           loggedInUser = localStorage.getItem('hivesignerUsername')
           if (token && loggedInUser) {
             this.provider.setAccessToken(token)
+            this.username = loggedInUser
             rs({
               provider: 'hivesigner',
               success: true,
@@ -93,6 +97,7 @@ export class HiveSigner implements AiohaProvider {
       localStorage.removeItem('hivesignerExpiry')
       localStorage.removeItem('hivesignerUsername')
       this.provider.removeAccessToken()
+      delete this.username
     } catch {}
   }
 
@@ -108,6 +113,7 @@ export class HiveSigner implements AiohaProvider {
     const expSeconds = parseInt(exp)
     if (isNaN(expSeconds) || new Date().getTime() / 1000 >= expSeconds) return false
     this.provider.setAccessToken(token)
+    this.username = loggedInUser
     return true
   }
 
@@ -187,5 +193,49 @@ export class HiveSigner implements AiohaProvider {
         }
       }, 1000)
     })
+  }
+
+  async vote(author: string, permlink: string, weight: number): Promise<SignOperationResult> {
+    assert(typeof this.username === 'string')
+    try {
+      const tx = await this.provider.vote(this.username, author, permlink, weight)
+      return {
+        success: true,
+        result: tx.result.id
+      }
+    } catch (e) {
+      const error = e as HiveSignerError
+      if (error.error === 'invalid_scope') return this.signTxInWindow([createVote(this.username, author, permlink, weight)])
+      return {
+        success: false,
+        error: error.error_description
+      }
+    }
+  }
+
+  async comment(
+    pa: string | null,
+    pp: string | null,
+    author: string,
+    permlink: string,
+    title: string,
+    body: string,
+    json: string | object,
+    options?: CommentOptions | undefined
+  ): Promise<SignOperationResult> {
+    throw new Error('Method not implemented.')
+  }
+
+  async deleteComment(author: string, permlink: string): Promise<SignOperationResult> {
+    throw new Error('Method not implemented.')
+  }
+
+  async customJSON(
+    required_auths: string[],
+    required_posting_auths: string[],
+    id: string,
+    json: string | object
+  ): Promise<SignOperationResult> {
+    throw new Error('Method not implemented.')
   }
 }

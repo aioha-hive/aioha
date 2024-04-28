@@ -1,6 +1,9 @@
+import { Operation } from '@hiveio/dhive'
 import HaWrapper, { Auth, AppMetaType, KeyType } from '../lib/hiveauth-wrapper.js'
 import { AiohaProvider } from './provider.js'
-import { KeyTypes, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types.js'
+import { KeyTypes, LoginOptions, LoginResult, OperationResult, SignOperationResult, CommentOptions } from '../types.js'
+import { createVote } from '../opbuilder.js'
+import assert from 'assert'
 
 const HiveAuthError = (e: any) => {
   if (e.toString() === 'Error: expired') return 'HiveAuth authentication request expired'
@@ -114,7 +117,7 @@ export class HiveAuth implements AiohaProvider {
     }
   }
 
-  async signAndBroadcastTx(tx: any[], keyType: KeyType): Promise<SignOperationResult> {
+  async signAndBroadcastTx(tx: Operation[], keyType: KeyType): Promise<SignOperationResult> {
     try {
       const broadcasted = await HaWrapper.signTx(this.provider, keyType, tx, true, (msg) => {
         console.log('Please approve tx in HiveAuth PKSA, uuid: ' + msg.uuid)
@@ -130,5 +133,36 @@ export class HiveAuth implements AiohaProvider {
         error: HiveAuthError(e)
       }
     }
+  }
+
+  async vote(author: string, permlink: string, weight: number): Promise<SignOperationResult> {
+    assert(this.provider.username)
+    return await this.signAndBroadcastTx([createVote(this.provider.username, author, permlink, weight)], 'posting')
+  }
+
+  async comment(
+    pa: string | null,
+    pp: string | null,
+    author: string,
+    permlink: string,
+    title: string,
+    body: string,
+    json: string | object,
+    options?: CommentOptions | undefined
+  ): Promise<SignOperationResult> {
+    throw new Error('Method not implemented.')
+  }
+
+  async deleteComment(author: string, permlink: string): Promise<SignOperationResult> {
+    throw new Error('Method not implemented.')
+  }
+
+  async customJSON(
+    required_auths: string[],
+    required_posting_auths: string[],
+    id: string,
+    json: string | object
+  ): Promise<SignOperationResult> {
+    throw new Error('Method not implemented.')
   }
 }

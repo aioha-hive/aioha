@@ -17,4 +17,7 @@ export interface AiohaProvider {
   // sign and optionally broadcast generic transaction
   signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResult>
   signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult>
+
+  // posting auth operation helpers
+  vote(author: string, permlink: string, weight: number): Promise<SignOperationResult>
 }
