@@ -1,4 +1,4 @@
-import { Operation, Transaction } from '@hiveio/dhive'
+import { CommentOptionsOperation, Operation, Transaction } from '@hiveio/dhive'
 import { KeyTypes, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types'
 
 export interface AiohaProvider {
@@ -20,4 +20,15 @@ export interface AiohaProvider {
 
   // posting auth operation helpers
   vote(author: string, permlink: string, weight: number): Promise<SignOperationResult>
+  comment(
+    pa: string | null,
+    pp: string | null,
+    permlink: string,
+    title: string,
+    body: string,
+    json: string,
+    options?: CommentOptionsOperation[1]
+  ): Promise<SignOperationResult>
+  deleteComment(permlink: string): Promise<SignOperationResult>
+  customJSON(required_auths: string[], required_posting_auths: string[], id: string, json: string): Promise<SignOperationResult>
 }

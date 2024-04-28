@@ -1,8 +1,8 @@
-import { Operation } from '@hiveio/dhive'
+import { CommentOptionsOperation, Operation } from '@hiveio/dhive'
 import HaWrapper, { Auth, AppMetaType, KeyType } from '../lib/hiveauth-wrapper.js'
 import { AiohaProvider } from './provider.js'
-import { KeyTypes, LoginOptions, LoginResult, OperationResult, SignOperationResult, CommentOptions } from '../types.js'
-import { createVote } from '../opbuilder.js'
+import { KeyTypes, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types.js'
+import { createComment, createVote } from '../opbuilder.js'
 import assert from 'assert'
 
 const HiveAuthError = (e: any) => {
@@ -143,17 +143,20 @@ export class HiveAuth implements AiohaProvider {
   async comment(
     pa: string | null,
     pp: string | null,
-    author: string,
     permlink: string,
     title: string,
     body: string,
-    json: string | object,
-    options?: CommentOptions | undefined
+    json: string,
+    options?: CommentOptionsOperation[1] | undefined
   ): Promise<SignOperationResult> {
-    throw new Error('Method not implemented.')
+    assert(this.provider.username)
+    return await this.signAndBroadcastTx(
+      createComment(pa, pp, this.provider.username, permlink, title, body, json, options) as Operation[],
+      'posting'
+    )
   }
 
-  async deleteComment(author: string, permlink: string): Promise<SignOperationResult> {
+  async deleteComment(permlink: string): Promise<SignOperationResult> {
     throw new Error('Method not implemented.')
   }
 

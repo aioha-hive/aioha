@@ -1,15 +1,7 @@
-import { KeychainKeyTypes, KeychainRequestResponse, KeychainSDK } from 'keychain-sdk'
-import { Operation, Transaction } from '@hiveio/dhive'
+import { KeychainKeyTypes, KeychainRequestResponse, KeychainSDK, Post } from 'keychain-sdk'
+import { Operation, Transaction, CommentOptionsOperation } from '@hiveio/dhive'
 import { AiohaProvider } from './provider.js'
-import {
-  CommentOptions,
-  KeyTypes,
-  KeychainOptions,
-  LoginOptions,
-  LoginResult,
-  OperationResult,
-  SignOperationResult
-} from '../types.js'
+import { KeyTypes, KeychainOptions, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types.js'
 import assert from 'assert'
 
 export class Keychain implements AiohaProvider {
@@ -209,17 +201,27 @@ export class Keychain implements AiohaProvider {
   async comment(
     pa: string | null,
     pp: string | null,
-    author: string,
     permlink: string,
     title: string,
     body: string,
-    json: string | object,
-    options?: CommentOptions | undefined
+    json: string,
+    options?: CommentOptionsOperation[1] | undefined
   ): Promise<SignOperationResult> {
-    throw new Error('Method not implemented.')
+    assert(this.username)
+    const tx = await this.provider.post({
+      username: this.username,
+      permlink,
+      title,
+      body,
+      json_metadata: json,
+      parent_username: pa ?? '',
+      parent_perm: pp ?? '',
+      comment_options: options ? JSON.stringify(options) : ''
+    })
+    return this.txResult(tx)
   }
 
-  async deleteComment(author: string, permlink: string): Promise<SignOperationResult> {
+  async deleteComment(permlink: string): Promise<SignOperationResult> {
     throw new Error('Method not implemented.')
   }
 
@@ -227,7 +229,7 @@ export class Keychain implements AiohaProvider {
     required_auths: string[],
     required_posting_auths: string[],
     id: string,
-    json: string | object
+    json: string
   ): Promise<SignOperationResult> {
     throw new Error('Method not implemented.')
   }

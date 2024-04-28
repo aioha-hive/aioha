@@ -48,14 +48,6 @@ export interface SignOperationResult extends OperationBaseResult {
   result?: any
 }
 
-export interface CommentOptions {
-  max_accepted_payout: string
-  percent_hbd: number
-  allow_votes: boolean
-  allow_curation_rewards: boolean
-  beneficiaries: BeneficiaryRoute[]
-}
-
 export interface AuthorLink {
   author: string
   permlink: string
@@ -63,11 +55,4 @@ export interface AuthorLink {
 
 export interface VoteParams extends AuthorLink {
   weight: number
-}
-
-export interface CustomJSONPayload {
-  required_auths: string[]
-  required_posting_auths: string[]
-  id: string
-  json: string
 }

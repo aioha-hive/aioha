@@ -1,12 +1,12 @@
 import hivesigner, { Client } from 'hivesigner'
 import { encodeOps } from 'hive-uri'
-import { Operation, Transaction } from '@hiveio/dhive'
+import { CommentOptionsOperation, Operation, Transaction } from '@hiveio/dhive'
 import { ClientConfig } from 'hivesigner/lib/types/client-config.interface.js'
 import { AiohaProvider } from './provider.js'
-import { KeyTypes, LoginOptions, LoginResult, OperationResult, SignOperationResult, CommentOptions } from '../types.js'
+import { KeyTypes, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types.js'
 import { KeyType } from '../lib/hiveauth-wrapper.js'
 import assert from 'assert'
-import { createVote } from '../opbuilder.js'
+import { createComment, createVote } from '../opbuilder.js'
 
 interface HiveSignerError {
   error: 'unauthorized_client' | 'unauthorized_access' | 'invalid_grant' | 'invalid_scope' | 'server_error'
@@ -216,17 +216,38 @@ export class HiveSigner implements AiohaProvider {
   async comment(
     pa: string | null,
     pp: string | null,
-    author: string,
     permlink: string,
     title: string,
     body: string,
-    json: string | object,
-    options?: CommentOptions | undefined
+    json: string,
+    options?: CommentOptionsOperation[1] | undefined
   ): Promise<SignOperationResult> {
-    throw new Error('Method not implemented.')
+    assert(this.username)
+    if (!options) {
+      try {
+        const tx = await this.provider.comment(pa ?? '', pp ?? '', this.username, permlink, title, body, json)
+        return {
+          success: true,
+          result: tx.result.id
+        }
+      } catch (e) {
+        const error = e as HiveSignerError
+        if (error.error === 'invalid_scope')
+          return this.signTxInWindow(createComment(pa, pp, this.username, permlink, title, body, json) as Operation[])
+        return {
+          success: false,
+          error: error.error_description
+        }
+      }
+    } else {
+      return await this.signAndBroadcastTx(
+        createComment(pa, pp, this.username, permlink, title, body, json, options) as Operation[],
+        'posting'
+      )
+    }
   }
 
-  async deleteComment(author: string, permlink: string): Promise<SignOperationResult> {
+  async deleteComment(permlink: string): Promise<SignOperationResult> {
     throw new Error('Method not implemented.')
   }
 
@@ -234,7 +255,7 @@ export class HiveSigner implements AiohaProvider {
     required_auths: string[],
     required_posting_auths: string[],
     id: string,
-    json: string | object
+    json: string
   ): Promise<SignOperationResult> {
     throw new Error('Method not implemented.')
   }

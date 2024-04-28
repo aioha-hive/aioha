@@ -1,4 +1,4 @@
-import { Operation, Transaction, VoteOperation } from '@hiveio/dhive'
+import { CommentOptionsOperation, Operation, Transaction, VoteOperation } from '@hiveio/dhive'
 import { HiveAuth } from './providers/hiveauth.js'
 import { HiveSigner } from './providers/hivesigner.js'
 import { Keychain } from './providers/keychain.js'
@@ -131,6 +131,20 @@ export class Aioha {
       voteOps.push(createVote(this.getCurrentUser()!, votes[i].author, votes[i].permlink, votes[i].weight))
     }
     return await this.signAndBroadcastTx(voteOps, 'posting')
+  }
+
+  async comment(
+    pa: string | null,
+    pp: string | null,
+    permlink: string,
+    title: string,
+    body: string,
+    json: string | object,
+    options?: CommentOptionsOperation[1]
+  ): Promise<SignOperationResult> {
+    if (!this.isLoggedIn()) return notLoggedInResult
+    if (typeof json === 'object') json = JSON.stringify(json)
+    return await this.providers[this.getCurrentProvider()!]!.comment(pa, pp, permlink, title, body, json, options)
   }
 }
 
