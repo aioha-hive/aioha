@@ -3,6 +3,7 @@ import { Operation, Transaction, CommentOptionsOperation } from '@hiveio/dhive'
 import { AiohaProvider } from './provider.js'
 import { KeyTypes, KeychainOptions, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types.js'
 import assert from 'assert'
+import { createCustomJSON } from '../opbuilder.js'
 
 export class Keychain implements AiohaProvider {
   private provider: KeychainSDK
@@ -229,8 +230,20 @@ export class Keychain implements AiohaProvider {
     required_auths: string[],
     required_posting_auths: string[],
     id: string,
-    json: string
+    json: string,
+    displayTitle?: string
   ): Promise<SignOperationResult> {
-    throw new Error('Method not implemented.')
+    assert(this.username && (required_auths.length > 0 || required_posting_auths.length > 0))
+    if (required_auths.length === 0 || required_posting_auths.length === 0)
+      return this.txResult(
+        await this.provider.custom({
+          username: this.username,
+          method: required_auths.length > 0 ? KeychainKeyTypes.active : KeychainKeyTypes.posting,
+          display_msg: displayTitle ?? 'Custom JSON',
+          id,
+          json
+        })
+      )
+    else return await this.signAndBroadcastTx([createCustomJSON(required_auths, required_posting_auths, id, json)], 'active')
   }
 }

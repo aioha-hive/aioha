@@ -146,6 +146,24 @@ export class Aioha {
     if (typeof json === 'object') json = JSON.stringify(json)
     return await this.providers[this.getCurrentProvider()!]!.comment(pa, pp, permlink, title, body, json, options)
   }
+
+  async customJSON(
+    required_auths: string[],
+    required_posting_auths: string[],
+    id: string,
+    json: string | object,
+    displayTitle?: string
+  ): Promise<SignOperationResult> {
+    if (!this.isLoggedIn()) return notLoggedInResult
+    if (typeof json === 'object') json = JSON.stringify(json)
+    return await this.providers[this.getCurrentProvider()!]!.customJSON(
+      required_auths,
+      required_posting_auths,
+      id,
+      json,
+      displayTitle
+    )
+  }
 }
 
 const getPrefix = (head_block_id: string) => {

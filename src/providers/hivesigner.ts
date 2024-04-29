@@ -6,7 +6,7 @@ import { AiohaProvider } from './provider.js'
 import { KeyTypes, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types.js'
 import { KeyType } from '../lib/hiveauth-wrapper.js'
 import assert from 'assert'
-import { createComment, createVote } from '../opbuilder.js'
+import { createComment, createCustomJSON, createVote } from '../opbuilder.js'
 
 interface HiveSignerError {
   error: 'unauthorized_client' | 'unauthorized_access' | 'invalid_grant' | 'invalid_scope' | 'server_error'
@@ -257,6 +257,20 @@ export class HiveSigner implements AiohaProvider {
     id: string,
     json: string
   ): Promise<SignOperationResult> {
-    throw new Error('Method not implemented.')
+    try {
+      const tx = await this.provider.customJson(required_auths, required_posting_auths, id, json)
+      return {
+        success: true,
+        result: tx.result.id
+      }
+    } catch (e) {
+      const error = e as HiveSignerError
+      if (error.error === 'invalid_scope')
+        return this.signTxInWindow([createCustomJSON(required_auths, required_posting_auths, id, json)])
+      return {
+        success: false,
+        error: error.error_description
+      }
+    }
   }
 }

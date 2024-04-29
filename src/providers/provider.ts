@@ -30,5 +30,11 @@ export interface AiohaProvider {
     options?: CommentOptionsOperation[1]
   ): Promise<SignOperationResult>
   deleteComment(permlink: string): Promise<SignOperationResult>
-  customJSON(required_auths: string[], required_posting_auths: string[], id: string, json: string): Promise<SignOperationResult>
+  customJSON(
+    required_auths: string[],
+    required_posting_auths: string[],
+    id: string,
+    json: string,
+    displayTitle?: string
+  ): Promise<SignOperationResult>
 }

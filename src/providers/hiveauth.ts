@@ -2,7 +2,7 @@ import { CommentOptionsOperation, Operation } from '@hiveio/dhive'
 import HaWrapper, { Auth, AppMetaType, KeyType } from '../lib/hiveauth-wrapper.js'
 import { AiohaProvider } from './provider.js'
 import { KeyTypes, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types.js'
-import { createComment, createVote } from '../opbuilder.js'
+import { createComment, createCustomJSON, createVote } from '../opbuilder.js'
 import assert from 'assert'
 
 const HiveAuthError = (e: any) => {
@@ -164,8 +164,12 @@ export class HiveAuth implements AiohaProvider {
     required_auths: string[],
     required_posting_auths: string[],
     id: string,
-    json: string | object
+    json: string
   ): Promise<SignOperationResult> {
-    throw new Error('Method not implemented.')
+    assert(this.provider.username)
+    return await this.signAndBroadcastTx(
+      [createCustomJSON(required_auths, required_posting_auths, id, json)],
+      required_auths.length > 0 ? 'active' : 'posting'
+    )
   }
 }
