@@ -164,6 +164,58 @@ export class Aioha {
       displayTitle
     )
   }
+
+  reblog(author: string, permlink: string, removeReblog: boolean): Promise<SignOperationResult> {
+    return this.customJSON(
+      [],
+      [this.getCurrentUser()!],
+      'reblog',
+      [
+        'reblog',
+        {
+          account: this.getCurrentUser()!,
+          author,
+          permlink,
+          delete: removeReblog ? 'delete' : undefined
+        }
+      ],
+      removeReblog ? 'Remove reblog' : 'Reblog'
+    )
+  }
+
+  follow(target: string, unfollow: boolean): Promise<SignOperationResult> {
+    return this.customJSON(
+      [],
+      [this.getCurrentUser()!],
+      'follow',
+      [
+        'follow',
+        {
+          follower: this.getCurrentUser()!,
+          following: target,
+          what: unfollow ? [] : ['blog']
+        }
+      ],
+      unfollow ? 'Unfollow' : 'Follow'
+    )
+  }
+
+  ignore(target: string): Promise<SignOperationResult> {
+    return this.customJSON(
+      [],
+      [this.getCurrentUser()!],
+      'follow',
+      [
+        'follow',
+        {
+          follower: this.getCurrentUser()!,
+          following: target,
+          what: ['ignore']
+        }
+      ],
+      'Ignore'
+    )
+  }
 }
 
 const getPrefix = (head_block_id: string) => {
