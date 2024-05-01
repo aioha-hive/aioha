@@ -3,7 +3,7 @@ import { Operation, Transaction, CommentOptionsOperation } from '@hiveio/dhive'
 import { AiohaProvider } from './provider.js'
 import { KeyTypes, KeychainOptions, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types.js'
 import assert from 'assert'
-import { createCustomJSON } from '../opbuilder.js'
+import { createCustomJSON, deleteComment } from '../opbuilder.js'
 
 export class Keychain implements AiohaProvider {
   private provider: KeychainSDK
@@ -223,7 +223,8 @@ export class Keychain implements AiohaProvider {
   }
 
   async deleteComment(permlink: string): Promise<SignOperationResult> {
-    throw new Error('Method not implemented.')
+    assert(this.username)
+    return await this.signAndBroadcastTx([deleteComment(this.username, permlink)], 'posting')
   }
 
   async customJSON(

@@ -6,7 +6,7 @@ import { AiohaProvider } from './provider.js'
 import { KeyTypes, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types.js'
 import { KeyType } from '../lib/hiveauth-wrapper.js'
 import assert from 'assert'
-import { createComment, createCustomJSON, createVote } from '../opbuilder.js'
+import { createComment, createCustomJSON, createVote, deleteComment } from '../opbuilder.js'
 
 interface HiveSignerError {
   error: 'unauthorized_client' | 'unauthorized_access' | 'invalid_grant' | 'invalid_scope' | 'server_error'
@@ -248,7 +248,16 @@ export class HiveSigner implements AiohaProvider {
   }
 
   async deleteComment(permlink: string): Promise<SignOperationResult> {
-    throw new Error('Method not implemented.')
+    assert(this.username)
+    try {
+      const tx = await this.provider.deleteComment(this.username, permlink)
+      return {
+        success: true,
+        result: tx.result.id
+      }
+    } catch (e) {
+      return await this.errorFallback(e as HiveSignerError, [deleteComment(this.username, permlink)])
+    }
   }
 
   async customJSON(

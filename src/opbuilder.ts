@@ -1,4 +1,4 @@
-import { CommentOperation, CommentOptionsOperation, CustomJsonOperation, VoteOperation } from '@hiveio/dhive'
+import { CommentOperation, CommentOptionsOperation, CustomJsonOperation, VoteOperation, DeleteCommentOperation } from '@hiveio/dhive'
 
 export const createVote = (voter: string, author: string, permlink: string, weight: number): VoteOperation => {
   return ['vote', { voter, author, permlink, weight }]
@@ -33,4 +33,8 @@ export const createComment = (pa: string | null,
 
 export const createCustomJSON = (required_auths: string[], required_posting_auths: string[], id: string, json: string): CustomJsonOperation => {
   return ['custom_json', { required_auths, required_posting_auths, id, json }]
+}
+
+export const deleteComment = (author: string, permlink: string): DeleteCommentOperation => {
+  return ['delete_comment', { author, permlink }]
 }

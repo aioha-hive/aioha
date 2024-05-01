@@ -147,6 +147,11 @@ export class Aioha {
     return await this.providers[this.getCurrentProvider()!]!.comment(pa, pp, permlink, title, body, json, options)
   }
 
+  async deleteComment(permlink: string): Promise<SignOperationResult> {
+    if (!this.isLoggedIn()) return notLoggedInResult
+    return await this.providers[this.getCurrentProvider()!]!.deleteComment(permlink)
+  }
+
   async customJSON(
     required_auths: string[],
     required_posting_auths: string[],
