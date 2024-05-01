@@ -221,6 +221,42 @@ export class Aioha {
       'Ignore'
     )
   }
+
+  async claimRewards(api: string = 'https://techcoderx.com'): Promise<SignOperationResult> {
+    if (!this.isLoggedIn()) return notLoggedInResult
+    const accReq = await fetch(api, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'condenser_api.get_accounts',
+        params: [[this.getCurrentUser()]]
+      })
+    })
+    const accResp = await accReq.json()
+    if (accResp.error)
+      return {
+        success: false,
+        error: 'Failed to fetch pending account rewards'
+      }
+    return await this.signAndBroadcastTx(
+      [
+        [
+          'claim_reward_balance',
+          {
+            account: this.getCurrentUser(),
+            reward_hive: accResp.result[0].reward_hive_balance,
+            reward_hbd: accResp.result[0].reward_hbd_balance,
+            reward_vests: accResp.result[0].reward_vesting_balance
+          }
+        ]
+      ],
+      'posting'
+    )
+  }
 }
 
 const getPrefix = (head_block_id: string) => {
