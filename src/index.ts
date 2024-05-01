@@ -237,10 +237,19 @@ export class Aioha {
       })
     })
     const accResp = await accReq.json()
-    if (accResp.error)
+    if (accResp.error || !Array.isArray(accResp.result) || accResp.result.length === 0)
       return {
         success: false,
         error: 'Failed to fetch pending account rewards'
+      }
+    else if (
+      accResp.result[0].reward_hive_balance === '0.000 HIVE' &&
+      accResp.result[0].reward_hbd_balance === '0.000 HBD' &&
+      accResp.result[0].reward_vesting_balance === '0.000000 VESTS'
+    )
+      return {
+        success: false,
+        error: 'There are no pending rewards to claim'
       }
     return await this.signAndBroadcastTx(
       [
