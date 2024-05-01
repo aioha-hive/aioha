@@ -1,4 +1,3 @@
-import { BeneficiaryRoute } from '@hiveio/dhive'
 import { KeyType as HaKeyType } from './lib/hiveauth-wrapper'
 import { MessageType as HaMsgType } from './lib/hiveauth-wrapper'
 

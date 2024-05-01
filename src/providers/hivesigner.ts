@@ -169,7 +169,7 @@ export class HiveSigner implements AiohaProvider {
     }
   }
 
-  async signTxInWindow(ops: Operation[]): Promise<SignOperationResult> {
+  private async signTxInWindow(ops: Operation[]): Promise<SignOperationResult> {
     return new Promise<SignOperationResult>((rs) => {
       const signUrl =
         encodeOps(ops).replace('hive://', 'https://hivesigner.com/') +
@@ -195,6 +195,14 @@ export class HiveSigner implements AiohaProvider {
     })
   }
 
+  private async errorFallback(error: HiveSignerError, ops: Operation[]): Promise<SignOperationResult> {
+    if (error.error === 'invalid_scope') return this.signTxInWindow(ops)
+    return {
+      success: false,
+      error: error.error_description
+    }
+  }
+
   async vote(author: string, permlink: string, weight: number): Promise<SignOperationResult> {
     assert(typeof this.username === 'string')
     try {
@@ -204,12 +212,7 @@ export class HiveSigner implements AiohaProvider {
         result: tx.result.id
       }
     } catch (e) {
-      const error = e as HiveSignerError
-      if (error.error === 'invalid_scope') return this.signTxInWindow([createVote(this.username, author, permlink, weight)])
-      return {
-        success: false,
-        error: error.error_description
-      }
+      return await this.errorFallback(e as HiveSignerError, [createVote(this.username, author, permlink, weight)])
     }
   }
 
@@ -231,13 +234,10 @@ export class HiveSigner implements AiohaProvider {
           result: tx.result.id
         }
       } catch (e) {
-        const error = e as HiveSignerError
-        if (error.error === 'invalid_scope')
-          return this.signTxInWindow(createComment(pa, pp, this.username, permlink, title, body, json) as Operation[])
-        return {
-          success: false,
-          error: error.error_description
-        }
+        return await this.errorFallback(
+          e as HiveSignerError,
+          createComment(pa, pp, this.username, permlink, title, body, json) as Operation[]
+        )
       }
     } else {
       return await this.signAndBroadcastTx(
@@ -264,13 +264,7 @@ export class HiveSigner implements AiohaProvider {
         result: tx.result.id
       }
     } catch (e) {
-      const error = e as HiveSignerError
-      if (error.error === 'invalid_scope')
-        return this.signTxInWindow([createCustomJSON(required_auths, required_posting_auths, id, json)])
-      return {
-        success: false,
-        error: error.error_description
-      }
+      return await this.errorFallback(e as HiveSignerError, [createCustomJSON(required_auths, required_posting_auths, id, json)])
     }
   }
 }
