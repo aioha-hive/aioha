@@ -152,18 +152,12 @@ export class Aioha {
     return await this.providers[this.getCurrentProvider()!]!.deleteComment(permlink)
   }
 
-  async customJSON(
-    required_auths: string[],
-    required_posting_auths: string[],
-    id: string,
-    json: string | object,
-    displayTitle?: string
-  ): Promise<SignOperationResult> {
+  async customJSON(keyType: KeyTypes, id: string, json: string | object, displayTitle?: string): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
     if (typeof json === 'object') json = JSON.stringify(json)
     return await this.providers[this.getCurrentProvider()!]!.customJSON(
-      required_auths,
-      required_posting_auths,
+      keyType === 'active' ? [this.getCurrentUser()!] : [],
+      keyType === 'posting' ? [this.getCurrentUser()!] : [],
       id,
       json,
       displayTitle
@@ -172,8 +166,7 @@ export class Aioha {
 
   reblog(author: string, permlink: string, removeReblog: boolean): Promise<SignOperationResult> {
     return this.customJSON(
-      [],
-      [this.getCurrentUser()!],
+      'posting',
       'reblog',
       [
         'reblog',
@@ -190,8 +183,7 @@ export class Aioha {
 
   follow(target: string, unfollow: boolean): Promise<SignOperationResult> {
     return this.customJSON(
-      [],
-      [this.getCurrentUser()!],
+      'posting',
       'follow',
       [
         'follow',
@@ -207,8 +199,7 @@ export class Aioha {
 
   ignore(target: string): Promise<SignOperationResult> {
     return this.customJSON(
-      [],
-      [this.getCurrentUser()!],
+      'posting',
       'follow',
       [
         'follow',
