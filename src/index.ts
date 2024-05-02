@@ -31,6 +31,7 @@ export class Aioha implements AiohaOperations {
   }
   user?: string
   currentProvider?: Providers
+  private vscNetId = 'testnet/0bf2e474-6b9e-4165-ad4e-a0d78968d20c'
 
   constructor() {
     this.providers = {}
@@ -319,6 +320,29 @@ export class Aioha implements AiohaOperations {
 
   async clearProxy(): Promise<SignOperationResult> {
     return await this.setProxy('')
+  }
+
+  vscSetNetId(net_id: string) {
+    this.vscNetId = net_id
+  }
+
+  async vscCallContract(
+    contractId: string,
+    action: string,
+    payload: any,
+    keyType: KeyTypes = 'posting'
+  ): Promise<SignOperationResult> {
+    return await this.customJSON(keyType, 'vsc.tx', {
+      __v: '0.1',
+      __t: 'vsc-tx',
+      net_id: this.vscNetId,
+      tx: {
+        op: 'call_contract',
+        action: action,
+        contract_id: contractId,
+        payload: payload
+      }
+    })
   }
 }
 
