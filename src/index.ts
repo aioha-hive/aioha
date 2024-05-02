@@ -16,13 +16,14 @@ import {
 import { AppMetaType } from './lib/hiveauth-wrapper.js'
 import { createVote } from './opbuilder.js'
 import { getAccounts, getDgp } from './rpc.js'
+import { AiohaOperations } from './providers/provider.js'
 
 const notLoggedInResult: OperationResult = {
   success: false,
   error: 'Not logged in'
 }
 
-export class Aioha {
+export class Aioha implements AiohaOperations {
   providers: {
     keychain?: Keychain
     hivesigner?: HiveSigner
@@ -165,13 +166,7 @@ export class Aioha {
   async customJSON(keyType: KeyTypes, id: string, json: string | object, displayTitle?: string): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
     if (typeof json === 'object') json = JSON.stringify(json)
-    return await this.providers[this.getCurrentProvider()!]!.customJSON(
-      keyType === 'active' ? [this.getCurrentUser()!] : [],
-      keyType === 'posting' ? [this.getCurrentUser()!] : [],
-      id,
-      json,
-      displayTitle
-    )
+    return await this.providers[this.getCurrentProvider()!]!.customJSON(keyType, id, json, displayTitle)
   }
 
   reblog(author: string, permlink: string, removeReblog: boolean): Promise<SignOperationResult> {

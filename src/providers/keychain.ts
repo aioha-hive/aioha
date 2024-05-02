@@ -229,25 +229,17 @@ export class Keychain implements AiohaProvider {
     return await this.signAndBroadcastTx([deleteComment(this.username, permlink)], 'posting')
   }
 
-  async customJSON(
-    required_auths: string[],
-    required_posting_auths: string[],
-    id: string,
-    json: string,
-    displayTitle?: string
-  ): Promise<SignOperationResult> {
-    assert(this.username && (required_auths.length > 0 || required_posting_auths.length > 0))
-    if (required_auths.length === 0 || required_posting_auths.length === 0)
-      return this.txResult(
-        await this.provider.custom({
-          username: this.username,
-          method: required_auths.length > 0 ? KeychainKeyTypes.active : KeychainKeyTypes.posting,
-          display_msg: displayTitle ?? 'Custom JSON',
-          id,
-          json
-        })
-      )
-    else return await this.signAndBroadcastTx([createCustomJSON(required_auths, required_posting_auths, id, json)], 'active')
+  async customJSON(keyType: KeyTypes, id: string, json: string, displayTitle?: string): Promise<SignOperationResult> {
+    assert(this.username)
+    return this.txResult(
+      await this.provider.custom({
+        username: this.username,
+        method: Keychain.mapAiohaKeyTypes(keyType),
+        display_msg: displayTitle ?? 'Custom JSON',
+        id,
+        json
+      })
+    )
   }
 
   async transfer(to: string, amount: number, currency: Asset, memo?: string): Promise<SignOperationResult> {

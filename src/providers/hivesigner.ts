@@ -275,20 +275,18 @@ export class HiveSigner implements AiohaProvider {
     }
   }
 
-  async customJSON(
-    required_auths: string[],
-    required_posting_auths: string[],
-    id: string,
-    json: string
-  ): Promise<SignOperationResult> {
+  async customJSON(keyType: KeyTypes, id: string, json: string): Promise<SignOperationResult> {
+    assert(this.username)
+    const requiredAuths = keyType === 'active' ? [this.username] : []
+    const requiredPostingAuths = keyType === 'posting' ? [this.username] : []
     try {
-      const tx = await this.provider.customJson(required_auths, required_posting_auths, id, json)
+      const tx = await this.provider.customJson(requiredAuths, requiredPostingAuths, id, json)
       return {
         success: true,
         result: tx.result.id
       }
     } catch (e) {
-      return await this.errorFallback(e as HiveSignerError, [createCustomJSON(required_auths, required_posting_auths, id, json)])
+      return await this.errorFallback(e as HiveSignerError, [createCustomJSON(requiredAuths, requiredPostingAuths, id, json)])
     }
   }
 

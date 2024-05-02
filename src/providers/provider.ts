@@ -1,13 +1,15 @@
 import { CommentOptionsOperation, Operation, Transaction } from '@hiveio/dhive'
 import { Asset, KeyTypes, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types'
 
-export interface AiohaProvider {
+export interface AiohaProvider extends AiohaOperations {
   // authentication
   login(username: string, options: LoginOptions): Promise<LoginResult>
   loginAndDecryptMemo(username: string, options: LoginOptions): Promise<LoginResult>
   logout(): Promise<void>
   loadAuth(username: string): boolean
+}
 
+export interface AiohaOperations {
   // memo
   decryptMemo(memo: string, keyType: KeyTypes): Promise<OperationResult>
 
@@ -30,13 +32,7 @@ export interface AiohaProvider {
     options?: CommentOptionsOperation[1]
   ): Promise<SignOperationResult>
   deleteComment(permlink: string): Promise<SignOperationResult>
-  customJSON(
-    required_auths: string[],
-    required_posting_auths: string[],
-    id: string,
-    json: string,
-    displayTitle?: string
-  ): Promise<SignOperationResult>
+  customJSON(keyType: KeyTypes, id: string, json: string, displayTitle?: string): Promise<SignOperationResult>
 
   // active auth operation helpers
   // mostly just constructs the op and calls signAndBroadcastTx(), but some providers

@@ -176,17 +176,11 @@ export class HiveAuth implements AiohaProvider {
     return await this.signAndBroadcastTx([deleteComment(this.provider.username, permlink)], 'posting')
   }
 
-  async customJSON(
-    required_auths: string[],
-    required_posting_auths: string[],
-    id: string,
-    json: string
-  ): Promise<SignOperationResult> {
+  async customJSON(keyType: KeyTypes, id: string, json: string): Promise<SignOperationResult> {
     assert(this.provider.username)
-    return await this.signAndBroadcastTx(
-      [createCustomJSON(required_auths, required_posting_auths, id, json)],
-      required_auths.length > 0 ? 'active' : 'posting'
-    )
+    const requiredAuths = keyType === 'active' ? [this.provider.username] : []
+    const requiredPostingAuths = keyType === 'posting' ? [this.provider.username] : []
+    return await this.signAndBroadcastTx([createCustomJSON(requiredAuths, requiredPostingAuths, id, json)], keyType)
   }
 
   async transfer(to: string, amount: number, currency: Asset, memo?: string): Promise<SignOperationResult> {
