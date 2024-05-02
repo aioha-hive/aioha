@@ -1,12 +1,27 @@
 import hivesigner, { Client } from 'hivesigner'
 import { encodeOps } from 'hive-uri'
-import { CommentOptionsOperation, Operation, Transaction } from '@hiveio/dhive'
+import { CommentOptionsOperation, Operation, Transaction, WithdrawVestingOperation } from '@hiveio/dhive'
 import { ClientConfig } from 'hivesigner/lib/types/client-config.interface.js'
 import { AiohaProvider } from './provider.js'
-import { KeyTypes, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types.js'
+import { Asset, KeyTypes, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types.js'
 import { KeyType } from '../lib/hiveauth-wrapper.js'
 import assert from 'assert'
-import { createComment, createCustomJSON, createVote, deleteComment } from '../opbuilder.js'
+import {
+  createComment,
+  createCustomJSON,
+  createDelegateVests,
+  createRecurrentXfer,
+  createSetProxy,
+  createStakeHive,
+  createUnstakeHive,
+  createUnstakeHiveByVests,
+  createVote,
+  createVoteProposals,
+  createVoteWitness,
+  createXfer,
+  deleteComment
+} from '../opbuilder.js'
+import { hivePerVests } from '../rpc.js'
 
 interface HiveSignerError {
   error: 'unauthorized_client' | 'unauthorized_access' | 'invalid_grant' | 'invalid_scope' | 'server_error'
@@ -275,5 +290,83 @@ export class HiveSigner implements AiohaProvider {
     } catch (e) {
       return await this.errorFallback(e as HiveSignerError, [createCustomJSON(required_auths, required_posting_auths, id, json)])
     }
+  }
+
+  async transfer(to: string, amount: number, currency: Asset, memo?: string): Promise<SignOperationResult> {
+    assert(this.username)
+    return await this.signAndBroadcastTx([createXfer(this.username, to, amount, currency, memo)], 'active')
+  }
+
+  async recurrentTransfer(
+    to: string,
+    amount: number,
+    currency: Asset,
+    recurrence: number,
+    executions: number,
+    memo?: string | undefined
+  ): Promise<SignOperationResult> {
+    assert(this.username)
+    return await this.signAndBroadcastTx(
+      [createRecurrentXfer(this.username, to, amount, currency, recurrence, executions, memo)],
+      'active'
+    )
+  }
+
+  async stakeHive(amount: number, to?: string | undefined): Promise<SignOperationResult> {
+    assert(this.username)
+    return await this.signAndBroadcastTx([createStakeHive(this.username, to ?? this.username, amount)], 'active')
+  }
+
+  async unstakeHive(amount: number): Promise<SignOperationResult> {
+    assert(this.username)
+    let op: WithdrawVestingOperation
+    try {
+      op = await createUnstakeHive(this.username, amount)
+    } catch {
+      return {
+        success: false,
+        error: 'Failed to retrieve VESTS from staked HIVE'
+      }
+    }
+    return await this.signAndBroadcastTx([op], 'active')
+  }
+
+  async unstakeHiveByVests(vests: number): Promise<SignOperationResult> {
+    assert(this.username)
+    return await this.signAndBroadcastTx([createUnstakeHiveByVests(this.username, vests)], 'active')
+  }
+
+  async delegateStakedHive(to: string, amount: number): Promise<SignOperationResult> {
+    assert(this.username)
+    let hpv: number
+    try {
+      hpv = await hivePerVests()
+    } catch {
+      return {
+        success: false,
+        error: 'Failed to retrieve HIVE per VESTS'
+      }
+    }
+    return await this.delegateVests(to, amount / hpv)
+  }
+
+  async delegateVests(to: string, amount: number): Promise<SignOperationResult> {
+    assert(this.username)
+    return await this.signAndBroadcastTx([createDelegateVests(this.username, to, amount)], 'active')
+  }
+
+  async voteWitness(witness: string, approve: boolean): Promise<SignOperationResult> {
+    assert(this.username)
+    return await this.signAndBroadcastTx([createVoteWitness(this.username, witness, approve)], 'active')
+  }
+
+  async voteProposals(proposals: number[], approve: boolean): Promise<SignOperationResult> {
+    assert(this.username)
+    return await this.signAndBroadcastTx([createVoteProposals(this.username, proposals, approve)], 'active')
+  }
+
+  async setProxy(proxy: string): Promise<SignOperationResult> {
+    assert(this.username)
+    return await this.signAndBroadcastTx([createSetProxy(this.username, proxy)], 'active')
   }
 }

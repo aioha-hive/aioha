@@ -55,3 +55,5 @@ export interface AuthorLink {
 export interface VoteParams extends AuthorLink {
   weight: number
 }
+
+export type Asset = 'HIVE' | 'HBD'

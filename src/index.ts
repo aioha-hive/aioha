@@ -3,9 +3,19 @@ import { HiveAuth } from './providers/hiveauth.js'
 import { HiveSigner } from './providers/hivesigner.js'
 import { Keychain } from './providers/keychain.js'
 import { ClientConfig as HiveSignerOptions } from 'hivesigner/lib/types/client-config.interface.js'
-import { KeyTypes, LoginOptions, LoginResult, OperationResult, SignOperationResult, Providers, VoteParams } from './types.js'
+import {
+  Asset,
+  KeyTypes,
+  LoginOptions,
+  LoginResult,
+  OperationResult,
+  SignOperationResult,
+  Providers,
+  VoteParams
+} from './types.js'
 import { AppMetaType } from './lib/hiveauth-wrapper.js'
 import { createVote } from './opbuilder.js'
+import { getAccounts, getDgp } from './rpc.js'
 
 const notLoggedInResult: OperationResult = {
   success: false,
@@ -215,19 +225,7 @@ export class Aioha {
 
   async claimRewards(api: string = 'https://techcoderx.com'): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    const accReq = await fetch(api, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        jsonrpc: '2.0',
-        id: 1,
-        method: 'condenser_api.get_accounts',
-        params: [[this.getCurrentUser()]]
-      })
-    })
-    const accResp = await accReq.json()
+    const accResp = await getAccounts([this.getCurrentUser()!], api)
     if (accResp.error || !Array.isArray(accResp.result) || accResp.result.length === 0)
       return {
         success: false,
@@ -257,6 +255,76 @@ export class Aioha {
       'posting'
     )
   }
+
+  async transfer(to: string, amount: number, currency: Asset, memo?: string): Promise<SignOperationResult> {
+    if (!this.isLoggedIn()) return notLoggedInResult
+    return await this.providers[this.getCurrentProvider()!]!.transfer(to, amount, currency, memo)
+  }
+
+  async recurrentTransfer(
+    to: string,
+    amount: number,
+    currency: Asset,
+    recurrence: number,
+    executions: number,
+    memo?: string
+  ): Promise<SignOperationResult> {
+    if (!this.isLoggedIn()) return notLoggedInResult
+    if (recurrence < 24)
+      return {
+        success: false,
+        error: 'recurrence must be at least 24 hours'
+      }
+    return await this.providers[this.getCurrentProvider()!]!.recurrentTransfer(to, amount, currency, recurrence, executions, memo)
+  }
+
+  cancelRecurrentTransfer(to: string, currency: Asset, memo?: string): Promise<SignOperationResult> {
+    return this.recurrentTransfer(to, 0, currency, 24, 2, memo)
+  }
+
+  async stakeHive(amount: number, to?: string): Promise<SignOperationResult> {
+    if (!this.isLoggedIn()) return notLoggedInResult
+    return await this.providers[this.getCurrentProvider()!]!.stakeHive(amount, to)
+  }
+
+  async unstakeHive(amount: number): Promise<SignOperationResult> {
+    if (!this.isLoggedIn()) return notLoggedInResult
+    return await this.providers[this.getCurrentProvider()!]!.unstakeHive(amount)
+  }
+
+  async unstakeHiveByVests(vests: number): Promise<SignOperationResult> {
+    if (!this.isLoggedIn()) return notLoggedInResult
+    return await this.providers[this.getCurrentProvider()!]!.unstakeHiveByVests(vests)
+  }
+
+  async delegateStakedHive(to: string, amount: number): Promise<SignOperationResult> {
+    if (!this.isLoggedIn()) return notLoggedInResult
+    return await this.providers[this.getCurrentProvider()!]!.delegateStakedHive(to, amount)
+  }
+
+  async delegateVests(to: string, amount: number): Promise<SignOperationResult> {
+    if (!this.isLoggedIn()) return notLoggedInResult
+    return await this.providers[this.getCurrentProvider()!]!.delegateVests(to, amount)
+  }
+
+  async voteWitness(witness: string, approve: boolean): Promise<SignOperationResult> {
+    if (!this.isLoggedIn()) return notLoggedInResult
+    return await this.providers[this.getCurrentProvider()!]!.voteWitness(witness, approve)
+  }
+
+  async voteProposals(proposals: number[], approve: boolean): Promise<SignOperationResult> {
+    if (!this.isLoggedIn()) return notLoggedInResult
+    return await this.providers[this.getCurrentProvider()!]!.voteProposals(proposals, approve)
+  }
+
+  async setProxy(proxy: string): Promise<SignOperationResult> {
+    if (!this.isLoggedIn()) return notLoggedInResult
+    return await this.providers[this.getCurrentProvider()!]!.setProxy(proxy)
+  }
+
+  async clearProxy(): Promise<SignOperationResult> {
+    return await this.setProxy('')
+  }
 }
 
 const getPrefix = (head_block_id: string) => {
@@ -268,20 +336,8 @@ const getPrefix = (head_block_id: string) => {
 }
 
 export const constructTxHeader = async (ops: any[], api: string = 'https://techcoderx.com', expiry: number = 600000) => {
-  const propsReq = await fetch(api, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      jsonrpc: '2.0',
-      id: 1,
-      method: 'database_api.get_dynamic_global_properties',
-      params: {}
-    })
-  })
-  const propsResp = await propsReq.json()
-  if (propsResp.error) throw new Error(propsResp)
+  const propsResp = await getDgp(api)
+  if (propsResp.error) throw new Error(propsResp.error)
   const props = propsResp.result
   // TODO: fix tx expiration errors
   return {

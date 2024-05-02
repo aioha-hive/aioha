@@ -1,9 +1,9 @@
 import { KeychainKeyTypes, KeychainRequestResponse, KeychainSDK, Post } from 'keychain-sdk'
 import { Operation, Transaction, CommentOptionsOperation } from '@hiveio/dhive'
 import { AiohaProvider } from './provider.js'
-import { KeyTypes, KeychainOptions, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types.js'
+import { Asset, KeyTypes, KeychainOptions, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types.js'
 import assert from 'assert'
-import { createCustomJSON, deleteComment } from '../opbuilder.js'
+import { createCustomJSON, createUnstakeHiveByVests, deleteComment } from '../opbuilder.js'
 
 export class Keychain implements AiohaProvider {
   private provider: KeychainSDK
@@ -40,7 +40,8 @@ export class Keychain implements AiohaProvider {
       success: login.success,
       message: login.message,
       result: login.result,
-      publicKey: login.publicKey
+      publicKey: login.publicKey,
+      username
     }
   }
 
@@ -73,7 +74,8 @@ export class Keychain implements AiohaProvider {
       provider: 'keychain',
       success: login.success,
       message: login.message,
-      result: login.result as unknown as string
+      result: login.result as unknown as string,
+      username
     }
   }
 
@@ -246,5 +248,124 @@ export class Keychain implements AiohaProvider {
         })
       )
     else return await this.signAndBroadcastTx([createCustomJSON(required_auths, required_posting_auths, id, json)], 'active')
+  }
+
+  async transfer(to: string, amount: number, currency: Asset, memo?: string): Promise<SignOperationResult> {
+    assert(this.username)
+    return this.txResult(
+      await this.provider.transfer({
+        username: this.username,
+        to,
+        amount: amount.toFixed(3),
+        memo: memo ?? '',
+        enforce: true,
+        currency
+      })
+    )
+  }
+
+  async recurrentTransfer(
+    to: string,
+    amount: number,
+    currency: Asset,
+    recurrence: number,
+    executions: number,
+    memo?: string
+  ): Promise<SignOperationResult> {
+    assert(this.username)
+    return this.txResult(
+      await this.provider.recurrentTransfer({
+        username: this.username,
+        to,
+        amount: amount.toFixed(3),
+        currency,
+        memo: memo ?? '',
+        recurrence,
+        executions
+      })
+    )
+  }
+
+  async stakeHive(amount: number, to?: string): Promise<SignOperationResult> {
+    assert(this.username)
+    return this.txResult(
+      await this.provider.powerUp({
+        username: this.username,
+        recipient: to ?? this.username,
+        hive: amount.toFixed(3)
+      })
+    )
+  }
+
+  async unstakeHive(amount: number): Promise<SignOperationResult> {
+    assert(this.username)
+    return this.txResult(
+      await this.provider.powerDown({
+        username: this.username,
+        hive_power: amount.toFixed(3)
+      })
+    )
+  }
+
+  async unstakeHiveByVests(vests: number): Promise<SignOperationResult> {
+    assert(this.username)
+    return await this.signAndBroadcastTx([createUnstakeHiveByVests(this.username, vests)], 'active')
+  }
+
+  async delegateStakedHive(to: string, amount: number): Promise<SignOperationResult> {
+    assert(this.username)
+    return this.txResult(
+      await this.provider.delegation({
+        username: this.username,
+        delegatee: to,
+        amount: amount.toFixed(3),
+        unit: 'HP'
+      })
+    )
+  }
+
+  async delegateVests(to: string, amount: number): Promise<SignOperationResult> {
+    assert(this.username)
+    return this.txResult(
+      await this.provider.delegation({
+        username: this.username,
+        delegatee: to,
+        amount: amount.toFixed(6),
+        unit: 'VESTS'
+      })
+    )
+  }
+
+  async voteWitness(witness: string, approve: boolean): Promise<SignOperationResult> {
+    assert(this.username)
+    return this.txResult(
+      await this.provider.witnessVote({
+        username: this.username,
+        witness,
+        vote: approve
+      })
+    )
+  }
+
+  async voteProposals(proposals: number[], approve: boolean): Promise<SignOperationResult> {
+    assert(this.username)
+    return this.txResult(
+      await this.provider.updateProposalVote({
+        username: this.username,
+        proposal_ids: proposals,
+        approve,
+        extensions: []
+      })
+    )
+  }
+
+  async setProxy(proxy: string): Promise<SignOperationResult> {
+    assert(this.username)
+    return this.txResult(
+      await this.provider.proxy({
+        username: this.username,
+        proxy
+      })
+    )
   }
 }

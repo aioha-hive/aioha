@@ -1,5 +1,5 @@
 import { CommentOptionsOperation, Operation, Transaction } from '@hiveio/dhive'
-import { KeyTypes, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types'
+import { Asset, KeyTypes, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types'
 
 export interface AiohaProvider {
   // authentication
@@ -37,4 +37,25 @@ export interface AiohaProvider {
     json: string,
     displayTitle?: string
   ): Promise<SignOperationResult>
+
+  // active auth operation helpers
+  // mostly just constructs the op and calls signAndBroadcastTx(), but some providers
+  // such as keychain have its own API method which will show differently in the popup.
+  transfer(to: string, amount: number, currency: Asset, memo?: string): Promise<SignOperationResult>
+  recurrentTransfer(
+    to: string,
+    amount: number,
+    currency: Asset,
+    recurrence: number,
+    executions: number,
+    memo?: string
+  ): Promise<SignOperationResult>
+  stakeHive(amount: number, to?: string): Promise<SignOperationResult>
+  unstakeHive(amount: number): Promise<SignOperationResult>
+  unstakeHiveByVests(vests: number): Promise<SignOperationResult>
+  delegateStakedHive(to: string, amount: number): Promise<SignOperationResult>
+  delegateVests(to: string, amount: number): Promise<SignOperationResult>
+  voteWitness(witness: string, approve: boolean): Promise<SignOperationResult>
+  voteProposals(proposals: number[], approve: boolean): Promise<SignOperationResult>
+  setProxy(proxy: string): Promise<SignOperationResult>
 }
