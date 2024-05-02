@@ -26,7 +26,7 @@ export const getDgp = (api: string = DEFAULT_API) => {
 }
 
 export const hivePerVests = async (api: string = DEFAULT_API) => {
-  const dgpResp = await getDgp()
+  const dgpResp = await getDgp(api)
   if (dgpResp.error) throw new Error(dgpResp.error)
   return parseFloat(dgpResp.result.total_vesting_fund_hive) / parseFloat(dgpResp.result.total_vesting_shares)
 }

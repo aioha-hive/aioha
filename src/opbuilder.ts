@@ -14,7 +14,9 @@ import {
   UpdateProposalVotesOperation
 } from '@hiveio/dhive'
 import { Asset } from './types'
-import { getAccounts, getDgp, hivePerVests } from './rpc'
+import { getAccounts, hivePerVests } from './rpc'
+
+const VESTS_DECIMALS = 6
 
 export const createVote = (voter: string, author: string, permlink: string, weight: number): VoteOperation => {
   return ['vote', { voter, author, permlink, weight }]
@@ -73,9 +75,9 @@ export const createUnstakeHive = async (account: string, amount: number): Promis
   if (accResp.error)
     throw new Error(accResp.error)
   let vestsToUnstake = amount/hpv
-  const availVestsFloor = Math.floor(parseFloat(accResp.result[0].vesting_shares) - parseFloat(accResp.result[0].delegated_vesting_shares))
+  const availVestsFloor = (Math.round(parseFloat(accResp.result[0].vesting_shares)*Math.pow(10,VESTS_DECIMALS)) - Math.round(parseFloat(accResp.result[0].delegated_vesting_shares)*Math.pow(10,VESTS_DECIMALS)))/Math.pow(10,VESTS_DECIMALS)
   if (vestsToUnstake >= availVestsFloor)
-    vestsToUnstake = parseFloat(accResp.result[0].vesting_shares)
+    vestsToUnstake = availVestsFloor
   return createUnstakeHiveByVests(account, vestsToUnstake)
 }
 
