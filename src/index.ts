@@ -69,6 +69,17 @@ export class Aioha implements AiohaOperations {
   }
 
   /**
+   * Deregister a provider. Must be logged out or unauthenticated.
+   * @param provider Provider to deregister
+   * @returns Boolean of whether the provider has been successfully deregistered
+   */
+  deregisterProvider(provider: Providers) {
+    if (!this.providers[provider] || this.isLoggedIn()) return false
+    delete this.providers[provider]
+    return true
+  }
+
+  /**
    * Get list of registered providers
    * @returns string[]
    */
