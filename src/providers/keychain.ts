@@ -1,17 +1,24 @@
-import { KeychainKeyTypes, KeychainRequestResponse, KeychainSDK, Post } from 'keychain-sdk'
+import { KeychainRequestResponse } from 'keychain-sdk'
 import { Operation, Transaction, CommentOptionsOperation } from '@hiveio/dhive'
 import { AiohaProvider } from './provider.js'
 import { Asset, KeyTypes, KeychainOptions, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types.js'
 import assert from 'assert'
-import { createCustomJSON, createUnstakeHiveByVests, deleteComment } from '../opbuilder.js'
+import { createUnstakeHiveByVests, deleteComment } from '../opbuilder.js'
+import { KeychainMini } from '../lib/keychain-mini.js'
+
+declare enum KeychainKeyTypes {
+  posting = 'Posting',
+  active = 'Active',
+  memo = 'Memo'
+}
 
 export class Keychain implements AiohaProvider {
-  private provider: KeychainSDK
+  private provider: KeychainMini
   private loginTitle: string = 'Login'
   private username?: string
 
   constructor(options?: KeychainOptions) {
-    this.provider = new KeychainSDK(window)
+    this.provider = new KeychainMini()
     if (options && options.loginTitle) this.loginTitle = options.loginTitle
   }
 
@@ -89,7 +96,7 @@ export class Keychain implements AiohaProvider {
   }
 
   static isInstalled(): Promise<boolean> {
-    return new KeychainSDK(window).isKeychainInstalled()
+    return new KeychainMini().isKeychainInstalled()
   }
 
   static mapAiohaKeyTypes(keyType: KeyTypes): KeychainKeyTypes {
