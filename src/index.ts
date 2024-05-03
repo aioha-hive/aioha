@@ -29,13 +29,13 @@ const noMemoAllowResult: OperationResult = {
 }
 
 export class Aioha implements AiohaOperations {
-  providers: {
+  private providers: {
     keychain?: Keychain
     hivesigner?: HiveSigner
     hiveauth?: HiveAuth
   }
-  user?: string
-  currentProvider?: Providers
+  private user?: string
+  private currentProvider?: Providers
   private vscNetId = 'testnet/0bf2e474-6b9e-4165-ad4e-a0d78968d20c'
 
   constructor() {
