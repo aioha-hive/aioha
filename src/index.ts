@@ -135,10 +135,12 @@ export class Aioha implements AiohaOperations {
         error: 'options are required'
       }
     const result = await this.providers[provider]!.login(username, options)
-    this.user = result.username ?? username
-    this.currentProvider = provider
-    localStorage.setItem('aiohaUsername', this.user)
-    localStorage.setItem('aiohaProvider', this.currentProvider)
+    if (result.success) {
+      this.user = result.username ?? username
+      this.currentProvider = provider
+      localStorage.setItem('aiohaUsername', this.user)
+      localStorage.setItem('aiohaProvider', this.currentProvider)
+    }
     return result
   }
 
