@@ -104,14 +104,6 @@ export const createSetProxy = (account: string, proxy: string): AccountWitnessPr
   return ['account_witness_proxy', { account, proxy }]
 }
 
-const getPrefix = (head_block_id: string) => {
-  return Buffer.from(head_block_id, 'hex').readUInt32LE(4)
-  // const buffer = new Uint8Array(head_block_id.match(/[\da-f]{2}/gi)!.map((h) => parseInt(h, 16)))
-  // const dataView = new DataView(buffer.buffer)
-  // const result = dataView.getUint32(4, true) // true for little endian
-  // return result
-}
-
 export const constructTxHeader = async (ops: any[], api: string = 'https://techcoderx.com', expiry: number = 600000, tries = 0): Promise<Transaction> => {
   if (tries > CONSTRUCT_TX_HEADER_MAX_TRIES)
     throw new Error('Failed to get dgp despite '+CONSTRUCT_TX_HEADER_MAX_TRIES+' tries')
@@ -125,7 +117,7 @@ export const constructTxHeader = async (ops: any[], api: string = 'https://techc
   // TODO: fix tx expiration errors, it only works inside Ledger provider but not anywhere else
   return {
     ref_block_num: props.head_block_number & 0xffff,
-    ref_block_prefix: getPrefix(props.head_block_id),
+    ref_block_prefix: Buffer.from(props.head_block_id, 'hex').readUInt32LE(4),
     expiration: new Date(new Date(props.time + 'Z').getTime() + expiry).toISOString().slice(0, -5),
     operations: ops,
     extensions: []
