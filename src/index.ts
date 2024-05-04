@@ -2,6 +2,7 @@ import { CommentOptionsOperation, Operation, Transaction, VoteOperation } from '
 import { HiveAuth } from './providers/hiveauth.js'
 import { HiveSigner } from './providers/hivesigner.js'
 import { Keychain } from './providers/keychain.js'
+import { Ledger } from './providers/ledger.js'
 import { ClientConfig as HiveSignerOptions } from 'hivesigner/lib/types/client-config.interface.js'
 import {
   Asset,
@@ -15,8 +16,10 @@ import {
 } from './types.js'
 import { AppMetaType } from './lib/hiveauth-wrapper.js'
 import { createVote } from './opbuilder.js'
-import { getAccounts, getDgp } from './rpc.js'
+import { getAccounts } from './rpc.js'
 import { AiohaOperations } from './providers/provider.js'
+export { constructTxHeader } from './opbuilder.js'
+export { broadcastTx } from './rpc.js'
 
 const notLoggedInResult: OperationResult = {
   success: false,
@@ -33,6 +36,7 @@ export class Aioha implements AiohaOperations {
     keychain?: Keychain
     hivesigner?: HiveSigner
     hiveauth?: HiveAuth
+    ledger?: Ledger
   }
   private user?: string
   private currentProvider?: Providers
@@ -66,6 +70,13 @@ export class Aioha implements AiohaOperations {
    */
   registerHiveAuth(options: AppMetaType) {
     this.providers.hiveauth = new HiveAuth(options)
+  }
+
+  /**
+   * Register Ledger provider.
+   */
+  registerLedger() {
+    this.providers.ledger = new Ledger()
   }
 
   /**
@@ -573,27 +584,5 @@ export class Aioha implements AiohaOperations {
         payload: payload
       }
     })
-  }
-}
-
-const getPrefix = (head_block_id: string) => {
-  // Buffer.from(props.head_block_id, 'hex').readUInt32LE(4)
-  const buffer = new Uint8Array(head_block_id.match(/[\da-f]{2}/gi)!.map((h) => parseInt(h, 16)))
-  const dataView = new DataView(buffer.buffer)
-  const result = dataView.getUint32(4, true) // true for little endian
-  return result
-}
-
-export const constructTxHeader = async (ops: any[], api: string = 'https://techcoderx.com', expiry: number = 600000) => {
-  const propsResp = await getDgp(api)
-  if (propsResp.error) throw new Error(propsResp.error)
-  const props = propsResp.result
-  // TODO: fix tx expiration errors
-  return {
-    ref_block_num: props.head_block_number & 0xffff,
-    ref_block_prefix: getPrefix(props.head_block_id),
-    expiration: new Date(new Date(props.time + 'Z').getTime() + expiry).toISOString().slice(0, -5),
-    operations: ops,
-    extensions: []
   }
 }

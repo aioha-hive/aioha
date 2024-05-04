@@ -21,8 +21,11 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
+    "@engrave/ledger-app-hive": "^3.5.6",
     "@hiveio/dhive": "^1.2.8",
+    "@ledgerhq/hw-transport-webusb": "^6.28.6",
     "assert": "^2.1.0",
+    "buffer": "^6.0.3",
     "crypto-js": "^4.2.0",
     "hive-uri": "^0.2.5",
     "hivesigner": "^3.3.4",
