@@ -17,7 +17,7 @@ import {
 import { AppMetaType } from './lib/hiveauth-wrapper.js'
 import { createVote } from './opbuilder.js'
 import { DEFAULT_API, getAccounts } from './rpc.js'
-import { AiohaOperations, AiohaProvider } from './providers/provider.js'
+import { AiohaOperations } from './providers/provider.js'
 export { constructTxHeader } from './opbuilder.js'
 export { broadcastTx } from './rpc.js'
 

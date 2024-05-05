@@ -10,15 +10,12 @@ export type KeyTypes = HaKeyType
 
 export interface LoginOptions {
   msg?: string
+  keyType?: KeyTypes
   hivesigner?: {
     state?: string
   }
   hiveauth?: {
-    authType: HaKeyType
     cbWait?: (payload: string, evt: HaMsgType) => any
-  }
-  keychain?: {
-    keyType: KeyTypes
   }
 }
 

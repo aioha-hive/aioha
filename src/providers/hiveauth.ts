@@ -36,18 +36,18 @@ export class HiveAuth extends AiohaProviderBase implements AiohaProvider {
   }
 
   async login(username: string, options: LoginOptions): Promise<LoginResult> {
-    if (!options || !options.hiveauth)
+    if (!options || !options.hiveauth || !options.keyType)
       return {
         provider: 'hiveauth',
         success: false,
-        error: 'hiveauth options must be present'
+        error: 'hiveauth and keyType options must be present'
       }
     try {
       const login = await HaWrapper.authenticate(
         this.provider,
         username,
         {
-          key_type: options.hiveauth.authType,
+          key_type: options.keyType,
           challenge: options.msg ?? ''
         },
         options.hiveauth.cbWait

@@ -24,7 +24,7 @@ export class Keychain extends AiohaProviderBase implements AiohaProvider {
   }
 
   async login(username: string, options: LoginOptions): Promise<LoginResult> {
-    if (!options || !options.keychain)
+    if (!options || !options.keyType)
       return {
         provider: 'keychain',
         success: false,
@@ -39,7 +39,7 @@ export class Keychain extends AiohaProviderBase implements AiohaProvider {
     const login = await this.provider.login({
       username: username,
       message: options.msg,
-      method: Keychain.mapAiohaKeyTypes(options.keychain.keyType),
+      method: Keychain.mapAiohaKeyTypes(options.keyType),
       title: this.loginTitle
     })
     if (login.success) this.username = username
@@ -60,7 +60,7 @@ export class Keychain extends AiohaProviderBase implements AiohaProvider {
         success: false,
         error: 'message to decode must start with #'
       }
-    else if (!options || !options.keychain)
+    else if (!options || !options.keyType)
       return {
         provider: 'keychain',
         success: false,
@@ -75,7 +75,7 @@ export class Keychain extends AiohaProviderBase implements AiohaProvider {
     const login = await this.provider.decode({
       username: username,
       message: options.msg,
-      method: Keychain.mapAiohaKeyTypes(options.keychain.keyType)
+      method: Keychain.mapAiohaKeyTypes(options.keyType)
     })
     if (login.success) this.username = username
     return {
