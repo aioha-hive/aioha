@@ -1,8 +1,10 @@
 // HiveAuth wrapper with types
 // https://github.com/hiveauth/hive-auth-wrapper/blob/master/has-wrapper.js
 import { v4 as uuidv4 } from 'uuid'
-import CryptoJS from 'crypto-js'
+import type CryptoJSType from 'crypto-js'
 import assert from 'assert'
+
+let CryptoJS: typeof CryptoJSType
 
 enum CMD {
   CONNECTED = 'connected',
@@ -265,6 +267,10 @@ export default {
     return await checkConnection()
   },
 
+  initCrypto: async function () {
+    CryptoJS = (await import(/* webpackChunkName: 'cryptojs' */ 'crypto-js')).default
+  },
+
   /**
    * Sends an authentication request to the server
    * @param {Object} auth
@@ -284,6 +290,7 @@ export default {
   ) {
     return new Promise<AuthAckDataType>(async (resolve, reject) => {
       try {
+        assert(CryptoJS, 'call initCrypto() first')
         assert(typeof username == 'string' && username.length >= 3, 'missing or invalid auth.username')
         assert(
           !challenge_data || (challenge_data.key_type && typeof challenge_data.key_type == 'string'),
@@ -410,6 +417,7 @@ export default {
    */
   signTx: function (auth: Auth, key_type: KeyType, ops: any, broadcast: boolean, cbWait?: (evt: MessageType) => any) {
     return new Promise<MessageType>(async (resolve, reject) => {
+      assert(CryptoJS, 'call initCrypto() first')
       assert(auth, 'missing auth')
       assert(auth.username && typeof auth.username == 'string', 'missing or invalid username')
       assert(auth.key && typeof auth.key == 'string', 'missing or invalid encryption key')
@@ -496,6 +504,7 @@ export default {
    */
   challenge: function (auth: Auth, challenge_data: ChallengeDataType, cbWait?: (evt: MessageType) => any) {
     return new Promise<ChallengeResult>(async (resolve, reject) => {
+      assert(CryptoJS, 'call initCrypto() first')
       assert(auth, 'missing auth')
       assert(auth.username && typeof auth.username == 'string', 'missing or invalid username')
       assert(auth.key && typeof auth.key == 'string', 'missing or invalid encryption key')

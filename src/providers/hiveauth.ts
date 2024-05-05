@@ -20,11 +20,12 @@ import {
 import { hivePerVests } from '../rpc.js'
 import assert from 'assert'
 
-const HiveAuthError = (e: any) => {
+const HiveAuthError = (e: any): string => {
   if (e.toString() === 'Error: expired') return 'HiveAuth authentication request expired'
   else if (e.cmd === 'auth_nack') return 'HiveAuth authentication request rejected'
   else if (e.cmd === 'sign_nack') return 'HiveAuth broadcast request rejected'
   else if (e.cmd === 'auth_err' || e.cmd === 'sign_err') return e.error
+  else return 'Unknown error'
 }
 
 export class HiveAuth extends AiohaProviderBase implements AiohaProvider {
@@ -43,6 +44,7 @@ export class HiveAuth extends AiohaProviderBase implements AiohaProvider {
         error: 'hiveauth and keyType options must be present'
       }
     try {
+      await HaWrapper.initCrypto()
       const login = await HaWrapper.authenticate(
         this.provider,
         username,
@@ -105,6 +107,7 @@ export class HiveAuth extends AiohaProviderBase implements AiohaProvider {
 
   async signMessage(message: string, keyType: KeyTypes): Promise<OperationResult> {
     try {
+      await HaWrapper.initCrypto()
       const signed = await HaWrapper.challenge(this.provider, {
         key_type: keyType,
         challenge: message
@@ -135,6 +138,7 @@ export class HiveAuth extends AiohaProviderBase implements AiohaProvider {
 
   async signAndBroadcastTx(tx: Operation[], keyType: KeyType): Promise<SignOperationResult> {
     try {
+      await HaWrapper.initCrypto()
       const broadcasted = await HaWrapper.signTx(this.provider, keyType, tx, true, (msg) => {
         console.log('Please approve tx in HiveAuth PKSA, uuid: ' + msg.uuid)
       })

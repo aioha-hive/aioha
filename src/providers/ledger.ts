@@ -19,8 +19,10 @@ import {
   createVoteProposals,
   createSetProxy
 } from '../opbuilder'
-import CryptoJS from 'crypto-js'
+import type CryptoJSType from 'crypto-js'
 import assert from 'assert'
+
+let CryptoJS: typeof CryptoJSType
 
 const sha256 = (input: string) => {
   return CryptoJS.SHA256(input).toString(CryptoJS.enc.Hex)
@@ -125,6 +127,7 @@ export class Ledger extends AiohaProviderBase implements AiohaProvider {
         this.provider = new LedgerApp(t)
         t.on('disconnect', () => delete this.provider)
       }
+      CryptoJS = (await import(/* webpackChunkName: 'cryptojs' */ 'crypto-js')).default
       return true
     } catch {
       return false
