@@ -15,7 +15,7 @@ import {
   Transaction
 } from '@hiveio/dhive'
 import { Asset } from './types'
-import { getAccounts, getDgp, hivePerVests } from './rpc'
+import { DEFAULT_API, getAccounts, getDgp, hivePerVests } from './rpc'
 import { Buffer } from 'buffer/'
 
 const VESTS_DECIMALS = 6
@@ -104,7 +104,7 @@ export const createSetProxy = (account: string, proxy: string): AccountWitnessPr
   return ['account_witness_proxy', { account, proxy }]
 }
 
-export const constructTxHeader = async (ops: any[], api: string = 'https://techcoderx.com', expiry: number = 600000, tries = 0): Promise<Transaction> => {
+export const constructTxHeader = async (ops: any[], api: string = DEFAULT_API, expiry: number = 600000, tries = 0): Promise<Transaction> => {
   if (tries > CONSTRUCT_TX_HEADER_MAX_TRIES)
     throw new Error('Failed to get dgp despite '+CONSTRUCT_TX_HEADER_MAX_TRIES+' tries')
   const propsResp = await getDgp(api)

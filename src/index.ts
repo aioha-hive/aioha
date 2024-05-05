@@ -16,7 +16,7 @@ import {
 } from './types.js'
 import { AppMetaType } from './lib/hiveauth-wrapper.js'
 import { createVote } from './opbuilder.js'
-import { getAccounts } from './rpc.js'
+import { DEFAULT_API, getAccounts } from './rpc.js'
 import { AiohaOperations, AiohaProvider } from './providers/provider.js'
 export { constructTxHeader } from './opbuilder.js'
 export { broadcastTx } from './rpc.js'
@@ -41,7 +41,7 @@ export class Aioha implements AiohaOperations {
   private user?: string
   private currentProvider?: Providers
   private vscNetId = 'testnet/0bf2e474-6b9e-4165-ad4e-a0d78968d20c'
-  private api = 'https://techcoderx.com'
+  private api = DEFAULT_API
 
   constructor(api?: string) {
     this.providers = {}
@@ -384,12 +384,11 @@ export class Aioha implements AiohaOperations {
 
   /**
    * Claim Hive rewards that have paid out from content reward pool.
-   * @param api API to use for querying unclaimed rewards for account. Defaults to https://techcoderx.com.
    * @returns Transaction result
    */
-  async claimRewards(api: string = 'https://techcoderx.com'): Promise<SignOperationResult> {
+  async claimRewards(): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    const accResp = await getAccounts([this.getCurrentUser()!], api)
+    const accResp = await getAccounts([this.getCurrentUser()!], this.api)
     if (accResp.error || !Array.isArray(accResp.result) || accResp.result.length === 0)
       return {
         success: false,
