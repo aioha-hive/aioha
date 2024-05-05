@@ -1,7 +1,19 @@
 import { CommentOptionsOperation, Operation, Transaction } from '@hiveio/dhive'
 import { Asset, KeyTypes, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types'
 
-export interface AiohaProvider extends AiohaOperations {
+export class AiohaProviderBase {
+  protected api: string
+
+  constructor(api: string) {
+    this.api = api
+  }
+
+  setApi(api: string) {
+    this.api = api
+  }
+}
+
+export interface AiohaProvider extends AiohaOperations, AiohaProviderBase {
   // authentication
   login(username: string, options: LoginOptions): Promise<LoginResult>
   loginAndDecryptMemo(username: string, options: LoginOptions): Promise<LoginResult>

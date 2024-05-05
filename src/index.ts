@@ -17,7 +17,7 @@ import {
 import { AppMetaType } from './lib/hiveauth-wrapper.js'
 import { createVote } from './opbuilder.js'
 import { getAccounts } from './rpc.js'
-import { AiohaOperations } from './providers/provider.js'
+import { AiohaOperations, AiohaProvider } from './providers/provider.js'
 export { constructTxHeader } from './opbuilder.js'
 export { broadcastTx } from './rpc.js'
 
@@ -41,9 +41,13 @@ export class Aioha implements AiohaOperations {
   private user?: string
   private currentProvider?: Providers
   private vscNetId = 'testnet/0bf2e474-6b9e-4165-ad4e-a0d78968d20c'
+  private api = 'https://techcoderx.com'
 
-  constructor() {
+  constructor(api?: string) {
     this.providers = {}
+    if (api) {
+      this.setApi(api)
+    }
   }
 
   /**
@@ -58,7 +62,7 @@ export class Aioha implements AiohaOperations {
    * @param {HiveSignerOptions} options HiveSigner instantiation options. See https://github.com/ecency/hivesigner-sdk#init-client for details.
    */
   registerHiveSigner(options: HiveSignerOptions) {
-    this.providers.hivesigner = new HiveSigner(options)
+    this.providers.hivesigner = new HiveSigner(this.api, options)
   }
 
   /**
@@ -69,14 +73,14 @@ export class Aioha implements AiohaOperations {
    * @param {string} [options.icon] URL to app icon
    */
   registerHiveAuth(options: AppMetaType) {
-    this.providers.hiveauth = new HiveAuth(options)
+    this.providers.hiveauth = new HiveAuth(this.api, options)
   }
 
   /**
    * Register Ledger provider.
    */
   registerLedger() {
-    this.providers.ledger = new Ledger()
+    this.providers.ledger = new Ledger(this.api)
   }
 
   /**
@@ -120,6 +124,16 @@ export class Aioha implements AiohaOperations {
    */
   isLoggedIn(): boolean {
     return !!this.user && !!this.currentProvider
+  }
+
+  /**
+   * Set Hive API URL used by some providers for API calls.
+   * @param api Hive API URL
+   */
+  setApi(api: string): void {
+    if (!api.startsWith('http://') && !api.startsWith('https://')) throw new Error('api must start from http:// or https://')
+    this.api = api
+    for (const p in this.providers) this.providers[p as Providers]?.setApi(api)
   }
 
   /**

@@ -2,7 +2,7 @@ import hivesigner, { Client } from 'hivesigner'
 import { encodeOps } from 'hive-uri'
 import { CommentOptionsOperation, Operation, Transaction, WithdrawVestingOperation } from '@hiveio/dhive'
 import { ClientConfig } from 'hivesigner/lib/types/client-config.interface.js'
-import { AiohaProvider } from './provider.js'
+import { AiohaProvider, AiohaProviderBase } from './provider.js'
 import { Asset, KeyTypes, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types.js'
 import { KeyType } from '../lib/hiveauth-wrapper.js'
 import assert from 'assert'
@@ -39,11 +39,12 @@ const authorizedOps = [
   'account_update2'
 ]
 
-export class HiveSigner implements AiohaProvider {
+export class HiveSigner extends AiohaProviderBase implements AiohaProvider {
   private provider: Client
   private username?: string
 
-  constructor(options: ClientConfig) {
+  constructor(api: string, options: ClientConfig) {
+    super(api)
     if (!options.callbackURL?.startsWith(window.location.origin))
       throw new Error('callback URL must be in the same domain or subdomain as the current page')
     this.provider = new hivesigner.Client(options)
@@ -338,7 +339,7 @@ export class HiveSigner implements AiohaProvider {
     assert(this.username)
     let hpv: number
     try {
-      hpv = await hivePerVests()
+      hpv = await hivePerVests(this.api)
     } catch {
       return {
         success: false,

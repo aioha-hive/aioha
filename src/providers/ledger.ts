@@ -1,5 +1,5 @@
 import type LedgerApp from '@engrave/ledger-app-hive'
-import { AiohaProvider } from './provider'
+import { AiohaProvider, AiohaProviderBase } from './provider'
 import { Transaction, Operation, CommentOptionsOperation, WithdrawVestingOperation } from '@hiveio/dhive'
 import { LoginOptions, LoginResult, OperationResult, SignOperationResult, Asset, KeyTypes } from '../types'
 import { broadcastTx, getKeyRefs, hivePerVests } from '../rpc'
@@ -50,13 +50,13 @@ const makePath = (role: SlipRole, accountIdx: number, keyIdx: number) => {
 }
 
 // https://gitlab.com/engrave/ledger/hiveledger/-/blob/main/src/modules/hive/accountDiscovery/discoverAccounts/discoverAccounts.ts
-const searchAccounts = async (role: SlipRole, app: LedgerApp, targetUser?: string) => {
+const searchAccounts = async (role: SlipRole, app: LedgerApp, targetUser?: string, api?: string) => {
   const foundAccounts: DiscoveredAccs[] = []
   outerLoop: for (let accountIndex = 0, accountGap = 0; accountGap < traverseConfig.maxAccountGap; accountIndex++) {
     for (let keyIndex = 0, keyGap = 0; keyGap < traverseConfig.maxKeyGap; keyIndex += 1) {
       const path = makePath(role, accountIndex, keyIndex)
       const pubkey = await app.getPublicKey(path, false)
-      const accounts = await getKeyRefs([pubkey])
+      const accounts = await getKeyRefs([pubkey], api)
       let accountExists = false
       if (!accounts.error && accounts.result && Array.isArray(accounts.result.accounts))
         for (let i in accounts.result.accounts)
@@ -84,10 +84,14 @@ const searchAccounts = async (role: SlipRole, app: LedgerApp, targetUser?: strin
   return foundAccounts
 }
 
-const searchAccountsAllRolesForUser = async (app: LedgerApp, targetUser: string): Promise<DiscoveredAccs | null> => {
+const searchAccountsAllRolesForUser = async (
+  app: LedgerApp,
+  targetUser: string,
+  api?: string
+): Promise<DiscoveredAccs | null> => {
   const roles = [SlipRole.owner, SlipRole.active, SlipRole.posting]
   for (let r in roles) {
-    const discoveredAccounts = await searchAccounts(roles[r], app, targetUser)
+    const discoveredAccounts = await searchAccounts(roles[r], app, targetUser, api)
     const found = discoveredAccounts.find((a) => a.username === targetUser)
     if (found) return found
   }
@@ -99,12 +103,14 @@ const connectionFailedError: SignOperationResult = {
   error: 'Failed to establish connection to the device'
 }
 
-export class Ledger implements AiohaProvider {
+export class Ledger extends AiohaProviderBase implements AiohaProvider {
   private path?: string
   private username?: string
   private provider?: LedgerApp
 
-  constructor() {}
+  constructor(api: string) {
+    super(api)
+  }
 
   /**
    * Establish connection with the device. To be called every time before any other interaction.
@@ -267,7 +273,7 @@ export class Ledger implements AiohaProvider {
       if (!signedTx.success || !signedTx.result) return signedTx
       const { cryptoUtils } = await import(/* webpackChunkName: 'dhive' */ '@hiveio/dhive')
       const txId = cryptoUtils.generateTrxId(signedTx.result)
-      const broadcasted = await broadcastTx(signedTx.result)
+      const broadcasted = await broadcastTx(signedTx.result, this.api)
       if (broadcasted.error)
         return {
           success: false,
@@ -367,7 +373,7 @@ export class Ledger implements AiohaProvider {
   async delegateStakedHive(to: string, amount: number): Promise<SignOperationResult> {
     let hpv: number
     try {
-      hpv = await hivePerVests()
+      hpv = await hivePerVests(this.api)
     } catch {
       return {
         success: false,

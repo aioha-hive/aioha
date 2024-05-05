@@ -1,6 +1,6 @@
 import { CommentOptionsOperation, Operation, WithdrawVestingOperation } from '@hiveio/dhive'
 import HaWrapper, { Auth, AppMetaType, KeyType } from '../lib/hiveauth-wrapper.js'
-import { AiohaProvider } from './provider.js'
+import { AiohaProvider, AiohaProviderBase } from './provider.js'
 import { Asset, KeyTypes, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types.js'
 import {
   createComment,
@@ -27,10 +27,11 @@ const HiveAuthError = (e: any) => {
   else if (e.cmd === 'auth_err' || e.cmd === 'sign_err') return e.error
 }
 
-export class HiveAuth implements AiohaProvider {
+export class HiveAuth extends AiohaProviderBase implements AiohaProvider {
   private provider: Auth
 
-  constructor(options: AppMetaType) {
+  constructor(api: string, options: AppMetaType) {
+    super(api)
     this.provider = new Auth(options)
   }
 
@@ -234,7 +235,7 @@ export class HiveAuth implements AiohaProvider {
     assert(this.provider.username)
     let hpv: number
     try {
-      hpv = await hivePerVests()
+      hpv = await hivePerVests(this.api)
     } catch {
       return {
         success: false,
