@@ -19,7 +19,7 @@ import { createVote } from './opbuilder.js'
 import { DEFAULT_API, getAccounts } from './rpc.js'
 import { AiohaOperations } from './providers/provider.js'
 export { constructTxHeader } from './opbuilder.js'
-export { broadcastTx } from './rpc.js'
+export { broadcastTx, call, hivePerVests } from './rpc.js'
 
 const notLoggedInResult: OperationResult = {
   success: false,

@@ -2,7 +2,7 @@ import { SignedTransaction } from '@hiveio/dhive'
 
 export const DEFAULT_API = 'https://techcoderx.com'
 
-const call = async (method: string, params: any, api: string = DEFAULT_API) => {
+export const call = async (method: string, params: any, api: string = DEFAULT_API) => {
   const req = await fetch(api, {
     method: 'POST',
     headers: {

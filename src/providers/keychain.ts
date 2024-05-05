@@ -6,7 +6,7 @@ import assert from 'assert'
 import { createUnstakeHiveByVests, deleteComment } from '../opbuilder.js'
 import { KeychainMini } from '../lib/keychain-mini.js'
 
-declare enum KeychainKeyTypes {
+enum KeychainKeyTypes {
   posting = 'Posting',
   active = 'Active',
   memo = 'Memo'
