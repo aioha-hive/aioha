@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://unpkg.com/qrcodejs@latest/qrcode.min.js"></script>
+    <script type="module">
+      import { Aioha, constructTxHeader, broadcastTx } from '/bundle.js'
+
+      const aioha = new Aioha()
+      const getLoginUser = () => document.getElementById('login-username').value
+      const updateDisplayByIDs = (toshow = [], tohide = [], type = 'block') => {
+        for (let i = 0; i < tohide.length; i++) document.getElementById(tohide[i]).style.display = 'none'
+        for (let i = 0; i < toshow.length; i++) document.getElementById(toshow[i]).style.display = type
+      }
+      const loginOptions = {
+        msg: 'Hello World',
+        keyType: 'posting',
+        hiveauth: {
+          cbWait: (payload, evt) => {
+            document.getElementById('hiveauth-qr').innerHTML = ''
+            new QRCode(document.getElementById('hiveauth-qr'), payload)
+            updateDisplayByIDs(['hiveauth-qr'], [])
+          }
+        }
+      }
+      const xferOp = () => [
+        'transfer',
+        {
+          from: aioha.getCurrentUser(),
+          to: aioha.getCurrentUser(),
+          amount: '0.001 HIVE',
+          memo: 'Aioha Test'
+        }
+      ]
+      setTimeout(async () => {
+        aioha.registerKeychain()
+        aioha.registerHiveSigner({
+          app: 'ipfsuploader.app',
+          callbackURL: window.location.origin + '/hivesigner.html',
+          scope: ['login', 'vote']
+        })
+        aioha.registerHiveAuth({
+          name: 'Aioha',
+          description: 'Aioha test app'
+        })
+        aioha.registerLedger()
+        const authLoaded = aioha.loadAuth()
+        console.log(aioha.getProviders())
+        if (authLoaded) {
+          updateDisplayByIDs(['logout'], [], 'inline-block')
+          console.log(aioha.getCurrentUser(), aioha.getCurrentProvider())
+          document.getElementById('login-username').value = aioha.getCurrentUser()
+        }
+        document.getElementById('login-keychain').onclick = async () => {
+          console.log(await aioha.login('keychain', getLoginUser(), loginOptions))
+          updateDisplayByIDs(['logout'], [], 'inline-block')
+        }
+        document.getElementById('login-hivesigner').onclick = async () => {
+          console.log(await aioha.login('hivesigner', getLoginUser(), loginOptions))
+          updateDisplayByIDs(['logout'], [], 'inline-block')
+        }
+        document.getElementById('login-hiveauth').onclick = async () => {
+          console.log(await aioha.login('hiveauth', getLoginUser(), loginOptions))
+          updateDisplayByIDs(['logout'], ['hiveauth-qr'], 'inline-block')
+        }
+        document.getElementById('login-ledger').onclick = async () => {
+          console.log(await aioha.login('ledger', getLoginUser(), loginOptions))
+          updateDisplayByIDs(['logout'], [], 'inline-block')
+        }
+        document.getElementById('logout').onclick = async () => {
+          aioha.logout()
+          updateDisplayByIDs([], ['logout'])
+        }
+        document.getElementById('decrypt-memo').onclick = async () => {
+          console.log(
+            await aioha.decryptMemo(document.getElementById('memo').value, document.getElementById('memo-keytype').value)
+          )
+        }
+        document.getElementById('sign-msg-btn').onclick = async () => {
+          console.log(
+            await aioha.signMessage(document.getElementById('sign-msg').value, document.getElementById('sign-msg-keytype').value)
+          )
+        }
+        document.getElementById('nobc-sign-btn').onclick = async () => {
+          const tx = await constructTxHeader([xferOp()])
+          let signed = await aioha.signTx(tx, 'active')
+          if (signed.success && document.getElementById('nobc-sign-bc').checked) {
+            console.log(await broadcastTx(signed))
+          }
+        }
+        document.getElementById('posting-sign-bc-btn').onclick = async () => {
+          console.log(
+            await aioha.signAndBroadcastTx(
+              [
+                [
+                  'vote',
+                  {
+                    voter: aioha.getCurrentUser(),
+                    author: document.getElementById('posting-vote-author').value,
+                    permlink: document.getElementById('posting-vote-permlink').value,
+                    weight: parseInt(document.getElementById('posting-vote-weight').value)
+                  }
+                ]
+              ],
+              'posting'
+            )
+          )
+        }
+        document.getElementById('active-sign-bc-btn').onclick = async () => {
+          console.log(await aioha.signAndBroadcastTx([xferOp()], 'active'))
+        }
+        document.getElementById('vote-btn').onclick = async () => {
+          console.log(
+            await aioha.vote(
+              document.getElementById('vote-author').value,
+              document.getElementById('vote-permlink').value,
+              parseInt(document.getElementById('vote-weight').value)
+            )
+          )
+        }
+        document.getElementById('claim-rewards-btn').onclick = async () => {
+          console.log(await aioha.claimRewards())
+        }
+        document.getElementById('vsc-call').onclick = async () => {
+          let payload = document.getElementById('vsc-payload').value
+          try {
+            payload = JSON.parse(payload)
+          } catch {}
+          console.log(
+            await aioha.vscCallContract(
+              document.getElementById('vsc-contract-id').value,
+              document.getElementById('vsc-action').value,
+              payload,
+              document.getElementById('vsc-radio-posting').checked ? 'posting' : 'active'
+            )
+          )
+        }
+      }, 1000)
+    </script>
+  </head>
+  <body>
+    <h1>Aioha Playground</h1>
+    <h2>Login</h2>
+    <input type="text" id="login-username" placeholder="HIVE Username" style="width: 150px" />
+    <button id="login-keychain">Keychain</button>
+    <button id="login-hivesigner">HiveSigner</button>
+    <button id="login-hiveauth">HiveAuth</button>
+    <button id="login-ledger">Ledger</button>
+    <button id="logout" style="display: none">Logout</button>
+    <br />
+    <div id="hiveauth-qr" style="height: 300px; width: 300px; padding: 20px; display: none; background-color: #ffffff"></div>
+    <br />
+    <h2>Decrypt Memo</h2>
+    <input type="text" id="memo" placeholder="Enter memo to decode" style="width: 300px" />
+    <select id="memo-keytype">
+      <option value="posting">Posting</option>
+      <option value="active">Active</option>
+      <option value="memo">Memo</option>
+    </select>
+    <button id="decrypt-memo">Decrypt</button>
+    <br />
+    <h2>Sign Message</h2>
+    <input type="text" id="sign-msg" placeholder="Enter message to sign" style="width: 300px" />
+    <select id="sign-msg-keytype">
+      <option value="posting">Posting</option>
+      <option value="active">Active</option>
+      <option value="memo">Memo</option>
+    </select>
+    <button id="sign-msg-btn">Sign</button>
+    <br />
+    <h2>Sign with optional broadcast</h2>
+    <button id="nobc-sign-btn">Sign Transfer 0.001 HIVE to itself</button>
+    <label><input type="checkbox" id="nobc-sign-bc" />Broadcast Tx</label>
+    <br />
+    <h2>Sign and broadcast generic tx</h2>
+    <input type="text" id="posting-vote-author" placeholder="Author" />
+    <input type="text" id="posting-vote-permlink" placeholder="Permlink" />
+    <input type="number" min="-10000" max="10000" step="1" id="posting-vote-weight" placeholder="Weight" />
+    <button id="posting-sign-bc-btn">Posting Auth (Vote)</button>
+    <button id="active-sign-bc-btn">Active Auth (Transfer 0.001 HIVE to self)</button>
+    <br />
+    <h2>Vote</h2>
+    <input type="text" id="vote-author" placeholder="Author" />
+    <input type="text" id="vote-permlink" placeholder="Permlink" />
+    <input type="number" min="-10000" max="10000" step="1" id="vote-weight" placeholder="Weight" />
+    <button id="vote-btn">Vote</button>
+    <br />
+    <h2>Claim Rewards</h2>
+    <button id="claim-rewards-btn">Claim Rewards</button>
+    <br />
+    <h2>VSC Contract Call</h2>
+    <input type="text" id="vsc-contract-id" placeholder="Contract ID" style="width: 250px" />
+    <input type="text" id="vsc-action" placeholder="Action" /><br /><br />
+    <textarea id="vsc-payload" placeholder="Payload" style="width: 300px"></textarea>
+    <br />
+    <input type="radio" id="vsc-radio-posting" name="vsc-call-auth" value="vsc-call-posting" checked />
+    <label for="vsc-radio-posting">Posting</label><br />
+    <input type="radio" id="vsc-radio-active" name="vsc-call-auth" value="vsc-call-active" />
+    <label for="vsc-radio-active">Active</label><br /><br />
+    <button id="vsc-call">Call Contract</button>
+  </body>
+</html>

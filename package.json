@@ -7,8 +7,8 @@
   "scripts": {
     "build": "tsc",
     "webpack": "webpack",
-    "clean": "rm -r dist/*.js dist/*.txt build/*",
-    "prepublish": "pnpm run build; pnpm run webpack",
+    "clean": "rm -r dist/* build/*",
+    "prepublish": "pnpm run clean; pnpm run build; pnpm run webpack",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
