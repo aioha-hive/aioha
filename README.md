@@ -88,3 +88,12 @@ The following keys are reserved:
 ## HiveSigner callback page
 
 A callback page is required for HiveSigner provider. An example HTML with the code which parses the response data and stores them into `localStorage` has been included in `snippets/hivesigner.html` file.
+
+## Build
+
+```sh
+pnpm run build
+pnpm run webpack
+```
+
+`tsc` output can be found in `build` folder and the Webpack output can be found in `dist` folder with `bundle.js` being the entrypoint. All Webpack output files are to be served and will be loaded on-demand depending on the provider selected upon login.
