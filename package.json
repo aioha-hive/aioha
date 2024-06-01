@@ -19,6 +19,12 @@
   ],
   "author": "techcoderx",
   "license": "MIT",
+  "repository": {
+    "url": "https://github.com/aioha-hive/aioha"
+  },
+  "bugs": {
+    "url": "https://github.com/aioha-hive/aioha/issues"
+  },
   "files": [
     "src",
     "dist",
