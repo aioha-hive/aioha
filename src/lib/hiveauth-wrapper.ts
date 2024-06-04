@@ -44,7 +44,7 @@ const HAS_options: HAS_options_type = {
 
 export type AppMetaType = {
   name: string
-  description: string
+  description?: string
   icon?: string
 }
 

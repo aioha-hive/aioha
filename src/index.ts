@@ -69,7 +69,7 @@ export class Aioha implements AiohaOperations {
    * Register HiveAuth provider.
    * @param {AppMetaType} options HiveAuth app metadata.
    * @param {string} options.name App name
-   * @param {string} options.description Description of the app
+   * @param {string} [options.description] Description of the app
    * @param {string} [options.icon] URL to app icon
    */
   registerHiveAuth(options: AppMetaType) {
