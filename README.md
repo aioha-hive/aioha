@@ -20,33 +20,26 @@ pnpm i @aioha/aioha
 ## Usage Example
 
 ```js
-import { Aioha } from '@aioha/aioha'
+import { initAioha } from '@aioha/aioha'
 
 // Instantiation
-const aioha = new Aioha()
-
-// Register providers
-aioha.registerKeychain()
-aioha.registerHiveSigner({
-  app: 'ipfsuploader.app',
-  callbackURL: window.location.origin + '/hivesigner.html',
-  scope: ['login', 'vote']
+const aioha = initAioha({
+  hiveauth: {
+    name: 'Aioha',
+    description: 'Aioha test app'
+  },
+  hivesigner: {
+    app: 'ipfsuploader.app',
+    callbackURL: window.location.origin + '/hivesigner.html',
+    scope: ['login', 'vote']
+  }
 })
-aioha.registerHiveAuth({
-  name: 'Aioha',
-  description: 'Aioha test app'
-})
-aioha.registerLedger()
-
-// Load persistent login from local storage
-// returns boolean of whether a login has been loaded
-const authLoaded = aioha.loadAuth()
 
 // Get registered providers
 console.log(aioha.getProviders())
 
 // Get current logged in user and provider name
-if (authLoaded) {
+if (aioha.isLoggedIn()) {
   console.log(aioha.getCurrentUser(), aioha.getCurrentProvider())
 }
 

@@ -599,3 +599,20 @@ export class Aioha implements AiohaOperations {
     })
   }
 }
+
+export const initAioha = (options?: { hivesigner?: HiveSignerOptions; hiveauth?: AppMetaType }): Aioha => {
+  if (!options) options = {}
+  if (!options.hiveauth)
+    options.hiveauth = {
+      name: 'Aioha Generic App'
+    }
+
+  const aioha = new Aioha()
+  aioha.registerKeychain()
+  aioha.registerLedger()
+  aioha.registerHiveAuth(options.hiveauth)
+  if (options.hivesigner) aioha.registerHiveSigner(options.hivesigner)
+  aioha.loadAuth()
+
+  return aioha
+}

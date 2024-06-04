@@ -3,9 +3,8 @@
   <head>
     <script src="https://unpkg.com/qrcodejs@latest/qrcode.min.js"></script>
     <script type="module">
-      import { Aioha, constructTxHeader, broadcastTx } from '/bundle.js'
+      import { initAioha, constructTxHeader, broadcastTx } from 'https://unpkg.com/@aioha/aioha@latest/dist/bundle.js'
 
-      const aioha = new Aioha()
       const getLoginUser = () => document.getElementById('login-username').value
       const updateDisplayByIDs = (toshow = [], tohide = [], type = 'block') => {
         for (let i = 0; i < tohide.length; i++) document.getElementById(tohide[i]).style.display = 'none'
@@ -22,30 +21,29 @@
           }
         }
       }
-      const xferOp = () => [
-        'transfer',
-        {
-          from: aioha.getCurrentUser(),
-          to: aioha.getCurrentUser(),
-          amount: '0.001 HIVE',
-          memo: 'Aioha Test'
-        }
-      ]
       setTimeout(async () => {
-        aioha.registerKeychain()
-        aioha.registerHiveSigner({
-          app: 'ipfsuploader.app',
-          callbackURL: window.location.origin + '/hivesigner.html',
-          scope: ['login', 'vote']
+        const aioha = initAioha({
+          hiveauth: {
+            name: 'Aioha',
+            description: 'Aioha test app'
+          },
+          hivesigner: {
+            app: 'ipfsuploader.app',
+            callbackURL: window.location.origin + '/hivesigner.html',
+            scope: ['login', 'vote']
+          }
         })
-        aioha.registerHiveAuth({
-          name: 'Aioha',
-          description: 'Aioha test app'
-        })
-        aioha.registerLedger()
-        const authLoaded = aioha.loadAuth()
+        const xferOp = () => [
+          'transfer',
+          {
+            from: aioha.getCurrentUser(),
+            to: aioha.getCurrentUser(),
+            amount: '0.001 HIVE',
+            memo: 'Aioha Test'
+          }
+        ]
         console.log(aioha.getProviders())
-        if (authLoaded) {
+        if (aioha.isLoggedIn()) {
           updateDisplayByIDs(['logout'], [], 'inline-block')
           console.log(aioha.getCurrentUser(), aioha.getCurrentProvider())
           document.getElementById('login-username').value = aioha.getCurrentUser()
