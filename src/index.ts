@@ -144,6 +144,7 @@ export class Aioha implements AiohaOperations {
    * @returns The login result.
    */
   async login(provider: Providers, username: string, options: LoginOptions): Promise<LoginResult> {
+    if (this.isLoggedIn()) throw new Error('already logged in')
     if (!this.providers[provider])
       return {
         success: false,
