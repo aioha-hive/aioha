@@ -90,7 +90,7 @@ export class HiveSigner extends AiohaProviderBase implements AiohaProvider {
       }
     const login = await this.login(username, options)
     if (!login.success) return login
-    const result = await this.decryptMemo(options.msg, 'posting')
+    const result = await this.decryptMemo(options.msg, KeyTypes.Posting)
     if (result.success)
       return {
         provider: Providers.HiveSigner,
@@ -258,7 +258,7 @@ export class HiveSigner extends AiohaProviderBase implements AiohaProvider {
     } else {
       return await this.signAndBroadcastTx(
         createComment(pa, pp, this.username, permlink, title, body, json, options) as Operation[],
-        'posting'
+        KeyTypes.Posting
       )
     }
   }
@@ -278,7 +278,7 @@ export class HiveSigner extends AiohaProviderBase implements AiohaProvider {
 
   async customJSON(keyType: KeyTypes, id: string, json: string): Promise<SignOperationResult> {
     assert(this.username)
-    const requiredAuths = keyType === 'active' ? [this.username] : []
+    const requiredAuths = keyType === KeyTypes.Active ? [this.username] : []
     const requiredPostingAuths = keyType === 'posting' ? [this.username] : []
     try {
       const tx = await this.provider.customJson(requiredAuths, requiredPostingAuths, id, json)
@@ -293,7 +293,7 @@ export class HiveSigner extends AiohaProviderBase implements AiohaProvider {
 
   async transfer(to: string, amount: number, currency: Asset, memo?: string): Promise<SignOperationResult> {
     assert(this.username)
-    return await this.signAndBroadcastTx([createXfer(this.username, to, amount, currency, memo)], 'active')
+    return await this.signAndBroadcastTx([createXfer(this.username, to, amount, currency, memo)], KeyTypes.Active)
   }
 
   async recurrentTransfer(
@@ -307,13 +307,13 @@ export class HiveSigner extends AiohaProviderBase implements AiohaProvider {
     assert(this.username)
     return await this.signAndBroadcastTx(
       [createRecurrentXfer(this.username, to, amount, currency, recurrence, executions, memo)],
-      'active'
+      KeyTypes.Active
     )
   }
 
   async stakeHive(amount: number, to?: string | undefined): Promise<SignOperationResult> {
     assert(this.username)
-    return await this.signAndBroadcastTx([createStakeHive(this.username, to ?? this.username, amount)], 'active')
+    return await this.signAndBroadcastTx([createStakeHive(this.username, to ?? this.username, amount)], KeyTypes.Active)
   }
 
   async unstakeHive(amount: number): Promise<SignOperationResult> {
@@ -327,12 +327,12 @@ export class HiveSigner extends AiohaProviderBase implements AiohaProvider {
         error: 'Failed to retrieve VESTS from staked HIVE'
       }
     }
-    return await this.signAndBroadcastTx([op], 'active')
+    return await this.signAndBroadcastTx([op], KeyTypes.Active)
   }
 
   async unstakeHiveByVests(vests: number): Promise<SignOperationResult> {
     assert(this.username)
-    return await this.signAndBroadcastTx([createUnstakeHiveByVests(this.username, vests)], 'active')
+    return await this.signAndBroadcastTx([createUnstakeHiveByVests(this.username, vests)], KeyTypes.Active)
   }
 
   async delegateStakedHive(to: string, amount: number): Promise<SignOperationResult> {
@@ -351,21 +351,21 @@ export class HiveSigner extends AiohaProviderBase implements AiohaProvider {
 
   async delegateVests(to: string, amount: number): Promise<SignOperationResult> {
     assert(this.username)
-    return await this.signAndBroadcastTx([createDelegateVests(this.username, to, amount)], 'active')
+    return await this.signAndBroadcastTx([createDelegateVests(this.username, to, amount)], KeyTypes.Active)
   }
 
   async voteWitness(witness: string, approve: boolean): Promise<SignOperationResult> {
     assert(this.username)
-    return await this.signAndBroadcastTx([createVoteWitness(this.username, witness, approve)], 'active')
+    return await this.signAndBroadcastTx([createVoteWitness(this.username, witness, approve)], KeyTypes.Active)
   }
 
   async voteProposals(proposals: number[], approve: boolean): Promise<SignOperationResult> {
     assert(this.username)
-    return await this.signAndBroadcastTx([createVoteProposals(this.username, proposals, approve)], 'active')
+    return await this.signAndBroadcastTx([createVoteProposals(this.username, proposals, approve)], KeyTypes.Active)
   }
 
   async setProxy(proxy: string): Promise<SignOperationResult> {
     assert(this.username)
-    return await this.signAndBroadcastTx([createSetProxy(this.username, proxy)], 'active')
+    return await this.signAndBroadcastTx([createSetProxy(this.username, proxy)], KeyTypes.Active)
   }
 }

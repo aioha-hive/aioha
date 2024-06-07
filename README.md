@@ -20,7 +20,7 @@ pnpm i @aioha/aioha
 ## Usage Example
 
 ```js
-import { initAioha, Asset, Providers } from '@aioha/aioha'
+import { initAioha, Asset, KeyTypes, Providers } from '@aioha/aioha'
 
 // Instantiation
 const aioha = initAioha({
@@ -46,7 +46,7 @@ if (aioha.isLoggedIn()) {
 // Login with provider. Supported providers are listed above, as in Providers enum.
 const login = await aioha.login(Providers.Keychain, 'hiveusername', {
   msg: 'Hello World',
-  keyType: 'posting',
+  keyType: KeyTypes.Posting,
   hiveauth: {
     cbWait: (payload, evt) => {
       // display HiveAuth QR code using `payload` as data

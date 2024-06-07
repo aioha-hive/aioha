@@ -21,7 +21,7 @@ import { DEFAULT_API, getAccounts } from './rpc.js'
 import { AiohaOperations } from './providers/provider.js'
 export { constructTxHeader } from './opbuilder.js'
 export { broadcastTx, call, hivePerVests } from './rpc.js'
-export { Asset, Providers } from './types.js'
+export { Asset, KeyTypes, Providers } from './types.js'
 
 const notLoggedInResult: OperationResult = {
   success: false,
@@ -265,7 +265,7 @@ export class Aioha implements AiohaOperations {
     for (let i in votes) {
       voteOps.push(createVote(this.getCurrentUser()!, votes[i].author, votes[i].permlink, votes[i].weight))
     }
-    return await this.signAndBroadcastTx(voteOps, 'posting')
+    return await this.signAndBroadcastTx(voteOps, KeyTypes.Posting)
   }
 
   /**
@@ -327,7 +327,7 @@ export class Aioha implements AiohaOperations {
    */
   reblog(author: string, permlink: string, removeReblog: boolean): Promise<SignOperationResult> {
     return this.customJSON(
-      'posting',
+      KeyTypes.Posting,
       'reblog',
       [
         'reblog',
@@ -350,7 +350,7 @@ export class Aioha implements AiohaOperations {
    */
   follow(target: string, unfollow: boolean): Promise<SignOperationResult> {
     return this.customJSON(
-      'posting',
+      KeyTypes.Posting,
       'follow',
       [
         'follow',
@@ -371,7 +371,7 @@ export class Aioha implements AiohaOperations {
    */
   ignore(target: string): Promise<SignOperationResult> {
     return this.customJSON(
-      'posting',
+      KeyTypes.Posting,
       'follow',
       [
         'follow',
@@ -418,7 +418,7 @@ export class Aioha implements AiohaOperations {
           }
         ]
       ],
-      'posting'
+      KeyTypes.Posting
     )
   }
 
@@ -586,7 +586,7 @@ export class Aioha implements AiohaOperations {
     contractId: string,
     action: string,
     payload: any,
-    keyType: KeyTypes = 'posting'
+    keyType: KeyTypes = KeyTypes.Posting
   ): Promise<SignOperationResult> {
     if (keyType === 'memo') return noMemoAllowResult
     return await this.customJSON(keyType, 'vsc.tx', {

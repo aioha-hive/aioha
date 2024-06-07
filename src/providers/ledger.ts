@@ -272,7 +272,7 @@ export class Ledger extends AiohaProviderBase implements AiohaProvider {
   async signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult> {
     try {
       const unsignedTx = await constructTxHeader(tx)
-      const signedTx = await this.signTx(unsignedTx, 'active')
+      const signedTx = await this.signTx(unsignedTx, KeyTypes.Active)
       if (!signedTx.success || !signedTx.result) return signedTx
       const { cryptoUtils } = await import(/* webpackChunkName: 'dhive' */ '@hiveio/dhive')
       const txId = cryptoUtils.generateTrxId(signedTx.result)
@@ -298,7 +298,7 @@ export class Ledger extends AiohaProviderBase implements AiohaProvider {
 
   vote(author: string, permlink: string, weight: number): Promise<SignOperationResult> {
     assert(this.username)
-    return this.signAndBroadcastTx([createVote(this.username, author, permlink, weight)], 'posting')
+    return this.signAndBroadcastTx([createVote(this.username, author, permlink, weight)], KeyTypes.Posting)
   }
 
   comment(
@@ -313,25 +313,25 @@ export class Ledger extends AiohaProviderBase implements AiohaProvider {
     assert(this.username)
     return this.signAndBroadcastTx(
       createComment(pa, pp, this.username, permlink, title, body, json, options) as Operation[],
-      'posting'
+      KeyTypes.Posting
     )
   }
 
   deleteComment(permlink: string): Promise<SignOperationResult> {
     assert(this.username)
-    return this.signAndBroadcastTx([deleteComment(this.username, permlink)], 'posting')
+    return this.signAndBroadcastTx([deleteComment(this.username, permlink)], KeyTypes.Posting)
   }
 
   customJSON(keyType: KeyTypes, id: string, json: string, displayTitle?: string | undefined): Promise<SignOperationResult> {
     assert(this.username)
-    const requiredAuths = keyType === 'active' ? [this.username] : []
-    const requiredPostingAuths = keyType === 'posting' ? [this.username] : []
+    const requiredAuths = keyType === KeyTypes.Active ? [this.username] : []
+    const requiredPostingAuths = keyType === KeyTypes.Posting ? [this.username] : []
     return this.signAndBroadcastTx([createCustomJSON(requiredAuths, requiredPostingAuths, id, json)], keyType)
   }
 
   transfer(to: string, amount: number, currency: Asset, memo?: string | undefined): Promise<SignOperationResult> {
     assert(this.username)
-    return this.signAndBroadcastTx([createXfer(this.username, to, amount, currency, memo)], 'active')
+    return this.signAndBroadcastTx([createXfer(this.username, to, amount, currency, memo)], KeyTypes.Active)
   }
 
   recurrentTransfer(
@@ -345,13 +345,13 @@ export class Ledger extends AiohaProviderBase implements AiohaProvider {
     assert(this.username)
     return this.signAndBroadcastTx(
       [createRecurrentXfer(this.username, to, amount, currency, recurrence, executions, memo)],
-      'active'
+      KeyTypes.Active
     )
   }
 
   stakeHive(amount: number, to?: string | undefined): Promise<SignOperationResult> {
     assert(this.username)
-    return this.signAndBroadcastTx([createStakeHive(this.username, to ?? this.username!, amount)], 'active')
+    return this.signAndBroadcastTx([createStakeHive(this.username, to ?? this.username!, amount)], KeyTypes.Active)
   }
 
   async unstakeHive(amount: number): Promise<SignOperationResult> {
@@ -365,12 +365,12 @@ export class Ledger extends AiohaProviderBase implements AiohaProvider {
         error: 'Failed to retrieve VESTS from staked HIVE'
       }
     }
-    return await this.signAndBroadcastTx([op], 'active')
+    return await this.signAndBroadcastTx([op], KeyTypes.Active)
   }
 
   unstakeHiveByVests(vests: number): Promise<SignOperationResult> {
     assert(this.username)
-    return this.signAndBroadcastTx([createUnstakeHiveByVests(this.username, vests)], 'active')
+    return this.signAndBroadcastTx([createUnstakeHiveByVests(this.username, vests)], KeyTypes.Active)
   }
 
   async delegateStakedHive(to: string, amount: number): Promise<SignOperationResult> {
@@ -388,21 +388,21 @@ export class Ledger extends AiohaProviderBase implements AiohaProvider {
 
   delegateVests(to: string, amount: number): Promise<SignOperationResult> {
     assert(this.username)
-    return this.signAndBroadcastTx([createDelegateVests(this.username, to, amount)], 'active')
+    return this.signAndBroadcastTx([createDelegateVests(this.username, to, amount)], KeyTypes.Active)
   }
 
   voteWitness(witness: string, approve: boolean): Promise<SignOperationResult> {
     assert(this.username)
-    return this.signAndBroadcastTx([createVoteWitness(this.username, witness, approve)], 'active')
+    return this.signAndBroadcastTx([createVoteWitness(this.username, witness, approve)], KeyTypes.Active)
   }
 
   voteProposals(proposals: number[], approve: boolean): Promise<SignOperationResult> {
     assert(this.username)
-    return this.signAndBroadcastTx([createVoteProposals(this.username, proposals, approve)], 'active')
+    return this.signAndBroadcastTx([createVoteProposals(this.username, proposals, approve)], KeyTypes.Active)
   }
 
   setProxy(proxy: string): Promise<SignOperationResult> {
     assert(this.username)
-    return this.signAndBroadcastTx([createSetProxy(this.username, proxy)], 'active')
+    return this.signAndBroadcastTx([createSetProxy(this.username, proxy)], KeyTypes.Active)
   }
 }

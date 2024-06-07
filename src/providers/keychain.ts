@@ -111,11 +111,11 @@ export class Keychain extends AiohaProviderBase implements AiohaProvider {
 
   static mapAiohaKeyTypes(keyType: KeyTypes): KeychainKeyTypes {
     switch (keyType) {
-      case 'posting':
+      case KeyTypes.Posting:
         return KeychainKeyTypes.posting
-      case 'active':
+      case KeyTypes.Active:
         return KeychainKeyTypes.active
-      case 'memo':
+      case KeyTypes.Memo:
         return KeychainKeyTypes.memo
     }
   }
@@ -243,7 +243,7 @@ export class Keychain extends AiohaProviderBase implements AiohaProvider {
 
   async deleteComment(permlink: string): Promise<SignOperationResult> {
     assert(this.username)
-    return await this.signAndBroadcastTx([deleteComment(this.username, permlink)], 'posting')
+    return await this.signAndBroadcastTx([deleteComment(this.username, permlink)], KeyTypes.Posting)
   }
 
   async customJSON(keyType: KeyTypes, id: string, json: string, displayTitle?: string): Promise<SignOperationResult> {
@@ -318,7 +318,7 @@ export class Keychain extends AiohaProviderBase implements AiohaProvider {
 
   async unstakeHiveByVests(vests: number): Promise<SignOperationResult> {
     assert(this.username)
-    return await this.signAndBroadcastTx([createUnstakeHiveByVests(this.username, vests)], 'active')
+    return await this.signAndBroadcastTx([createUnstakeHiveByVests(this.username, vests)], KeyTypes.Active)
   }
 
   async delegateStakedHive(to: string, amount: number): Promise<SignOperationResult> {

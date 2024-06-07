@@ -48,7 +48,11 @@ export type AppMetaType = {
   icon?: string
 }
 
-export type KeyType = 'posting' | 'active' | 'memo'
+export enum KeyType {
+  Posting = 'posting',
+  Active = 'active',
+  Memo = 'memo'
+}
 type ChallengeDataType = {
   key_type: KeyType
   challenge: string

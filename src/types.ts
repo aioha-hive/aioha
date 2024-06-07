@@ -1,5 +1,5 @@
-import { KeyType as HaKeyType } from './lib/hiveauth-wrapper'
-import { MessageType as HaMsgType } from './lib/hiveauth-wrapper'
+import { MessageType as HaMsgType, KeyType as KeyTypes } from './lib/hiveauth-wrapper'
+export { KeyType as KeyTypes } from './lib/hiveauth-wrapper'
 
 export interface KeychainOptions {
   loginTitle: string
@@ -11,7 +11,6 @@ export enum Providers {
   HiveAuth = 'hiveauth',
   Ledger = 'ledger'
 }
-export type KeyTypes = HaKeyType
 
 export interface LoginOptions {
   msg?: string
