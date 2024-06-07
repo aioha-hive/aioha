@@ -64,7 +64,7 @@ const vote = await aioha.vote('author', 'permlink', 10000)
 const rewardClaim = await aioha.claimRewards()
 ```
 
-More usage details can be found on the Aioha documentation (TBD).
+More usage details can be found on the Aioha documentation [here](https://aioha.dev/docs).
 
 ## Local storage reserved keys
 

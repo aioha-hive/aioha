@@ -1,6 +1,6 @@
 {
   "name": "@aioha/aioha",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "All-In-One Hive Authentication API",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -19,6 +19,7 @@
   ],
   "author": "techcoderx",
   "license": "MIT",
+  "homepage": "https://aioha.dev",
   "repository": {
     "url": "https://github.com/aioha-hive/aioha"
   },
