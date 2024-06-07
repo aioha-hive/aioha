@@ -47,15 +47,11 @@ export class KeychainMini {
   }
 
   async decode(data: Decode): Promise<KeychainRequestResponse> {
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async (resolve) => {
       try {
         await this.isKeychainInstalled()
         window.hive_keychain.requestVerifyKey(data.username, data.message, data.method, (response: KeychainRequestResponse) => {
-          if (response.error) {
-            reject(response)
-          } else {
-            resolve(response)
-          }
+          resolve(response)
         })
       } catch (error) {
         throw error
@@ -64,7 +60,7 @@ export class KeychainMini {
   }
 
   async signBuffer(data: SignBuffer): Promise<KeychainRequestResponse> {
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async (resolve) => {
       try {
         await this.isKeychainInstalled()
         window.hive_keychain.requestSignBuffer(
@@ -72,11 +68,7 @@ export class KeychainMini {
           data.message,
           data.method,
           (response: KeychainRequestResponse) => {
-            if (response.error) {
-              reject(response)
-            } else {
-              resolve(response)
-            }
+            resolve(response)
           },
           undefined,
           data.title
@@ -88,7 +80,7 @@ export class KeychainMini {
   }
 
   async broadcast(data: Broadcast): Promise<KeychainRequestResponse> {
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async (resolve) => {
       try {
         await this.isKeychainInstalled()
         window.hive_keychain.requestBroadcast(
@@ -96,11 +88,7 @@ export class KeychainMini {
           typeof data.operations === 'string' ? JSON.parse(data.operations) : data.operations,
           data.method,
           (response: KeychainRequestResponse) => {
-            if (response.error) {
-              reject(response)
-            } else {
-              resolve(response)
-            }
+            resolve(response)
           }
         )
       } catch (error) {
@@ -110,15 +98,11 @@ export class KeychainMini {
   }
 
   async signTx(data: SignTx): Promise<KeychainSignTxRequestResponse> {
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async (resolve) => {
       try {
         await this.isKeychainInstalled()
         window.hive_keychain.requestSignTx(data.username, data.tx, data.method, (response: KeychainSignTxRequestResponse) => {
-          if (response.error) {
-            reject(response)
-          } else {
-            resolve(response)
-          }
+          resolve(response)
         })
       } catch (error) {
         throw error
@@ -127,7 +111,7 @@ export class KeychainMini {
   }
 
   async post(data: Post): Promise<KeychainRequestResponse> {
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async (resolve) => {
       try {
         await this.isKeychainInstalled()
         window.hive_keychain.requestPost(
@@ -140,11 +124,7 @@ export class KeychainMini {
           data.permlink,
           data.comment_options,
           (response: KeychainRequestResponse) => {
-            if (response.error) {
-              reject(response)
-            } else {
-              resolve(response)
-            }
+            resolve(response)
           }
         )
       } catch (error) {
@@ -154,7 +134,7 @@ export class KeychainMini {
   }
 
   async vote(data: Vote): Promise<KeychainRequestResponse> {
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async (resolve) => {
       try {
         await this.isKeychainInstalled()
         window.hive_keychain.requestVote(
@@ -163,11 +143,7 @@ export class KeychainMini {
           data.author,
           data.weight,
           (response: KeychainRequestResponse) => {
-            if (response.error) {
-              reject(response)
-            } else {
-              resolve(response)
-            }
+            resolve(response)
           }
         )
       } catch (error) {
@@ -177,7 +153,7 @@ export class KeychainMini {
   }
 
   async custom(data: Custom): Promise<KeychainRequestResponse> {
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async (resolve) => {
       try {
         await this.isKeychainInstalled()
         window.hive_keychain.requestCustomJson(
@@ -187,11 +163,7 @@ export class KeychainMini {
           data.json,
           data.display_msg,
           (response: KeychainRequestResponse) => {
-            if (response.error) {
-              reject(response)
-            } else {
-              resolve(response)
-            }
+            resolve(response)
           }
         )
       } catch (error) {
@@ -201,7 +173,7 @@ export class KeychainMini {
   }
 
   async transfer(data: Transfer): Promise<KeychainRequestResponse> {
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async (resolve) => {
       try {
         await this.isKeychainInstalled()
         window.hive_keychain.requestTransfer(
@@ -211,11 +183,7 @@ export class KeychainMini {
           data.memo,
           data.currency,
           (response: KeychainRequestResponse) => {
-            if (response.error) {
-              reject(response)
-            } else {
-              resolve(response)
-            }
+            resolve(response)
           },
           data.enforce
         )
@@ -226,7 +194,7 @@ export class KeychainMini {
   }
 
   async recurrentTransfer(data: RecurrentTransfer): Promise<KeychainRequestResponse> {
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async (resolve) => {
       try {
         await this.isKeychainInstalled()
         window.hive_keychain.requestRecurrentTransfer(
@@ -238,11 +206,7 @@ export class KeychainMini {
           data.recurrence,
           data.executions,
           (response: KeychainRequestResponse) => {
-            if (response.error) {
-              reject(response)
-            } else {
-              resolve(response)
-            }
+            resolve(response)
           }
         )
       } catch (error) {
@@ -252,7 +216,7 @@ export class KeychainMini {
   }
 
   async delegation(data: Delegation): Promise<KeychainRequestResponse> {
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async (resolve) => {
       try {
         await this.isKeychainInstalled()
         window.hive_keychain.requestDelegation(
@@ -261,11 +225,7 @@ export class KeychainMini {
           data.amount,
           data.unit,
           (response: KeychainRequestResponse) => {
-            if (response.error) {
-              reject(response)
-            } else {
-              resolve(response)
-            }
+            resolve(response)
           }
         )
       } catch (error) {
@@ -275,15 +235,11 @@ export class KeychainMini {
   }
 
   async witnessVote(data: WitnessVote): Promise<KeychainRequestResponse> {
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async (resolve) => {
       try {
         await this.isKeychainInstalled()
         window.hive_keychain.requestWitnessVote(data.username, data.witness, data.vote, (response: KeychainRequestResponse) => {
-          if (response.error) {
-            reject(response)
-          } else {
-            resolve(response)
-          }
+          resolve(response)
         })
       } catch (error) {
         throw error
@@ -292,15 +248,11 @@ export class KeychainMini {
   }
 
   async proxy(data: Proxy): Promise<KeychainRequestResponse> {
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async (resolve) => {
       try {
         await this.isKeychainInstalled()
         window.hive_keychain.requestProxy(data.username, data.proxy, (response: KeychainRequestResponse) => {
-          if (response.error) {
-            reject(response)
-          } else {
-            resolve(response)
-          }
+          resolve(response)
         })
       } catch (error) {
         throw error
@@ -309,15 +261,11 @@ export class KeychainMini {
   }
 
   async powerUp(data: PowerUp): Promise<KeychainRequestResponse> {
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async (resolve) => {
       try {
         await this.isKeychainInstalled()
         window.hive_keychain.requestPowerUp(data.username, data.recipient, data.hive, (response: KeychainRequestResponse) => {
-          if (response.error) {
-            reject(response)
-          } else {
-            resolve(response)
-          }
+          resolve(response)
         })
       } catch (error) {
         throw error
@@ -326,15 +274,11 @@ export class KeychainMini {
   }
 
   async powerDown(data: PowerDown): Promise<KeychainRequestResponse> {
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async (resolve) => {
       try {
         await this.isKeychainInstalled()
         window.hive_keychain.requestPowerDown(data.username, data.hive_power, (response: KeychainRequestResponse) => {
-          if (response.error) {
-            reject(response)
-          } else {
-            resolve(response)
-          }
+          resolve(response)
         })
       } catch (error) {
         throw error
@@ -343,7 +287,7 @@ export class KeychainMini {
   }
 
   async updateProposalVote(data: UpdateProposalVote): Promise<KeychainRequestResponse> {
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async (resolve) => {
       try {
         await this.isKeychainInstalled()
         window.hive_keychain.requestUpdateProposalVote(
@@ -352,11 +296,7 @@ export class KeychainMini {
           data.approve,
           data.extensions,
           (response: KeychainRequestResponse) => {
-            if (response.error) {
-              reject(response)
-            } else {
-              resolve(response)
-            }
+            resolve(response)
           }
         )
       } catch (error) {
