@@ -5,7 +5,12 @@ export interface KeychainOptions {
   loginTitle: string
 }
 
-export type Providers = 'keychain' | 'hivesigner' | 'hiveauth' | 'ledger'
+export enum Providers {
+  Keychain = 'keychain',
+  HiveSigner = 'hivesigner',
+  HiveAuth = 'hiveauth',
+  Ledger = 'ledger'
+}
 export type KeyTypes = HaKeyType
 
 export interface LoginOptions {

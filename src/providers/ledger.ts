@@ -1,7 +1,7 @@
 import type LedgerApp from '@engrave/ledger-app-hive'
 import { AiohaProvider, AiohaProviderBase } from './provider'
 import { Transaction, Operation, CommentOptionsOperation, WithdrawVestingOperation } from '@hiveio/dhive'
-import { LoginOptions, LoginResult, OperationResult, SignOperationResult, Asset, KeyTypes } from '../types'
+import { LoginOptions, LoginResult, OperationResult, SignOperationResult, Asset, KeyTypes, Providers } from '../types'
 import { broadcastTx, getKeyRefs, hivePerVests } from '../rpc'
 import {
   constructTxHeader,
@@ -144,7 +144,7 @@ export class Ledger extends AiohaProviderBase implements AiohaProvider {
   async login(username: string, options: LoginOptions): Promise<LoginResult> {
     if (!(await this.checkConnection()))
       return {
-        provider: 'ledger',
+        provider: Providers.Ledger,
         ...connectionFailedError
       }
     assert(this.provider)
@@ -155,7 +155,7 @@ export class Ledger extends AiohaProviderBase implements AiohaProvider {
         if (!userFound) {
           await this.closeConnection()
           return {
-            provider: 'ledger',
+            provider: Providers.Ledger,
             success: false,
             error: 'Username is not associated with the device'
           }
@@ -169,7 +169,7 @@ export class Ledger extends AiohaProviderBase implements AiohaProvider {
           this.path = userFound.path
           localStorage.setItem('ledgerPath', this.path)
           return {
-            provider: 'ledger',
+            provider: Providers.Ledger,
             success: true,
             message: 'Message signed successfully',
             result: signature,
@@ -179,7 +179,7 @@ export class Ledger extends AiohaProviderBase implements AiohaProvider {
         } catch (e) {
           await this.closeConnection()
           return {
-            provider: 'ledger',
+            provider: Providers.Ledger,
             success: false,
             error: (e as any).message ?? 'Failed to obtain message signature'
           }
@@ -187,14 +187,14 @@ export class Ledger extends AiohaProviderBase implements AiohaProvider {
       } catch {
         await this.closeConnection()
         return {
-          provider: 'ledger',
+          provider: Providers.Ledger,
           success: false,
           error: 'Failed to search accounts'
         }
       }
     } catch (e) {
       return {
-        provider: 'ledger',
+        provider: Providers.Ledger,
         success: false,
         error: (e as any).message ?? 'Failed to login'
       }
@@ -203,7 +203,7 @@ export class Ledger extends AiohaProviderBase implements AiohaProvider {
 
   async loginAndDecryptMemo(username: string, options: LoginOptions): Promise<LoginResult> {
     return {
-      provider: 'ledger',
+      provider: Providers.Ledger,
       success: false,
       error: 'Memo cryptography is not supported in Ledger provider'
     }

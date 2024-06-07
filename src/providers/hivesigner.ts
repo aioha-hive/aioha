@@ -3,7 +3,7 @@ import { encodeOps } from 'hive-uri'
 import { CommentOptionsOperation, Operation, Transaction, WithdrawVestingOperation } from '@hiveio/dhive'
 import { ClientConfig } from 'hivesigner/lib/types/client-config.interface.js'
 import { AiohaProvider, AiohaProviderBase } from './provider.js'
-import { Asset, KeyTypes, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types.js'
+import { Asset, KeyTypes, LoginOptions, LoginResult, OperationResult, Providers, SignOperationResult } from '../types.js'
 import { KeyType } from '../lib/hiveauth-wrapper.js'
 import assert from 'assert'
 import {
@@ -64,7 +64,7 @@ export class HiveSigner extends AiohaProviderBase implements AiohaProvider {
             this.provider.setAccessToken(token)
             this.username = loggedInUser
             rs({
-              provider: 'hivesigner',
+              provider: Providers.HiveSigner,
               success: true,
               message: 'HiveSigner authentication success',
               result: token,
@@ -72,7 +72,7 @@ export class HiveSigner extends AiohaProviderBase implements AiohaProvider {
             })
           } else
             rs({
-              provider: 'hivesigner',
+              provider: Providers.HiveSigner,
               success: false,
               error: 'Failed to obtain HiveSigner access token'
             })
@@ -84,7 +84,7 @@ export class HiveSigner extends AiohaProviderBase implements AiohaProvider {
   async loginAndDecryptMemo(username: string, options: LoginOptions): Promise<LoginResult> {
     if (!options || typeof options.msg !== 'string' || !options.msg.startsWith('#'))
       return {
-        provider: 'hivesigner',
+        provider: Providers.HiveSigner,
         error: 'memo to decode must be a valid string beginning with #, encrypted with @hivesigner public posting key',
         success: false
       }
@@ -93,14 +93,14 @@ export class HiveSigner extends AiohaProviderBase implements AiohaProvider {
     const result = await this.decryptMemo(options.msg, 'posting')
     if (result.success)
       return {
-        provider: 'hivesigner',
+        provider: Providers.HiveSigner,
         success: true,
         message: 'Memo decoded successfully',
         username: login.username,
         result: result.result
       }
     return {
-      provider: 'hivesigner',
+      provider: Providers.HiveSigner,
       error: result.error!,
       success: false
     }

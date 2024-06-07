@@ -3,7 +3,8 @@
   <head>
     <script src="https://unpkg.com/qrcodejs@latest/qrcode.min.js"></script>
     <script type="module">
-      import { initAioha, constructTxHeader, broadcastTx } from 'https://unpkg.com/@aioha/aioha@latest/dist/bundle.js'
+      // import { initAioha, constructTxHeader, broadcastTx } from 'https://unpkg.com/@aioha/aioha@latest/dist/bundle.js'
+      import { initAioha, constructTxHeader, broadcastTx, Providers } from 'http://localhost:8081/bundle.js'
 
       const getLoginUser = () => document.getElementById('login-username').value
       const updateDisplayByIDs = (toshow = [], tohide = [], type = 'block') => {
@@ -49,19 +50,19 @@
           document.getElementById('login-username').value = aioha.getCurrentUser()
         }
         document.getElementById('login-keychain').onclick = async () => {
-          console.log(await aioha.login('keychain', getLoginUser(), loginOptions))
+          console.log(await aioha.login(Providers.Keychain, getLoginUser(), loginOptions))
           updateDisplayByIDs(['logout'], [], 'inline-block')
         }
         document.getElementById('login-hivesigner').onclick = async () => {
-          console.log(await aioha.login('hivesigner', getLoginUser(), loginOptions))
+          console.log(await aioha.login(Providers.HiveSigner, getLoginUser(), loginOptions))
           updateDisplayByIDs(['logout'], [], 'inline-block')
         }
         document.getElementById('login-hiveauth').onclick = async () => {
-          console.log(await aioha.login('hiveauth', getLoginUser(), loginOptions))
+          console.log(await aioha.login(Providers.HiveAuth, getLoginUser(), loginOptions))
           updateDisplayByIDs(['logout'], ['hiveauth-qr'], 'inline-block')
         }
         document.getElementById('login-ledger').onclick = async () => {
-          console.log(await aioha.login('ledger', getLoginUser(), loginOptions))
+          console.log(await aioha.login(Providers.Ledger, getLoginUser(), loginOptions))
           updateDisplayByIDs(['logout'], [], 'inline-block')
         }
         document.getElementById('logout').onclick = async () => {

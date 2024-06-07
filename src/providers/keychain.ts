@@ -1,7 +1,16 @@
 import { KeychainRequestResponse } from 'keychain-sdk'
 import { Operation, Transaction, CommentOptionsOperation } from '@hiveio/dhive'
 import { AiohaProvider, AiohaProviderBase } from './provider.js'
-import { Asset, KeyTypes, KeychainOptions, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types.js'
+import {
+  Asset,
+  KeyTypes,
+  KeychainOptions,
+  LoginOptions,
+  LoginResult,
+  OperationResult,
+  Providers,
+  SignOperationResult
+} from '../types.js'
 import assert from 'assert'
 import { createUnstakeHiveByVests, deleteComment } from '../opbuilder.js'
 import { KeychainMini } from '../lib/keychain-mini.js'
@@ -26,13 +35,13 @@ export class Keychain extends AiohaProviderBase implements AiohaProvider {
   async login(username: string, options: LoginOptions): Promise<LoginResult> {
     if (!options || !options.keyType)
       return {
-        provider: 'keychain',
+        provider: Providers.Keychain,
         success: false,
         error: 'keyType options are required'
       }
     else if (!(await Keychain.isInstalled()))
       return {
-        provider: 'keychain',
+        provider: Providers.Keychain,
         success: false,
         error: 'Keychain extension is not installed'
       }
@@ -44,7 +53,7 @@ export class Keychain extends AiohaProviderBase implements AiohaProvider {
     })
     if (login.success) this.username = username
     return {
-      provider: 'keychain',
+      provider: Providers.Keychain,
       success: login.success,
       message: login.message,
       result: login.result,
@@ -56,19 +65,19 @@ export class Keychain extends AiohaProviderBase implements AiohaProvider {
   async loginAndDecryptMemo(username: string, options: LoginOptions): Promise<LoginResult> {
     if (!options.msg || !options.msg.startsWith('#'))
       return {
-        provider: 'keychain',
+        provider: Providers.Keychain,
         success: false,
         error: 'message to decode must start with #'
       }
     else if (!options || !options.keyType)
       return {
-        provider: 'keychain',
+        provider: Providers.Keychain,
         success: false,
         error: 'keyType options are required'
       }
     else if (!(await Keychain.isInstalled()))
       return {
-        provider: 'keychain',
+        provider: Providers.Keychain,
         success: false,
         error: 'Keychain extension is not installed'
       }
@@ -79,7 +88,7 @@ export class Keychain extends AiohaProviderBase implements AiohaProvider {
     })
     if (login.success) this.username = username
     return {
-      provider: 'keychain',
+      provider: Providers.Keychain,
       success: login.success,
       message: login.message,
       result: login.result as unknown as string,

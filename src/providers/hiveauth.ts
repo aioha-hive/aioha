@@ -1,7 +1,7 @@
 import { CommentOptionsOperation, Operation, WithdrawVestingOperation } from '@hiveio/dhive'
 import HaWrapper, { Auth, AppMetaType, KeyType } from '../lib/hiveauth-wrapper.js'
 import { AiohaProvider, AiohaProviderBase } from './provider.js'
-import { Asset, KeyTypes, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types.js'
+import { Asset, KeyTypes, LoginOptions, LoginResult, OperationResult, Providers, SignOperationResult } from '../types.js'
 import {
   createComment,
   createCustomJSON,
@@ -39,7 +39,7 @@ export class HiveAuth extends AiohaProviderBase implements AiohaProvider {
   async login(username: string, options: LoginOptions): Promise<LoginResult> {
     if (!options || !options.hiveauth || !options.keyType)
       return {
-        provider: 'hiveauth',
+        provider: Providers.HiveAuth,
         success: false,
         error: 'hiveauth and keyType options must be present'
       }
@@ -58,7 +58,7 @@ export class HiveAuth extends AiohaProviderBase implements AiohaProvider {
       localStorage.setItem('hiveauthKey', this.provider.key!)
       localStorage.setItem('hiveauthExp', this.provider.expire!.toString())
       return {
-        provider: 'hiveauth',
+        provider: Providers.HiveAuth,
         success: true,
         message: 'Login Success',
         result: login.challenge.challenge,
@@ -66,7 +66,7 @@ export class HiveAuth extends AiohaProviderBase implements AiohaProvider {
       }
     } catch (e) {
       return {
-        provider: 'hiveauth',
+        provider: Providers.HiveAuth,
         success: false,
         error: HiveAuthError(e)
       }
