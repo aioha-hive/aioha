@@ -21,7 +21,7 @@ import { DEFAULT_API, getAccounts } from './rpc.js'
 import { AiohaOperations } from './providers/provider.js'
 export { constructTxHeader } from './opbuilder.js'
 export { broadcastTx, call, hivePerVests } from './rpc.js'
-export { Providers } from './types.js'
+export { Asset, Providers } from './types.js'
 
 const notLoggedInResult: OperationResult = {
   success: false,

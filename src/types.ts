@@ -58,4 +58,7 @@ export interface VoteParams extends AuthorLink {
   weight: number
 }
 
-export type Asset = 'HIVE' | 'HBD'
+export enum Asset {
+  HIVE = 'HIVE',
+  HBD = 'HBD'
+}

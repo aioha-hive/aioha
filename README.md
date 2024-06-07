@@ -20,7 +20,7 @@ pnpm i @aioha/aioha
 ## Usage Example
 
 ```js
-import { initAioha, Providers } from '@aioha/aioha'
+import { initAioha, Asset, Providers } from '@aioha/aioha'
 
 // Instantiation
 const aioha = initAioha({
@@ -55,7 +55,7 @@ const login = await aioha.login(Providers.Keychain, 'hiveusername', {
 })
 
 // Transfer 1 HIVE using logged in provider
-const xfer = await aioha.transfer('recipient', 1, 'HIVE', 'Transferred using Aioha with memo')
+const xfer = await aioha.transfer('recipient', 1, Asset.HIVE, 'Transferred using Aioha with memo')
 
 // Vote comment with 100% weight
 const vote = await aioha.vote('author', 'permlink', 10000)
