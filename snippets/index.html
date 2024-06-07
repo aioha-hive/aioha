@@ -4,7 +4,7 @@
     <script src="https://unpkg.com/qrcodejs@latest/qrcode.min.js"></script>
     <script type="module">
       // import { initAioha, constructTxHeader, broadcastTx } from 'https://unpkg.com/@aioha/aioha@latest/dist/bundle.js'
-      import { initAioha, constructTxHeader, broadcastTx, Providers } from 'http://localhost:8081/bundle.js'
+      import { initAioha, constructTxHeader, broadcastTx, KeyTypes, Providers } from 'http://localhost:8081/bundle.js'
 
       const getLoginUser = () => document.getElementById('login-username').value
       const updateDisplayByIDs = (toshow = [], tohide = [], type = 'block') => {
@@ -13,7 +13,7 @@
       }
       const loginOptions = {
         msg: 'Hello World',
-        keyType: 'posting',
+        keyType: KeyTypes.Posting,
         hiveauth: {
           cbWait: (payload, evt) => {
             document.getElementById('hiveauth-qr').innerHTML = ''
@@ -81,9 +81,11 @@
         }
         document.getElementById('nobc-sign-btn').onclick = async () => {
           const tx = await constructTxHeader([xferOp()])
-          let signed = await aioha.signTx(tx, 'active')
+          let signed = await aioha.signTx(tx, KeyTypes.Active)
           if (signed.success && document.getElementById('nobc-sign-bc').checked) {
             console.log(await broadcastTx(signed))
+          } else {
+            console.log(signed)
           }
         }
         document.getElementById('posting-sign-bc-btn').onclick = async () => {
@@ -100,12 +102,12 @@
                   }
                 ]
               ],
-              'posting'
+              KeyTypes.Posting
             )
           )
         }
         document.getElementById('active-sign-bc-btn').onclick = async () => {
-          console.log(await aioha.signAndBroadcastTx([xferOp()], 'active'))
+          console.log(await aioha.signAndBroadcastTx([xferOp()], KeyTypes.Active))
         }
         document.getElementById('vote-btn').onclick = async () => {
           console.log(
@@ -129,7 +131,7 @@
               document.getElementById('vsc-contract-id').value,
               document.getElementById('vsc-action').value,
               payload,
-              document.getElementById('vsc-radio-posting').checked ? 'posting' : 'active'
+              document.getElementById('vsc-radio-posting').checked ? KeyTypes.Posting : KeyTypes.Active
             )
           )
         }
