@@ -17,7 +17,7 @@ import {
 } from '../opbuilder'
 import { hivePerVests } from '../rpc'
 
-export abstract class AiohaProviderBase {
+export abstract class AiohaProviderBase implements AiohaOperations {
   protected api: string
 
   constructor(api: string) {
@@ -28,7 +28,14 @@ export abstract class AiohaProviderBase {
     this.api = api
   }
 
+  abstract login(username: string, options: LoginOptions): Promise<LoginResult>
+  abstract loginAndDecryptMemo(username: string, options: LoginOptions): Promise<LoginResult>
+  abstract logout(): Promise<void>
+  abstract loadAuth(username: string): boolean
   abstract getUser(): string | undefined
+  abstract decryptMemo(memo: string, keyType: KeyTypes): Promise<OperationResult>
+  abstract signMessage(message: string, keyType: KeyTypes): Promise<OperationResult>
+  abstract signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResult>
   abstract signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult>
 
   async vote(author: string, permlink: string, weight: number): Promise<SignOperationResult> {
@@ -127,14 +134,6 @@ export abstract class AiohaProviderBase {
   async setProxy(proxy: string): Promise<SignOperationResult> {
     return await this.signAndBroadcastTx([createSetProxy(this.getUser()!, proxy)], KeyTypes.Active)
   }
-}
-
-export interface AiohaProvider extends AiohaOperations, AiohaProviderBase {
-  // authentication
-  login(username: string, options: LoginOptions): Promise<LoginResult>
-  loginAndDecryptMemo(username: string, options: LoginOptions): Promise<LoginResult>
-  logout(): Promise<void>
-  loadAuth(username: string): boolean
 }
 
 export interface AiohaOperations {

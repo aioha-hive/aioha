@@ -1,5 +1,5 @@
 import type LedgerApp from '@engrave/ledger-app-hive'
-import { AiohaProvider, AiohaProviderBase } from './provider'
+import { AiohaProviderBase } from './provider'
 import { Transaction, Operation } from '@hiveio/dhive'
 import { LoginOptions, LoginResult, OperationResult, SignOperationResult, KeyTypes, Providers } from '../types'
 import { broadcastTx, getKeyRefs } from '../rpc'
@@ -90,7 +90,7 @@ const connectionFailedError: SignOperationResult = {
   error: 'Failed to establish connection to the device'
 }
 
-export class Ledger extends AiohaProviderBase implements AiohaProvider {
+export class Ledger extends AiohaProviderBase {
   private path?: string
   private username?: string
   private provider?: LedgerApp

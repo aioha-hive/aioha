@@ -1,6 +1,6 @@
 import { KeychainRequestResponse } from 'keychain-sdk'
 import { Operation, Transaction, CommentOptionsOperation } from '@hiveio/dhive'
-import { AiohaProvider, AiohaProviderBase } from './provider.js'
+import { AiohaProviderBase } from './provider.js'
 import {
   Asset,
   KeyTypes,
@@ -21,7 +21,7 @@ enum KeychainKeyTypes {
   memo = 'Memo'
 }
 
-export class Keychain extends AiohaProviderBase implements AiohaProvider {
+export class Keychain extends AiohaProviderBase {
   private provider: KeychainMini
   private loginTitle: string = 'Login'
   private username?: string

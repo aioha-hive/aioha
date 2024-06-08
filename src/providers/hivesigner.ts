@@ -1,8 +1,8 @@
-import hivesigner, { Client } from 'hivesigner'
+import { Client } from 'hivesigner'
 import { encodeOps } from 'hive-uri'
 import { CommentOptionsOperation, Operation, Transaction } from '@hiveio/dhive'
 import { ClientConfig } from 'hivesigner/lib/types/client-config.interface.js'
-import { AiohaProvider, AiohaProviderBase } from './provider.js'
+import { AiohaProviderBase } from './provider.js'
 import { KeyTypes, LoginOptions, LoginResult, OperationResult, Providers, SignOperationResult } from '../types.js'
 import { KeyType } from '../lib/hiveauth-wrapper.js'
 import assert from 'assert'
@@ -24,7 +24,7 @@ const authorizedOps = [
   'account_update2'
 ]
 
-export class HiveSigner extends AiohaProviderBase implements AiohaProvider {
+export class HiveSigner extends AiohaProviderBase {
   private provider: Client
   private username?: string
 
@@ -32,7 +32,7 @@ export class HiveSigner extends AiohaProviderBase implements AiohaProvider {
     super(api)
     if (!options.callbackURL?.startsWith(window.location.origin))
       throw new Error('callback URL must be in the same domain or subdomain as the current page')
-    this.provider = new hivesigner.Client(options)
+    this.provider = new Client(options)
   }
 
   async login(username: string, options: LoginOptions): Promise<LoginResult> {
@@ -179,12 +179,13 @@ export class HiveSigner extends AiohaProviderBase implements AiohaProvider {
       const signUrl =
         encodeOps(ops).replace('hive://', 'https://hivesigner.com/') +
         `?redirect_uri=${encodeURIComponent(this.provider.callbackURL)}`
+      const oldTxid = localStorage.getItem('hivesignerTxId')
       const hsWindow = window.open(signUrl)
       let hsInterval = setInterval(() => {
         if (hsWindow && hsWindow.closed) {
           clearInterval(hsInterval)
           const txid = localStorage.getItem('hivesignerTxId')
-          if (txid) {
+          if (txid && txid !== oldTxid) {
             rs({
               success: true,
               message: 'The transaction has been broadcasted successfully.',

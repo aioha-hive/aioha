@@ -1,6 +1,6 @@
 import { Operation } from '@hiveio/dhive'
 import HaWrapper, { Auth, AppMetaType, KeyType } from '../lib/hiveauth-wrapper.js'
-import { AiohaProvider, AiohaProviderBase } from './provider.js'
+import { AiohaProviderBase } from './provider.js'
 import { KeyTypes, LoginOptions, LoginResult, OperationResult, Providers, SignOperationResult } from '../types.js'
 
 const HiveAuthError = (e: any): string => {
@@ -11,7 +11,7 @@ const HiveAuthError = (e: any): string => {
   else return 'Unknown error'
 }
 
-export class HiveAuth extends AiohaProviderBase implements AiohaProvider {
+export class HiveAuth extends AiohaProviderBase {
   private provider: Auth
 
   constructor(api: string, options: AppMetaType) {
