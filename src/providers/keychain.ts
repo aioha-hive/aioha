@@ -39,7 +39,7 @@ export class Keychain extends AiohaProviderBase implements AiohaProvider {
         success: false,
         error: 'keyType options are required'
       }
-    else if (!(await Keychain.isInstalled()))
+    else if (!(await this.provider.isKeychainInstalled()))
       return {
         provider: Providers.Keychain,
         success: false,
@@ -75,7 +75,7 @@ export class Keychain extends AiohaProviderBase implements AiohaProvider {
         success: false,
         error: 'keyType options are required'
       }
-    else if (!(await Keychain.isInstalled()))
+    else if (!(await this.provider.isKeychainInstalled()))
       return {
         provider: Providers.Keychain,
         success: false,
@@ -105,8 +105,8 @@ export class Keychain extends AiohaProviderBase implements AiohaProvider {
     return true
   }
 
-  static isInstalled(): Promise<boolean> {
-    return new KeychainMini().isKeychainInstalled()
+  static isInstalled(): boolean {
+    return KeychainMini.isKeychainInstalledSync()
   }
 
   static mapAiohaKeyTypes(keyType: KeyTypes): KeychainKeyTypes {

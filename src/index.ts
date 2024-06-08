@@ -97,6 +97,20 @@ export class Aioha implements AiohaOperations {
   }
 
   /**
+   * Checks if a provider is registered and ready to use (i.e. Keychain provider is registered and browser extension installed by user)
+   * @param provider A Providers enum value
+   * @returns boolean of whether the specified provider is ready to use by the user
+   */
+  isProviderEnabled(provider: Providers): boolean {
+    switch (provider) {
+      case Providers.Keychain:
+        return !!this.providers.keychain && Keychain.isInstalled()
+      default:
+        return !!this.providers[provider]
+    }
+  }
+
+  /**
    * Get list of registered providers
    * @returns string[]
    */

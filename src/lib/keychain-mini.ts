@@ -37,6 +37,10 @@ export class KeychainMini {
     })
   }
 
+  static isKeychainInstalledSync(): boolean {
+    return !!window.hive_keychain
+  }
+
   async login(data: Login): Promise<any> {
     return await this.signBuffer({
       username: data.username,
