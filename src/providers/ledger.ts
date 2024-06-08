@@ -1,24 +1,9 @@
 import type LedgerApp from '@engrave/ledger-app-hive'
 import { AiohaProvider, AiohaProviderBase } from './provider'
-import { Transaction, Operation, CommentOptionsOperation, WithdrawVestingOperation } from '@hiveio/dhive'
-import { LoginOptions, LoginResult, OperationResult, SignOperationResult, Asset, KeyTypes, Providers } from '../types'
-import { broadcastTx, getKeyRefs, hivePerVests } from '../rpc'
-import {
-  constructTxHeader,
-  createComment,
-  createCustomJSON,
-  createRecurrentXfer,
-  createVote,
-  createXfer,
-  deleteComment,
-  createStakeHive,
-  createUnstakeHive,
-  createUnstakeHiveByVests,
-  createDelegateVests,
-  createVoteWitness,
-  createVoteProposals,
-  createSetProxy
-} from '../opbuilder'
+import { Transaction, Operation } from '@hiveio/dhive'
+import { LoginOptions, LoginResult, OperationResult, SignOperationResult, KeyTypes, Providers } from '../types'
+import { broadcastTx, getKeyRefs } from '../rpc'
+import { constructTxHeader } from '../opbuilder'
 import type CryptoJSType from 'crypto-js'
 import assert from 'assert'
 
@@ -226,6 +211,10 @@ export class Ledger extends AiohaProviderBase implements AiohaProvider {
     return true
   }
 
+  getUser(): string | undefined {
+    return this.username
+  }
+
   async decryptMemo(memo: string, keyType: KeyTypes): Promise<OperationResult> {
     return {
       success: false,
@@ -294,115 +283,5 @@ export class Ledger extends AiohaProviderBase implements AiohaProvider {
         error: 'Failed to sign or broadcast tx due to unknown error'
       }
     }
-  }
-
-  vote(author: string, permlink: string, weight: number): Promise<SignOperationResult> {
-    assert(this.username)
-    return this.signAndBroadcastTx([createVote(this.username, author, permlink, weight)], KeyTypes.Posting)
-  }
-
-  comment(
-    pa: string | null,
-    pp: string | null,
-    permlink: string,
-    title: string,
-    body: string,
-    json: string,
-    options?: CommentOptionsOperation[1]
-  ): Promise<SignOperationResult> {
-    assert(this.username)
-    return this.signAndBroadcastTx(
-      createComment(pa, pp, this.username, permlink, title, body, json, options) as Operation[],
-      KeyTypes.Posting
-    )
-  }
-
-  deleteComment(permlink: string): Promise<SignOperationResult> {
-    assert(this.username)
-    return this.signAndBroadcastTx([deleteComment(this.username, permlink)], KeyTypes.Posting)
-  }
-
-  customJSON(keyType: KeyTypes, id: string, json: string, displayTitle?: string | undefined): Promise<SignOperationResult> {
-    assert(this.username)
-    const requiredAuths = keyType === KeyTypes.Active ? [this.username] : []
-    const requiredPostingAuths = keyType === KeyTypes.Posting ? [this.username] : []
-    return this.signAndBroadcastTx([createCustomJSON(requiredAuths, requiredPostingAuths, id, json)], keyType)
-  }
-
-  transfer(to: string, amount: number, currency: Asset, memo?: string | undefined): Promise<SignOperationResult> {
-    assert(this.username)
-    return this.signAndBroadcastTx([createXfer(this.username, to, amount, currency, memo)], KeyTypes.Active)
-  }
-
-  recurrentTransfer(
-    to: string,
-    amount: number,
-    currency: Asset,
-    recurrence: number,
-    executions: number,
-    memo?: string | undefined
-  ): Promise<SignOperationResult> {
-    assert(this.username)
-    return this.signAndBroadcastTx(
-      [createRecurrentXfer(this.username, to, amount, currency, recurrence, executions, memo)],
-      KeyTypes.Active
-    )
-  }
-
-  stakeHive(amount: number, to?: string | undefined): Promise<SignOperationResult> {
-    assert(this.username)
-    return this.signAndBroadcastTx([createStakeHive(this.username, to ?? this.username!, amount)], KeyTypes.Active)
-  }
-
-  async unstakeHive(amount: number): Promise<SignOperationResult> {
-    assert(this.username)
-    let op: WithdrawVestingOperation
-    try {
-      op = await createUnstakeHive(this.username, amount)
-    } catch {
-      return {
-        success: false,
-        error: 'Failed to retrieve VESTS from staked HIVE'
-      }
-    }
-    return await this.signAndBroadcastTx([op], KeyTypes.Active)
-  }
-
-  unstakeHiveByVests(vests: number): Promise<SignOperationResult> {
-    assert(this.username)
-    return this.signAndBroadcastTx([createUnstakeHiveByVests(this.username, vests)], KeyTypes.Active)
-  }
-
-  async delegateStakedHive(to: string, amount: number): Promise<SignOperationResult> {
-    let hpv: number
-    try {
-      hpv = await hivePerVests(this.api)
-    } catch {
-      return {
-        success: false,
-        error: 'Failed to retrieve HIVE per VESTS'
-      }
-    }
-    return await this.delegateVests(to, amount / hpv)
-  }
-
-  delegateVests(to: string, amount: number): Promise<SignOperationResult> {
-    assert(this.username)
-    return this.signAndBroadcastTx([createDelegateVests(this.username, to, amount)], KeyTypes.Active)
-  }
-
-  voteWitness(witness: string, approve: boolean): Promise<SignOperationResult> {
-    assert(this.username)
-    return this.signAndBroadcastTx([createVoteWitness(this.username, witness, approve)], KeyTypes.Active)
-  }
-
-  voteProposals(proposals: number[], approve: boolean): Promise<SignOperationResult> {
-    assert(this.username)
-    return this.signAndBroadcastTx([createVoteProposals(this.username, proposals, approve)], KeyTypes.Active)
-  }
-
-  setProxy(proxy: string): Promise<SignOperationResult> {
-    assert(this.username)
-    return this.signAndBroadcastTx([createSetProxy(this.username, proxy)], KeyTypes.Active)
   }
 }

@@ -1,5 +1,9 @@
 import { v4 as uuidv4 } from 'uuid'
 import {
+  AddAccountAuthority,
+  AddKeyAuthority,
+  RemoveAccountAuthority,
+  RemoveKeyAuthority,
   Broadcast,
   Custom,
   Decode,
@@ -76,6 +80,80 @@ export class KeychainMini {
           },
           undefined,
           data.title
+        )
+      } catch (error) {
+        throw error
+      }
+    })
+  }
+
+  async addAccountAuthority(data: AddAccountAuthority): Promise<KeychainRequestResponse> {
+    return new Promise(async (resolve) => {
+      try {
+        await this.isKeychainInstalled()
+        window.hive_keychain.requestAddAccountAuthority(
+          data.username,
+          data.authorizedUsername,
+          data.role,
+          data.weight,
+          (response: KeychainRequestResponse) => {
+            resolve(response)
+          }
+        )
+      } catch (error) {
+        throw error
+      }
+    })
+  }
+
+  async removeAccountAuthority(data: RemoveAccountAuthority): Promise<KeychainRequestResponse> {
+    return new Promise(async (resolve) => {
+      try {
+        await this.isKeychainInstalled()
+        window.hive_keychain.requestRemoveAccountAuthority(
+          data.username,
+          data.authorizedUsername,
+          data.role,
+          (response: KeychainRequestResponse) => {
+            resolve(response)
+          }
+        )
+      } catch (error) {
+        throw error
+      }
+    })
+  }
+
+  async addKeyAuthority(data: AddKeyAuthority): Promise<KeychainRequestResponse> {
+    return new Promise(async (resolve) => {
+      try {
+        await this.isKeychainInstalled()
+        window.hive_keychain.requestAddKeyAuthority(
+          data.username,
+          data.authorizedKey,
+          data.role,
+          data.weight,
+          (response: KeychainRequestResponse) => {
+            resolve(response)
+          }
+        )
+      } catch (error) {
+        throw error
+      }
+    })
+  }
+
+  async removeKeyAuthority(data: RemoveKeyAuthority): Promise<KeychainRequestResponse> {
+    return new Promise(async (resolve) => {
+      try {
+        await this.isKeychainInstalled()
+        window.hive_keychain.requestRemoveKeyAuthority(
+          data.username,
+          data.authorizedKey,
+          data.role,
+          (response: KeychainRequestResponse) => {
+            resolve(response)
+          }
         )
       } catch (error) {
         throw error

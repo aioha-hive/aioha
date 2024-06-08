@@ -105,6 +105,10 @@ export class Keychain extends AiohaProviderBase implements AiohaProvider {
     return true
   }
 
+  getUser(): string | undefined {
+    return this.username
+  }
+
   static isInstalled(): boolean {
     return KeychainMini.isKeychainInstalledSync()
   }
@@ -374,6 +378,52 @@ export class Keychain extends AiohaProviderBase implements AiohaProvider {
       await this.provider.proxy({
         username: this.username,
         proxy
+      })
+    )
+  }
+
+  async addAccountAuthority(username: string, role: KeyTypes, weight: number): Promise<SignOperationResult> {
+    assert(this.username)
+    return this.txResult(
+      await this.provider.addAccountAuthority({
+        username: this.username,
+        authorizedUsername: username,
+        role: Keychain.mapAiohaKeyTypes(role),
+        weight
+      })
+    )
+  }
+
+  async removeAccountAuthority(username: string, role: KeyTypes): Promise<SignOperationResult> {
+    assert(this.username)
+    return this.txResult(
+      await this.provider.removeAccountAuthority({
+        username: this.username,
+        authorizedUsername: username,
+        role: Keychain.mapAiohaKeyTypes(role)
+      })
+    )
+  }
+
+  async addKeyAuthority(publicKey: string, role: KeyTypes, weight: number): Promise<SignOperationResult> {
+    assert(this.username)
+    return this.txResult(
+      await this.provider.addKeyAuthority({
+        username: this.username,
+        authorizedKey: publicKey,
+        role: Keychain.mapAiohaKeyTypes(role),
+        weight
+      })
+    )
+  }
+
+  async removeKeyAuthority(publicKey: string, role: KeyTypes): Promise<SignOperationResult> {
+    assert(this.username)
+    return this.txResult(
+      await this.provider.removeKeyAuthority({
+        username: this.username,
+        authorizedKey: publicKey,
+        role: Keychain.mapAiohaKeyTypes(role)
       })
     )
   }
