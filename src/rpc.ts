@@ -23,6 +23,10 @@ export const getAccounts = (accounts: string[], api: string = DEFAULT_API) => {
   return call('condenser_api.get_accounts', [accounts], api)
 }
 
+export const getAccountsErrored = (rpcResponse: any): boolean => {
+  return !!rpcResponse.error || !Array.isArray(rpcResponse.result) || rpcResponse.result.length === 0
+}
+
 export const getDgp = (api: string = DEFAULT_API) => {
   return call('condenser_api.get_dynamic_global_properties', undefined, api)
 }

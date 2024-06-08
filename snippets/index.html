@@ -121,6 +121,23 @@
         document.getElementById('claim-rewards-btn').onclick = async () => {
           console.log(await aioha.claimRewards())
         }
+        document.getElementById('add-acc-auth-btn').onclick = async () => {
+          console.log(
+            await aioha.addAccountAuthority(
+              document.getElementById('add-acc-auth-username').value,
+              KeyTypes.Posting,
+              parseInt(document.getElementById('add-acc-auth-weight').value)
+            )
+          )
+        }
+        document.getElementById('rm-acc-auth-btn').onclick = async () => {
+          console.log(
+            await aioha.removeAccountAuthority(
+              document.getElementById('rm-acc-auth-username').value,
+              document.getElementById('rm-acc-auth-keytype').value
+            )
+          )
+        }
         document.getElementById('vsc-call').onclick = async () => {
           let payload = document.getElementById('vsc-payload').value
           try {
@@ -187,6 +204,19 @@
     <br />
     <h2>Claim Rewards</h2>
     <button id="claim-rewards-btn">Claim Rewards</button>
+    <br />
+    <h2>Add Account Auth</h2>
+    <input type="text" id="add-acc-auth-username" placeholder="Account" />
+    <input type="number" id="add-acc-auth-weight" placeholder="Weight" />
+    <button id="add-acc-auth-btn">Add</button>
+    <br />
+    <h2>Remove Account Auth</h2>
+    <input type="text" id="rm-acc-auth-username" placeholder="Account" />
+    <select id="rm-acc-auth-keytype">
+      <option value="posting" selected>Posting</option>
+      <option value="active">Active</option>
+    </select>
+    <button id="rm-acc-auth-btn">Remove</button>
     <br />
     <h2>VSC Contract Call</h2>
     <input type="text" id="vsc-contract-id" placeholder="Contract ID" style="width: 250px" />

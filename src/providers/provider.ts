@@ -1,4 +1,4 @@
-import { CommentOptionsOperation, Operation, Transaction, WithdrawVestingOperation } from '@hiveio/dhive'
+import { AuthorityType, CommentOptionsOperation, Operation, Transaction, WithdrawVestingOperation } from '@hiveio/dhive'
 import { Asset, KeyTypes, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types'
 import {
   createVote,
@@ -15,7 +15,7 @@ import {
   createSetProxy,
   deleteComment
 } from '../opbuilder'
-import { hivePerVests } from '../rpc'
+import { hivePerVests, getAccounts, getAccountsErrored } from '../rpc'
 
 export abstract class AiohaProviderBase implements AiohaOperations {
   protected api: string
@@ -134,6 +134,135 @@ export abstract class AiohaProviderBase implements AiohaOperations {
   async setProxy(proxy: string): Promise<SignOperationResult> {
     return await this.signAndBroadcastTx([createSetProxy(this.getUser()!, proxy)], KeyTypes.Active)
   }
+
+  async addAccountAuthority(username: string, role: KeyTypes, weight: number): Promise<SignOperationResult> {
+    if (this.getUser()! === username)
+      return {
+        success: false,
+        error: 'cannot add itself as account auth'
+      }
+    return await this.addAuth('account', username, role, weight)
+  }
+
+  async removeAccountAuthority(username: string, role: KeyTypes): Promise<SignOperationResult> {
+    if (this.getUser()! === username)
+      return {
+        success: false,
+        error: 'cannot remove itself as account auth'
+      }
+    return await this.removeAuth('account', username, role)
+  }
+
+  addKeyAuthority(publicKey: string, role: KeyTypes, weight: number): Promise<SignOperationResult> {
+    return this.addAuth('key', publicKey, role, weight)
+  }
+
+  removeKeyAuthority(publicKey: string, role: KeyTypes): Promise<SignOperationResult> {
+    return this.removeAuth('key', publicKey, role)
+  }
+
+  async addAuth(type: 'account' | 'key', theAuth: string, role: KeyTypes, weight: number): Promise<SignOperationResult> {
+    if (role === KeyTypes.Memo)
+      return {
+        success: false,
+        error: `cannot add ${type} memo auth`
+      }
+    else if (weight <= 0)
+      return {
+        success: false,
+        error: 'weight must be greater than 0'
+      }
+    try {
+      const acc = await getAccounts([this.getUser()!], this.api)
+      if (getAccountsErrored(acc))
+        return {
+          success: false,
+          error: `Failed to fetch current ${type} auths`
+        }
+      const currentAuths = acc.result[0][role]
+      const authExists = currentAuths[`${type}_auths`].findIndex((a: [string, number]) => a[0] === theAuth)
+      if (authExists > -1) {
+        // update weight if key auth already exists
+        if (currentAuths[`${type}_auths`][authExists][1] !== weight) {
+          currentAuths[`${type}_auths`][authExists][1] = weight
+        } else
+          return {
+            success: false,
+            error: 'Nothing to update'
+          }
+      } else {
+        // push new auth if not exist
+        currentAuths[`${type}_auths`].push([theAuth, weight])
+        currentAuths[`${type}_auths`].sort((a: [string, number], b: [string, number]) => a[0].localeCompare(b[0]))
+      }
+      return await this.signAndBroadcastTx(
+        [
+          [
+            'account_update',
+            {
+              account: this.getUser()!,
+              posting: acc.result[0].posting as AuthorityType,
+              active: acc.result[0].active as AuthorityType,
+              memo_key: acc.result[0].memo_key,
+              json_metadata: acc.result[0].json_metadata
+            }
+          ]
+        ],
+        KeyTypes.Active
+      )
+    } catch {
+      return {
+        success: false,
+        error: 'Failed to add key auth due to unknown error'
+      }
+    }
+  }
+
+  async removeAuth(type: 'account' | 'key', theAuth: string, role: KeyTypes): Promise<SignOperationResult> {
+    if (role === KeyTypes.Memo)
+      return {
+        success: false,
+        error: `cannot remove ${type} memo auth`
+      }
+    try {
+      const acc = await getAccounts([this.getUser()!], this.api)
+      if (getAccountsErrored(acc))
+        return {
+          success: false,
+          error: `Failed to fetch current ${type} auths`
+        }
+      const currentAuths = acc.result[0][role]
+      const authExists = currentAuths[`${type}_auths`].findIndex((a: [string, number]) => a[0] === theAuth)
+      if (authExists > -1) {
+        currentAuths[`${type}_auths`].splice(authExists, 1)
+      } else {
+        return {
+          success: false,
+          error: 'Nothing to remove'
+        }
+      }
+      return await this.signAndBroadcastTx(
+        [
+          [
+            'account_update',
+            {
+              account: this.getUser()!,
+              posting: acc.result[0].posting as AuthorityType,
+              active: acc.result[0].active as AuthorityType,
+              memo_key: acc.result[0].memo_key,
+              json_metadata: acc.result[0].json_metadata
+            }
+          ]
+        ],
+        KeyTypes.Active
+      )
+    } catch {
+      return {
+        success: false,
+        error: `Failed to remove ${type} auth due to unknown error`
+      }
+    }
+  }
 }
 
 export interface AiohaOperations {
@@ -181,8 +310,8 @@ export interface AiohaOperations {
   voteWitness(witness: string, approve: boolean): Promise<SignOperationResult>
   voteProposals(proposals: number[], approve: boolean): Promise<SignOperationResult>
   setProxy(proxy: string): Promise<SignOperationResult>
-  // addAccountAuthority(username: string, role: KeyTypes, weight: number): Promise<SignOperationResult>
-  // removeAccountAuthority(username: string, role: KeyTypes): Promise<SignOperationResult>
-  // addKeyAuthority(publicKey: string, role: KeyTypes, weight: number): Promise<SignOperationResult>
-  // removeKeyAuthority(publicKey: string, role: KeyTypes): Promise<SignOperationResult>
+  addAccountAuthority(username: string, role: KeyTypes, weight: number): Promise<SignOperationResult>
+  removeAccountAuthority(username: string, role: KeyTypes): Promise<SignOperationResult>
+  addKeyAuthority(publicKey: string, role: KeyTypes, weight: number): Promise<SignOperationResult>
+  removeKeyAuthority(publicKey: string, role: KeyTypes): Promise<SignOperationResult>
 }

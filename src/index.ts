@@ -581,6 +581,53 @@ export class Aioha implements AiohaOperations {
   }
 
   /**
+   * Add an account auth.
+   * @param username Account username to authorize
+   * @param role KeyTypes role to authorize. Must be either KeyTypes.Posting or KeyTypes.Active
+   * @param weight Weight of the account auth
+   * @returns Transaction result
+   */
+  async addAccountAuthority(username: string, role: KeyTypes, weight: number): Promise<SignOperationResult> {
+    if (!this.isLoggedIn()) return notLoggedInResult
+    return await this.providers[this.getCurrentProvider()!]!.addAccountAuthority(username, role, weight)
+  }
+
+  /**
+   * Remove an account auth.
+   * @param username Account username to revoke
+   * @param role KeyTypes role to revoke. Must be either KeyTypes.Posting or KeyTypes.Active
+   * @returns Transaction result
+   */
+  async removeAccountAuthority(username: string, role: KeyTypes): Promise<SignOperationResult> {
+    if (!this.isLoggedIn()) return notLoggedInResult
+    return await this.providers[this.getCurrentProvider()!]!.removeAccountAuthority(username, role)
+  }
+
+  /**
+   * Add a key auth.
+   * @param username Public key to authorize
+   * @param role KeyTypes role to authorize. Must be either KeyTypes.Posting or KeyTypes.Active
+   * @param weight Weight of the key auth
+   * @returns Transaction result
+   */
+  async addKeyAuthority(publicKey: string, role: KeyTypes, weight: number): Promise<SignOperationResult> {
+    if (!this.isLoggedIn()) return notLoggedInResult
+    return await this.providers[this.getCurrentProvider()!]!.addKeyAuthority(publicKey, role, weight)
+  }
+
+  /**
+   * Remove a key auth.
+   * @param username Public key to revoke
+   * @param role KeyTypes role to revoke. Must be either KeyTypes.Posting or KeyTypes.Active
+   * @param weight Weight of the key auth
+   * @returns Transaction result
+   */
+  async removeKeyAuthority(publicKey: string, role: KeyTypes): Promise<SignOperationResult> {
+    if (!this.isLoggedIn()) return notLoggedInResult
+    return await this.providers[this.getCurrentProvider()!]!.removeKeyAuthority(publicKey, role)
+  }
+
+  /**
    * Set the VSC network ID for VSC related functions.
    * @param net_id VSC network ID to use.
    */
