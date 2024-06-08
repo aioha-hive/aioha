@@ -1,7 +1,7 @@
 import { CommentOptionsOperation, Operation, Transaction } from '@hiveio/dhive'
 import { Asset, KeyTypes, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types'
 
-export class AiohaProviderBase {
+export abstract class AiohaProviderBase {
   protected api: string
 
   constructor(api: string) {
