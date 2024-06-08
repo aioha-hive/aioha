@@ -32,9 +32,6 @@ dependencies:
   keychain-sdk:
     specifier: ^0.6.1
     version: 0.6.1
-  uuid:
-    specifier: ^9.0.1
-    version: 9.0.1
 
 devDependencies:
   '@types/crypto-js':

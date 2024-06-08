@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from 'uuid'
 import {
   AddAccountAuthority,
   AddKeyAuthority,
@@ -48,7 +47,7 @@ export class KeychainMini {
   async login(data: Login): Promise<any> {
     return await this.signBuffer({
       username: data.username,
-      message: data.message ?? uuidv4(),
+      message: data.message ?? window.crypto.randomUUID(),
       method: data.method,
       title: data.title
     })

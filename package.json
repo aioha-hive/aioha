@@ -50,7 +50,6 @@
     "crypto-js": "^4.2.0",
     "hive-uri": "^0.2.5",
     "hivesigner": "^3.3.4",
-    "keychain-sdk": "^0.6.1",
-    "uuid": "^9.0.1"
+    "keychain-sdk": "^0.6.1"
   }
 }

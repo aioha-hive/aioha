@@ -1,6 +1,5 @@
 // HiveAuth wrapper with types
 // https://github.com/hiveauth/hive-auth-wrapper/blob/master/has-wrapper.js
-import { v4 as uuidv4 } from 'uuid'
 import type CryptoJSType from 'crypto-js'
 import assert from 'assert'
 
@@ -307,7 +306,7 @@ export default {
         assert(await checkConnection(), `Failed to connect to HiveAuth server ${trace ? HAS_options.host : ''}`)
 
         // initialize key to encrypt communication with PKSA
-        const auth_key = auth.key || uuidv4()
+        const auth_key = auth.key || window.crypto.randomUUID()
         const data = CryptoJS.AES.encrypt(
           JSON.stringify({ app: auth.getAppMetadata(), challenge: challenge_data, token: auth.token }),
           auth_key
