@@ -1,10 +1,6 @@
 import { MessageType as HaMsgType, KeyType as KeyTypes } from './lib/hiveauth-wrapper'
 export { KeyType as KeyTypes } from './lib/hiveauth-wrapper'
 
-export interface KeychainOptions {
-  loginTitle: string
-}
-
 export enum Providers {
   Keychain = 'keychain',
   HiveSigner = 'hivesigner',
@@ -15,6 +11,7 @@ export enum Providers {
 export interface LoginOptions {
   msg?: string
   keyType?: KeyTypes
+  loginTitle?: string
   hivesigner?: {
     state?: string
   }

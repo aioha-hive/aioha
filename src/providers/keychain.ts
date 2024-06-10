@@ -1,16 +1,7 @@
 import { KeychainRequestResponse } from 'keychain-sdk'
 import { Operation, Transaction, CommentOptionsOperation } from '@hiveio/dhive'
 import { AiohaProviderBase } from './provider.js'
-import {
-  Asset,
-  KeyTypes,
-  KeychainOptions,
-  LoginOptions,
-  LoginResult,
-  OperationResult,
-  Providers,
-  SignOperationResult
-} from '../types.js'
+import { Asset, KeyTypes, LoginOptions, LoginResult, OperationResult, Providers, SignOperationResult } from '../types.js'
 import assert from 'assert'
 import { createUnstakeHiveByVests, deleteComment } from '../opbuilder.js'
 import { KeychainMini } from '../lib/keychain-mini.js'
@@ -23,13 +14,11 @@ enum KeychainKeyTypes {
 
 export class Keychain extends AiohaProviderBase {
   private provider: KeychainMini
-  private loginTitle: string = 'Login'
   private username?: string
 
-  constructor(options?: KeychainOptions) {
+  constructor() {
     super('') // api url isn't used here
     this.provider = new KeychainMini()
-    if (options && options.loginTitle) this.loginTitle = options.loginTitle
   }
 
   async login(username: string, options: LoginOptions): Promise<LoginResult> {
@@ -49,7 +38,7 @@ export class Keychain extends AiohaProviderBase {
       username: username,
       message: options.msg,
       method: Keychain.mapAiohaKeyTypes(options.keyType),
-      title: this.loginTitle
+      title: options.loginTitle
     })
     if (login.success) this.username = username
     return {

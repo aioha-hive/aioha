@@ -12,8 +12,7 @@ import {
   OperationResult,
   SignOperationResult,
   Providers,
-  VoteParams,
-  KeychainOptions
+  VoteParams
 } from './types.js'
 import { AppMetaType } from './lib/hiveauth-wrapper.js'
 import { createVote } from './opbuilder.js'
@@ -55,8 +54,8 @@ export class Aioha implements AiohaOperations {
   /**
    * Register Hive Keychain provider.
    */
-  registerKeychain(options?: KeychainOptions) {
-    this.providers.keychain = new Keychain(options)
+  registerKeychain() {
+    this.providers.keychain = new Keychain()
   }
 
   /**
@@ -664,11 +663,7 @@ export class Aioha implements AiohaOperations {
   }
 }
 
-export const initAioha = (options?: {
-  keychain?: KeychainOptions
-  hivesigner?: HiveSignerOptions
-  hiveauth?: AppMetaType
-}): Aioha => {
+export const initAioha = (options?: { hivesigner?: HiveSignerOptions; hiveauth?: AppMetaType }): Aioha => {
   if (!options) options = {}
   if (!options.hiveauth)
     options.hiveauth = {
@@ -676,7 +671,7 @@ export const initAioha = (options?: {
     }
 
   const aioha = new Aioha()
-  aioha.registerKeychain(options.keychain)
+  aioha.registerKeychain()
   aioha.registerLedger()
   aioha.registerHiveAuth(options.hiveauth)
   if (options.hivesigner) aioha.registerHiveSigner(options.hivesigner)
