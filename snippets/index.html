@@ -65,6 +65,10 @@
           console.log(await aioha.login(Providers.Ledger, getLoginUser(), loginOptions))
           updateDisplayByIDs(['logout'], [], 'inline-block')
         }
+        document.getElementById('login-peakvault').onclick = async () => {
+          console.log(await aioha.login(Providers.PeakVault, getLoginUser(), loginOptions))
+          updateDisplayByIDs(['logout'], [], 'inline-block')
+        }
         document.getElementById('logout').onclick = async () => {
           aioha.logout()
           updateDisplayByIDs([], ['logout'])
@@ -163,6 +167,7 @@
     <button id="login-hivesigner">HiveSigner</button>
     <button id="login-hiveauth">HiveAuth</button>
     <button id="login-ledger">Ledger</button>
+    <button id="login-peakvault">Peak Vault</button>
     <button id="logout" style="display: none">Logout</button>
     <br />
     <div id="hiveauth-qr" style="height: 300px; width: 300px; padding: 20px; display: none; background-color: #ffffff"></div>

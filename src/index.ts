@@ -3,6 +3,7 @@ import { HiveAuth } from './providers/hiveauth.js'
 import { HiveSigner } from './providers/hivesigner.js'
 import { Keychain } from './providers/keychain.js'
 import { Ledger } from './providers/ledger.js'
+import { PeakVault } from './providers/peakvault.js'
 import { ClientConfig as HiveSignerOptions } from 'hivesigner/lib/types/client-config.interface.js'
 import {
   Asset,
@@ -38,6 +39,7 @@ export class Aioha implements AiohaOperations {
     hivesigner?: HiveSigner
     hiveauth?: HiveAuth
     ledger?: Ledger
+    peakvault?: PeakVault
   }
   private user?: string
   private currentProvider?: Providers
@@ -82,6 +84,13 @@ export class Aioha implements AiohaOperations {
    */
   registerLedger() {
     this.providers.ledger = new Ledger(this.api)
+  }
+
+  /**
+   * Register Peak Vault provider.
+   */
+  registerPeakVault() {
+    this.providers.peakvault = new PeakVault()
   }
 
   /**
@@ -673,6 +682,7 @@ export const initAioha = (options?: { hivesigner?: HiveSignerOptions; hiveauth?:
   const aioha = new Aioha()
   aioha.registerKeychain()
   aioha.registerLedger()
+  aioha.registerPeakVault()
   aioha.registerHiveAuth(options.hiveauth)
   if (options.hivesigner) aioha.registerHiveSigner(options.hivesigner)
   aioha.loadAuth()

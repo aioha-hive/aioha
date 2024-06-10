@@ -10,6 +10,7 @@ This repository contains the core API designed for use in browser contexts. Read
 * [HiveAuth](https://hiveauth.com)
 * [HiveSigner](https://hivesigner.com)
 * [Ledger](https://hiveledger.io)
+* [Peak Vault](https://vault.peakd.com)
 
 ## Installation
 
