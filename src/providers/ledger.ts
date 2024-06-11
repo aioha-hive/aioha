@@ -263,8 +263,8 @@ export class Ledger extends AiohaProviderBase {
       const unsignedTx = await constructTxHeader(tx)
       const signedTx = await this.signTx(unsignedTx, KeyTypes.Active)
       if (!signedTx.success || !signedTx.result) return signedTx
-      const { cryptoUtils } = await import(/* webpackChunkName: 'dhive' */ '@hiveio/dhive')
-      const txId = cryptoUtils.generateTrxId(signedTx.result)
+      const { Transaction } = await import(/* webpackChunkName: 'hive-tx' */ 'hive-tx')
+      const txId = new Transaction(signedTx.result).digest().txId
       const broadcasted = await broadcastTx(signedTx.result, this.api)
       if (broadcasted.error)
         return {
