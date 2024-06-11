@@ -46,12 +46,9 @@ export interface SignOperationResult extends OperationBaseResult {
   result?: any
 }
 
-export interface AuthorLink {
+export interface VoteParams {
   author: string
   permlink: string
-}
-
-export interface VoteParams extends AuthorLink {
   weight: number
 }
 
