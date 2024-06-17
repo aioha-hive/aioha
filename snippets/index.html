@@ -3,8 +3,14 @@
   <head>
     <script src="https://unpkg.com/qrcodejs@latest/qrcode.min.js"></script>
     <script type="module">
-      // import { initAioha, constructTxHeader, broadcastTx } from 'https://unpkg.com/@aioha/aioha@latest/dist/bundle.js'
-      import { initAioha, constructTxHeader, broadcastTx, KeyTypes, Providers } from 'http://localhost:8081/bundle.js'
+      import {
+        initAioha,
+        constructTxHeader,
+        broadcastTx,
+        KeyTypes,
+        Providers
+      } from 'https://unpkg.com/@aioha/aioha@latest/dist/bundle.js'
+      // import { initAioha, constructTxHeader, broadcastTx, KeyTypes, Providers } from 'http://localhost:8081/bundle.js'
 
       const getLoginUser = () => document.getElementById('login-username').value
       const updateDisplayByIDs = (toshow = [], tohide = [], type = 'block') => {
