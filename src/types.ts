@@ -17,7 +17,7 @@ export interface LoginOptions {
     state?: string
   }
   hiveauth?: {
-    cbWait?: (payload: string, evt: HaMsgType) => any
+    cbWait?: (payload: string, evt: HaMsgType, cancel: () => void) => any
   }
 }
 

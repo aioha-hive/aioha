@@ -289,7 +289,7 @@ export default {
     auth: Auth,
     username: string,
     challenge_data: ChallengeDataType,
-    cbWait?: (payload: string, evt: MessageType) => any
+    cbWait?: (payload: string, evt: MessageType, cancel: () => void) => any
   ) {
     return new Promise<AuthAckDataType>(async (resolve, reject) => {
       try {
@@ -349,7 +349,9 @@ export default {
                     key: auth_key,
                     host: HAS_SERVER
                   }
-                  cbWait('has://auth_req/' + window.btoa(JSON.stringify(payload)), req)
+                  cbWait('has://auth_req/' + window.btoa(JSON.stringify(payload)), req, () =>
+                    reject(new Error('Error: cancelled'))
+                  )
                 }
               } else if (err) {
                 if (trace) console.log(`error found: ${JSON.stringify(err)}`)
@@ -418,7 +420,13 @@ export default {
    * @param {Array} ops
    * @param {Object} cbWait - (optional) callback method to notify the app about pending request
    */
-  signTx: function (auth: Auth, key_type: KeyType, ops: any, broadcast: boolean, cbWait?: (evt: MessageType) => any) {
+  signTx: function (
+    auth: Auth,
+    key_type: KeyType,
+    ops: any,
+    broadcast: boolean,
+    cbWait?: (evt: MessageType, cancel: () => void) => any
+  ) {
     return new Promise<MessageType>(async (resolve, reject) => {
       assert(CryptoJS, 'call initCrypto() first')
       assert(auth, 'missing auth')
@@ -454,7 +462,7 @@ export default {
               uuid = req.uuid
               expire = req.expire
               // call back app to notify about pending request
-              if (cbWait) cbWait(req)
+              if (cbWait) cbWait(req, () => reject(new Error('Error: cancelled')))
             } else if (err) {
               if (trace) console.log(`error found: ${JSON.stringify(err)}`)
               reject(err)
@@ -505,7 +513,7 @@ export default {
    * @param {string} challenge_data.challenge - a string to be signed
    * @param {Object} cbWait - (optional) callback method to notify the app about pending request
    */
-  challenge: function (auth: Auth, challenge_data: ChallengeDataType, cbWait?: (evt: MessageType) => any) {
+  challenge: function (auth: Auth, challenge_data: ChallengeDataType, cbWait?: (evt: MessageType, cancel: () => void) => any) {
     return new Promise<ChallengeResult>(async (resolve, reject) => {
       assert(CryptoJS, 'call initCrypto() first')
       assert(auth, 'missing auth')
@@ -544,7 +552,7 @@ export default {
               uuid = req.uuid
               expire = req.expire
               // call back app to notify about pending request
-              if (cbWait) cbWait(req)
+              if (cbWait) cbWait(req, () => reject(new Error('Error: cancelled')))
             } else if (err) {
               if (trace) console.log(`error found: ${JSON.stringify(err)}`)
               reject(err)
