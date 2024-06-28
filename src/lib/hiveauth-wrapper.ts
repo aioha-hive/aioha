@@ -349,9 +349,10 @@ export default {
                     key: auth_key,
                     host: HAS_SERVER
                   }
-                  cbWait('has://auth_req/' + window.btoa(JSON.stringify(payload)), req, () =>
+                  cbWait('has://auth_req/' + window.btoa(JSON.stringify(payload)), req, () => {
+                    clearInterval(wait)
                     reject(new Error('Error: cancelled'))
-                  )
+                  })
                 }
               } else if (err) {
                 if (trace) console.log(`error found: ${JSON.stringify(err)}`)
@@ -462,7 +463,11 @@ export default {
               uuid = req.uuid
               expire = req.expire
               // call back app to notify about pending request
-              if (cbWait) cbWait(req, () => reject(new Error('Error: cancelled')))
+              if (cbWait)
+                cbWait(req, () => {
+                  clearInterval(wait)
+                  reject(new Error('Error: cancelled'))
+                })
             } else if (err) {
               if (trace) console.log(`error found: ${JSON.stringify(err)}`)
               reject(err)
@@ -552,7 +557,11 @@ export default {
               uuid = req.uuid
               expire = req.expire
               // call back app to notify about pending request
-              if (cbWait) cbWait(req, () => reject(new Error('Error: cancelled')))
+              if (cbWait)
+                cbWait(req, () => {
+                  clearInterval(wait)
+                  reject(new Error('Error: cancelled'))
+                })
             } else if (err) {
               if (trace) console.log(`error found: ${JSON.stringify(err)}`)
               reject(err)
