@@ -44,7 +44,8 @@ export class Keychain extends AiohaProviderBase {
     return {
       provider: Providers.Keychain,
       success: login.success,
-      message: login.message,
+      error: !login.success ? login.message : undefined,
+      message: login.success ? login.message : undefined,
       result: login.result,
       publicKey: login.publicKey,
       username
@@ -79,6 +80,7 @@ export class Keychain extends AiohaProviderBase {
     return {
       provider: Providers.Keychain,
       success: login.success,
+      error: !login.success ? login.message : undefined,
       message: login.message,
       result: login.result as unknown as string,
       username
