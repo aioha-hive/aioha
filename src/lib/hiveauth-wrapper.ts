@@ -351,7 +351,7 @@ export default {
                   }
                   cbWait('has://auth_req/' + window.btoa(JSON.stringify(payload)), req, () => {
                     clearInterval(wait)
-                    reject(new Error('Error: cancelled'))
+                    reject(new Error('cancelled'))
                   })
                 }
               } else if (err) {
@@ -466,7 +466,7 @@ export default {
               if (cbWait)
                 cbWait(req, () => {
                   clearInterval(wait)
-                  reject(new Error('Error: cancelled'))
+                  reject(new Error('cancelled'))
                 })
             } else if (err) {
               if (trace) console.log(`error found: ${JSON.stringify(err)}`)
@@ -560,7 +560,7 @@ export default {
               if (cbWait)
                 cbWait(req, () => {
                   clearInterval(wait)
-                  reject(new Error('Error: cancelled'))
+                  reject(new Error('cancelled'))
                 })
             } else if (err) {
               if (trace) console.log(`error found: ${JSON.stringify(err)}`)
