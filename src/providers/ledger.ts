@@ -107,7 +107,9 @@ export class Ledger extends AiohaProviderBase {
     try {
       if (!this.provider) {
         const TransportWebUSB = (await import(/* webpackChunkName: 'ledger' */ '@ledgerhq/hw-transport-webusb')).default
-        const LedgerApp = (await import(/* webpackChunkName: 'ledger' */ '@engrave/ledger-app-hive')).default
+        let LedgerApp = (await import(/* webpackChunkName: 'ledger' */ '@engrave/ledger-app-hive')).default
+        //@ts-ignore
+        if (typeof LedgerApp.default !== 'undefined' && LedgerApp.__esModule) LedgerApp = LedgerApp.default
         const t = await TransportWebUSB.create()
         this.provider = new LedgerApp(t)
         t.on('disconnect', () => delete this.provider)
