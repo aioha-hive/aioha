@@ -16,7 +16,7 @@ import {
 } from '@hiveio/dhive'
 import { Asset } from './types.js'
 import { DEFAULT_API, getAccounts, getDgp, hivePerVests } from './rpc.js'
-import { Buffer } from 'buffer/'
+import { Buffer } from 'buffer'
 
 const VESTS_DECIMALS = 6
 const CONSTRUCT_TX_HEADER_MAX_TRIES = 10

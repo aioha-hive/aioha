@@ -23,7 +23,7 @@ module.exports = {
   resolve: {
     fallback: {
       url: false,
-      buffer: require.resolve('buffer/')
+      buffer: require.resolve('buffer')
     },
     extensions: ['.js', '.ts'],
     extensionAlias: {
