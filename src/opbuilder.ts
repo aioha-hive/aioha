@@ -14,8 +14,8 @@ import {
   UpdateProposalVotesOperation,
   Transaction
 } from '@hiveio/dhive'
-import { Asset } from './types'
-import { DEFAULT_API, getAccounts, getDgp, hivePerVests } from './rpc'
+import { Asset } from './types.js'
+import { DEFAULT_API, getAccounts, getDgp, hivePerVests } from './rpc.js'
 import { Buffer } from 'buffer/'
 
 const VESTS_DECIMALS = 6

@@ -1,5 +1,5 @@
 import { AuthorityType, CommentOptionsOperation, Operation, Transaction, WithdrawVestingOperation } from '@hiveio/dhive'
-import { Asset, KeyTypes, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types'
+import { Asset, KeyTypes, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types.js'
 import {
   createVote,
   createComment,
@@ -14,8 +14,8 @@ import {
   createVoteProposals,
   createSetProxy,
   deleteComment
-} from '../opbuilder'
-import { hivePerVests, getAccounts, getAccountsErrored } from '../rpc'
+} from '../opbuilder.js'
+import { hivePerVests, getAccounts, getAccountsErrored } from '../rpc.js'
 
 export abstract class AiohaProviderBase implements AiohaOperations {
   protected api: string

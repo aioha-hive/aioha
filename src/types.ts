@@ -1,5 +1,5 @@
-import { MessageType as HaMsgType, KeyType as KeyTypes } from './lib/hiveauth-wrapper'
-export { KeyType as KeyTypes } from './lib/hiveauth-wrapper'
+import { MessageType as HaMsgType, KeyType as KeyTypes } from './lib/hiveauth-wrapper.js'
+export { KeyType as KeyTypes } from './lib/hiveauth-wrapper.js'
 
 export enum Providers {
   Keychain = 'keychain',

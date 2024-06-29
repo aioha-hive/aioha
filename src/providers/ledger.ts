@@ -1,9 +1,9 @@
 import type LedgerApp from '@engrave/ledger-app-hive'
-import { AiohaProviderBase } from './provider'
+import { AiohaProviderBase } from './provider.js'
 import { Transaction, Operation } from '@hiveio/dhive'
-import { LoginOptions, LoginResult, OperationResult, SignOperationResult, KeyTypes, Providers } from '../types'
-import { broadcastTx, getKeyRefs } from '../rpc'
-import { constructTxHeader } from '../opbuilder'
+import { LoginOptions, LoginResult, OperationResult, SignOperationResult, KeyTypes, Providers } from '../types.js'
+import { broadcastTx, getKeyRefs } from '../rpc.js'
+import { constructTxHeader } from '../opbuilder.js'
 import type CryptoJSType from 'crypto-js'
 import assert from 'assert'
 
