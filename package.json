@@ -4,6 +4,7 @@
   "description": "All-In-One Hive Authentication API",
   "main": "build/index.js",
   "types": "build/index.d.ts",
+  "type": "module",
   "scripts": {
     "build": "tsc",
     "webpack": "webpack",
