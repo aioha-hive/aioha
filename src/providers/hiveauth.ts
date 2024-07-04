@@ -44,7 +44,6 @@ export class HiveAuth extends AiohaProviderBase {
       return {
         provider: Providers.HiveAuth,
         success: true,
-        message: 'Login Success',
         result: login.challenge.challenge,
         publicKey: login.challenge.pubkey
       }
@@ -102,7 +101,6 @@ export class HiveAuth extends AiohaProviderBase {
       })
       return {
         success: true,
-        message: 'Message signed successfully',
         result: signed.challenge,
         publicKey: signed.pubkey
       }
@@ -132,7 +130,6 @@ export class HiveAuth extends AiohaProviderBase {
       })
       return {
         success: true,
-        message: 'The transaction has been broadcasted successfully.',
         result: broadcasted.data
       }
     } catch (e) {

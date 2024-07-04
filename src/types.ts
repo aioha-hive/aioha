@@ -26,7 +26,6 @@ export interface LoginResult {
   success: boolean
   error?: string
   result?: string
-  message?: string
   username?: string
   publicKey?: string
 }
@@ -34,7 +33,6 @@ export interface LoginResult {
 interface OperationBaseResult {
   success: boolean
   error?: string
-  message?: string
 }
 
 export interface OperationResult extends OperationBaseResult {

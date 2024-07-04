@@ -29,7 +29,6 @@ export class PeakVault extends AiohaProviderBase {
         provider: Providers.PeakVault,
         success: res.success,
         result: res.result,
-        message: res.success ? 'Message signed successfully' : 'Failed to sign message',
         username: username,
         publicKey: res.publicKey
       }
@@ -39,7 +38,6 @@ export class PeakVault extends AiohaProviderBase {
         provider: Providers.PeakVault,
         success: false,
         error: error.message,
-        message: 'Failed to sign message',
         username: username
       }
     }
@@ -78,8 +76,7 @@ export class PeakVault extends AiohaProviderBase {
       const error = e as VaultError
       return {
         success: false,
-        error: error.message,
-        message: 'Failed to decrypt memo'
+        error: error.message
       }
     }
   }
@@ -90,15 +87,13 @@ export class PeakVault extends AiohaProviderBase {
       return {
         success: res.success,
         result: res.result,
-        message: res.success ? 'Message signed successfully' : 'Failed to sign message',
         publicKey: res.publicKey
       }
     } catch (e) {
       const error = e as VaultError
       return {
         success: false,
-        error: error.message,
-        message: 'Failed to sign message'
+        error: error.message
       }
     }
   }
@@ -113,15 +108,13 @@ export class PeakVault extends AiohaProviderBase {
       const res: VaultResponse = await window.peakvault.requestSignTx(this.getUser()!, tx, keyType)
       return {
         success: res.success,
-        result: res.result,
-        message: res.success ? 'Transaction signed successfully' : 'Failed to sign transaction'
+        result: res.result
       }
     } catch (e) {
       const error = e as VaultError
       return {
         success: false,
-        error: error.message,
-        message: 'Failed to sign transaction'
+        error: error.message
       }
     }
   }
@@ -136,15 +129,13 @@ export class PeakVault extends AiohaProviderBase {
       const res: VaultBroadcastResponse = await window.peakvault.requestBroadcast(this.getUser()!, tx, keyType)
       return {
         success: res.success,
-        result: res.result!.tx_id,
-        message: res.success ? 'Transaction signed and broadcasted successfully' : 'Failed to sign and broadcast transaction'
+        result: res.result!.tx_id
       }
     } catch (e) {
       const error = e as VaultError
       return {
         success: false,
-        error: error.message,
-        message: 'Failed to sign and broadcast transaction'
+        error: error.message
       }
     }
   }

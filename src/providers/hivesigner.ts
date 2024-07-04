@@ -51,7 +51,6 @@ export class HiveSigner extends AiohaProviderBase {
             rs({
               provider: Providers.HiveSigner,
               success: true,
-              message: 'HiveSigner authentication success',
               result: token,
               username: loggedInUser
             })
@@ -80,7 +79,6 @@ export class HiveSigner extends AiohaProviderBase {
       return {
         provider: Providers.HiveSigner,
         success: true,
-        message: 'Memo decoded successfully',
         username: login.username,
         result: result.result
       }
@@ -161,7 +159,6 @@ export class HiveSigner extends AiohaProviderBase {
       const broadcasted = await this.provider.broadcast(tx)
       return {
         success: true,
-        message: 'The transaction has been broadcasted successfully.',
         result: broadcasted.result.id
       }
     } catch (e) {
@@ -188,7 +185,6 @@ export class HiveSigner extends AiohaProviderBase {
           if (txid && txid !== oldTxid) {
             rs({
               success: true,
-              message: 'The transaction has been broadcasted successfully.',
               result: txid
             })
           } else

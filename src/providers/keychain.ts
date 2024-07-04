@@ -45,7 +45,6 @@ export class Keychain extends AiohaProviderBase {
       provider: Providers.Keychain,
       success: login.success,
       error: !login.success ? login.message : undefined,
-      message: login.success ? login.message : undefined,
       result: login.result,
       publicKey: login.publicKey,
       username
@@ -81,7 +80,6 @@ export class Keychain extends AiohaProviderBase {
       provider: Providers.Keychain,
       success: login.success,
       error: !login.success ? login.message : undefined,
-      message: login.message,
       result: login.result as unknown as string,
       username
     }
@@ -145,7 +143,6 @@ export class Keychain extends AiohaProviderBase {
       }
     return {
       success: signBuf.success,
-      message: signBuf.message,
       result: signBuf.result as unknown as string,
       publicKey: signBuf.publicKey
     }
@@ -166,7 +163,6 @@ export class Keychain extends AiohaProviderBase {
       }
     return {
       success: signedTx.success,
-      message: signedTx.message,
       result: signedTx.result
     }
   }
@@ -197,7 +193,6 @@ export class Keychain extends AiohaProviderBase {
       }
     return {
       success: tx.success,
-      message: tx.message,
       result: tx.result!.id
     }
   }

@@ -158,7 +158,6 @@ export class Ledger extends AiohaProviderBase {
           return {
             provider: Providers.Ledger,
             success: true,
-            message: 'Message signed successfully',
             result: signature,
             publicKey: userFound.pubkey,
             username
@@ -231,7 +230,6 @@ export class Ledger extends AiohaProviderBase {
       const signature = await this.provider.signHash(sha256(message), this.path)
       return {
         success: true,
-        message: 'Message signed successfully.',
         result: signature
       }
     } catch (e) {
@@ -249,7 +247,6 @@ export class Ledger extends AiohaProviderBase {
       const signedTx = await this.provider.signTransaction(tx, this.path)
       return {
         success: true,
-        message: 'Transaction signed successfully.',
         result: signedTx
       }
     } catch (e) {
@@ -276,7 +273,6 @@ export class Ledger extends AiohaProviderBase {
       else
         return {
           success: true,
-          message: 'The transaction has been broadcasted successfully.',
           result: txId
         }
     } catch (e) {
