@@ -169,9 +169,16 @@ export class Aioha implements AiohaOperations {
     for (const p in this.providers) this.providers[p as Providers]?.setApi(api)
   }
 
+  private setUserAndProvider(username: string, provider: Providers) {
+    this.user = username
+    this.currentProvider = provider
+    localStorage.setItem('aiohaUsername', this.user)
+    localStorage.setItem('aiohaProvider', this.currentProvider)
+  }
+
   /**
    * Authenticate a Hive account by requesting a message signature.
-   * @param {string} provider The provider to use for auth which must be registered already. Valid values: `keychain`, `hivesigner` and `hiveauth`.
+   * @param {string} provider The provider to use for auth which must be registered already.
    * @param {string} username Hive username
    * @param {LoginOptions} options Login options including message to sign and provider specific options.
    * @returns The login result.
@@ -195,10 +202,48 @@ export class Aioha implements AiohaOperations {
       }
     const result = await this.providers[provider]!.login(username, options)
     if (result.success) {
-      this.user = result.username ?? username
-      this.currentProvider = provider
-      localStorage.setItem('aiohaUsername', this.user)
-      localStorage.setItem('aiohaProvider', this.currentProvider)
+      this.setUserAndProvider(result.username ?? username, provider)
+    }
+    return result
+  }
+
+  /**
+   * Authenticate a Hive account by requesting a memo to be decrypted. Memo is to be decrypted with @hivesigner posting key for HiveSigner provider.
+   * @param {string} provider The provider to use for auth which must be registered already.
+   * @param {string} username Hive username
+   * @param {LoginOptions} options Login options including memo to decrypt.
+   * @returns The login result.
+   */
+  async loginAndDecryptMemo(provider: Providers, username: string, options: LoginOptions): Promise<LoginResult> {
+    if (this.isLoggedIn()) throw new Error('already logged in')
+    if (!this.providers[provider])
+      return {
+        success: false,
+        error: provider + ' provider is not registered'
+      }
+    if (!username)
+      return {
+        success: false,
+        error: 'username is required'
+      }
+    if (typeof options !== 'object')
+      return {
+        success: false,
+        error: 'options are required'
+      }
+    if (!options || typeof options.msg !== 'string' || !options.msg.startsWith('#'))
+      return {
+        success: false,
+        error: 'memo to decode must start with #'
+      }
+    if (provider === Providers.HiveSigner && options.keyType !== KeyTypes.Posting)
+      return {
+        success: false,
+        error: 'memo needs to be decrypted with @hivesigner posting key for HiveSigner provider'
+      }
+    const result = await this.providers[provider]!.loginAndDecryptMemo(username, options)
+    if (result.success) {
+      this.setUserAndProvider(result.username ?? username, provider)
     }
     return result
   }

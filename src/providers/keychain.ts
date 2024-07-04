@@ -52,13 +52,7 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async loginAndDecryptMemo(username: string, options: LoginOptions): Promise<LoginResult> {
-    if (!options.msg || !options.msg.startsWith('#'))
-      return {
-        provider: Providers.Keychain,
-        success: false,
-        error: 'message to decode must start with #'
-      }
-    else if (!options || !options.keyType)
+    if (!options || !options.keyType)
       return {
         provider: Providers.Keychain,
         success: false,
@@ -72,7 +66,7 @@ export class Keychain extends AiohaProviderBase {
       }
     const login = await this.provider.decode({
       username: username,
-      message: options.msg,
+      message: options.msg!,
       method: Keychain.mapAiohaKeyTypes(options.keyType)
     })
     if (login.success) this.username = username

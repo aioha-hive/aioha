@@ -66,15 +66,9 @@ export class HiveSigner extends AiohaProviderBase {
   }
 
   async loginAndDecryptMemo(username: string, options: LoginOptions): Promise<LoginResult> {
-    if (!options || typeof options.msg !== 'string' || !options.msg.startsWith('#'))
-      return {
-        provider: Providers.HiveSigner,
-        error: 'memo to decode must be a valid string beginning with #, encrypted with @hivesigner public posting key',
-        success: false
-      }
     const login = await this.login(username, options)
     if (!login.success) return login
-    const result = await this.decryptMemo(options.msg, KeyTypes.Posting)
+    const result = await this.decryptMemo(options.msg!, KeyTypes.Posting)
     if (result.success)
       return {
         provider: Providers.HiveSigner,

@@ -57,7 +57,11 @@ export class HiveAuth extends AiohaProviderBase {
   }
 
   async loginAndDecryptMemo(username: string, options: LoginOptions): Promise<LoginResult> {
-    throw new Error('TODO')
+    // return the error
+    return {
+      provider: Providers.HiveAuth,
+      ...(await this.decryptMemo())
+    }
   }
 
   async logout(): Promise<void> {

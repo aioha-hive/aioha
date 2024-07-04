@@ -44,7 +44,10 @@ export class PeakVault extends AiohaProviderBase {
   }
 
   async loginAndDecryptMemo(username: string, options: LoginOptions): Promise<LoginResult> {
-    return this.decryptMemo(options.msg || window.crypto.randomUUID(), options.keyType || KeyTypes.Posting, username)
+    return {
+      provider: Providers.PeakVault,
+      ...(await this.decryptMemo(options.msg || window.crypto.randomUUID(), options.keyType || KeyTypes.Posting, username))
+    }
   }
 
   async logout(): Promise<void> {
