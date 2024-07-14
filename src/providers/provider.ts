@@ -96,6 +96,7 @@ export abstract class AiohaProviderBase implements AiohaOperations {
     } catch {
       return {
         success: false,
+        errorCode: -32603,
         error: 'Failed to retrieve VESTS from staked HIVE'
       }
     }
@@ -113,6 +114,7 @@ export abstract class AiohaProviderBase implements AiohaOperations {
     } catch {
       return {
         success: false,
+        errorCode: -32603,
         error: 'Failed to retrieve HIVE per VESTS'
       }
     }
@@ -139,6 +141,7 @@ export abstract class AiohaProviderBase implements AiohaOperations {
     if (this.getUser()! === username)
       return {
         success: false,
+        errorCode: 5201,
         error: 'cannot add itself as account auth'
       }
     return await this.addAuth('account', username, role, weight)
@@ -148,6 +151,7 @@ export abstract class AiohaProviderBase implements AiohaOperations {
     if (this.getUser()! === username)
       return {
         success: false,
+        errorCode: 5201,
         error: 'cannot remove itself as account auth'
       }
     return await this.removeAuth('account', username, role)
@@ -165,11 +169,13 @@ export abstract class AiohaProviderBase implements AiohaOperations {
     if (role === KeyTypes.Memo)
       return {
         success: false,
+        errorCode: 5005,
         error: `cannot add ${type} memo auth`
       }
     else if (weight <= 0)
       return {
         success: false,
+        errorCode: -32003,
         error: 'weight must be greater than 0'
       }
     try {
@@ -177,6 +183,7 @@ export abstract class AiohaProviderBase implements AiohaOperations {
       if (getAccountsErrored(acc))
         return {
           success: false,
+          errorCode: -32603,
           error: `Failed to fetch current ${type} auths`
         }
       const currentAuths = acc.result[0][role]
@@ -188,6 +195,7 @@ export abstract class AiohaProviderBase implements AiohaOperations {
         } else
           return {
             success: false,
+            errorCode: 5200,
             error: 'Nothing to update'
           }
       } else {
@@ -213,6 +221,7 @@ export abstract class AiohaProviderBase implements AiohaOperations {
     } catch {
       return {
         success: false,
+        errorCode: 5000,
         error: 'Failed to add key auth due to unknown error'
       }
     }
@@ -222,6 +231,7 @@ export abstract class AiohaProviderBase implements AiohaOperations {
     if (role === KeyTypes.Memo)
       return {
         success: false,
+        errorCode: 5005,
         error: `cannot remove ${type} memo auth`
       }
     try {
@@ -229,6 +239,7 @@ export abstract class AiohaProviderBase implements AiohaOperations {
       if (getAccountsErrored(acc))
         return {
           success: false,
+          errorCode: -32603,
           error: `Failed to fetch current ${type} auths`
         }
       const currentAuths = acc.result[0][role]
@@ -238,6 +249,7 @@ export abstract class AiohaProviderBase implements AiohaOperations {
       } else {
         return {
           success: false,
+          errorCode: 5200,
           error: 'Nothing to remove'
         }
       }
@@ -259,6 +271,7 @@ export abstract class AiohaProviderBase implements AiohaOperations {
     } catch {
       return {
         success: false,
+        errorCode: 5000,
         error: `Failed to remove ${type} auth due to unknown error`
       }
     }

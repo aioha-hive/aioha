@@ -15,20 +15,22 @@ export class PeakVault extends AiohaProviderBase {
       return {
         provider: Providers.PeakVault,
         success: false,
+        errorCode: 5003,
         error: 'keyType options are required'
       }
     else if (!this.isInstalled())
       return {
         provider: Providers.PeakVault,
         success: false,
+        errorCode: 5001,
         error: 'Peak Vault extension is not installed'
       }
     try {
       const res: VaultResponse = await window.peakvault.requestSignBuffer(username, options.keyType, options.msg)
       return {
         provider: Providers.PeakVault,
-        success: res.success,
-        result: res.result,
+        success: true,
+        result: res.result!,
         username: username,
         publicKey: res.publicKey
       }
@@ -37,16 +39,27 @@ export class PeakVault extends AiohaProviderBase {
       return {
         provider: Providers.PeakVault,
         success: false,
-        error: error.message,
-        username: username
+        errorCode: 5000,
+        error: error.message
       }
     }
   }
 
   async loginAndDecryptMemo(username: string, options: LoginOptions): Promise<LoginResult> {
+    const memo = await this.decryptMemo(options.msg || window.crypto.randomUUID(), options.keyType || KeyTypes.Posting, username)
     return {
       provider: Providers.PeakVault,
-      ...(await this.decryptMemo(options.msg || window.crypto.randomUUID(), options.keyType || KeyTypes.Posting, username))
+      ...(memo.success
+        ? {
+            success: true,
+            result: memo.result,
+            username
+          }
+        : {
+            success: false,
+            errorCode: memo.errorCode,
+            error: memo.error
+          })
     }
   }
 
@@ -71,14 +84,15 @@ export class PeakVault extends AiohaProviderBase {
     try {
       const decoded: VaultResponse = await window.peakvault.requestDecode(this.getUser()!, memo, keyType)
       return {
-        success: decoded.success,
-        result: decoded.result,
+        success: true,
+        result: decoded.result!,
         publicKey: decoded.publicKey
       }
     } catch (e) {
       const error = e as VaultError
       return {
         success: false,
+        errorCode: 5000,
         error: error.message
       }
     }
@@ -88,14 +102,15 @@ export class PeakVault extends AiohaProviderBase {
     try {
       const res: VaultResponse = await window.peakvault.requestSignBuffer(this.getUser()!, keyType, message)
       return {
-        success: res.success,
-        result: res.result,
+        success: true,
+        result: res.result!,
         publicKey: res.publicKey
       }
     } catch (e) {
       const error = e as VaultError
       return {
         success: false,
+        errorCode: 5000,
         error: error.message
       }
     }
@@ -105,18 +120,20 @@ export class PeakVault extends AiohaProviderBase {
     if (keyType === KeyTypes.Memo)
       return {
         success: false,
+        errorCode: 5003,
         error: 'keyType must not be memo'
       }
     try {
       const res: VaultResponse = await window.peakvault.requestSignTx(this.getUser()!, tx, keyType)
       return {
-        success: res.success,
+        success: true,
         result: res.result
       }
     } catch (e) {
       const error = e as VaultError
       return {
         success: false,
+        errorCode: 5000,
         error: error.message
       }
     }
@@ -126,18 +143,20 @@ export class PeakVault extends AiohaProviderBase {
     if (keyType === KeyTypes.Memo)
       return {
         success: false,
+        errorCode: 5003,
         error: 'keyType must not be memo'
       }
     try {
       const res: VaultBroadcastResponse = await window.peakvault.requestBroadcast(this.getUser()!, tx, keyType)
       return {
-        success: res.success,
+        success: true,
         result: res.result!.tx_id
       }
     } catch (e) {
       const error = e as VaultError
       return {
         success: false,
+        errorCode: 5000,
         error: error.message
       }
     }

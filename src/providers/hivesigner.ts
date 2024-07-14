@@ -24,6 +24,11 @@ const authorizedOps = [
   'account_update2'
 ]
 
+const getErrorCode = (error: HiveSignerError['error']): number => {
+  if (error === 'server_error') return -32603
+  else return 4100
+}
+
 export class HiveSigner extends AiohaProviderBase {
   private provider: Client
   private username?: string
@@ -58,6 +63,7 @@ export class HiveSigner extends AiohaProviderBase {
             rs({
               provider: Providers.HiveSigner,
               success: false,
+              errorCode: 5000,
               error: 'Failed to obtain HiveSigner access token'
             })
         }
@@ -78,6 +84,7 @@ export class HiveSigner extends AiohaProviderBase {
       }
     return {
       provider: Providers.HiveSigner,
+      errorCode: 5000,
       error: result.error!,
       success: false
     }
@@ -118,6 +125,7 @@ export class HiveSigner extends AiohaProviderBase {
     if (keyType !== 'posting')
       return {
         success: false,
+        errorCode: 5005,
         error: 'Memo must be decrypted using @hivesigner account posting key'
       }
     const decoded = await this.provider.decode(memo)
@@ -129,6 +137,7 @@ export class HiveSigner extends AiohaProviderBase {
     else
       return {
         success: false,
+        errorCode: 5000,
         error: 'Failed to decrypt memo'
       }
   }
@@ -136,6 +145,7 @@ export class HiveSigner extends AiohaProviderBase {
   async signMessage(): Promise<OperationResult> {
     return {
       success: false,
+      errorCode: 4200,
       error: 'message signing is unsupported with HiveSigner provider'
     }
   }
@@ -143,6 +153,7 @@ export class HiveSigner extends AiohaProviderBase {
   async signTx(tx: Transaction, keyType: KeyType): Promise<OperationResult> {
     return {
       success: false,
+      errorCode: 4200,
       error: 'tx signing without broadcast is currently unsupported with HiveSigner provider'
     }
   }
@@ -160,6 +171,7 @@ export class HiveSigner extends AiohaProviderBase {
       if (error.error === 'invalid_scope') return await this.signTxInWindow(tx)
       return {
         success: false,
+        errorCode: error.error_description ? getErrorCode(error.error) : 5000,
         error: error.error_description ?? 'Failed to broadcast tx due to unknown error'
       }
     }
@@ -184,6 +196,7 @@ export class HiveSigner extends AiohaProviderBase {
           } else
             rs({
               success: false,
+              errorCode: 5000,
               error: 'Failed to broadcast transaction.'
             })
         }
@@ -195,6 +208,7 @@ export class HiveSigner extends AiohaProviderBase {
     if (error.error === 'invalid_scope') return this.signTxInWindow(ops)
     return {
       success: false,
+      errorCode: getErrorCode(error.error),
       error: error.error_description
     }
   }

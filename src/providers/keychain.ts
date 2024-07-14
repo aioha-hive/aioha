@@ -1,4 +1,4 @@
-import { KeychainRequestResponse } from 'keychain-sdk'
+import { KeychainRequestResponse, KeychainSignTxRequestResponse } from 'keychain-sdk'
 import { Operation, Transaction, CommentOptionsOperation } from '@hiveio/dhive'
 import { AiohaProviderBase } from './provider.js'
 import { Asset, KeyTypes, LoginOptions, LoginResult, OperationResult, Providers, SignOperationResult } from '../types.js'
@@ -10,6 +10,12 @@ enum KeychainKeyTypes {
   posting = 'Posting',
   active = 'Active',
   memo = 'Memo'
+}
+
+const getErrorCode = (resp: any): number => {
+  if (typeof resp.error === 'string' && resp.error === 'user_cancel') return 4001
+  else if (typeof resp.error === 'object' && typeof resp.error.code === 'number') return resp.error.code
+  else return 5000
 }
 
 export class Keychain extends AiohaProviderBase {
@@ -26,12 +32,14 @@ export class Keychain extends AiohaProviderBase {
       return {
         provider: Providers.Keychain,
         success: false,
+        errorCode: 5003,
         error: 'keyType options are required'
       }
     else if (!(await this.provider.isKeychainInstalled()))
       return {
         provider: Providers.Keychain,
         success: false,
+        errorCode: 5001,
         error: 'Keychain extension is not installed'
       }
     const login = await this.provider.login({
@@ -56,12 +64,14 @@ export class Keychain extends AiohaProviderBase {
       return {
         provider: Providers.Keychain,
         success: false,
+        errorCode: 5003,
         error: 'keyType options are required'
       }
     else if (!(await this.provider.isKeychainInstalled()))
       return {
         provider: Providers.Keychain,
         success: false,
+        errorCode: 5001,
         error: 'Keychain extension is not installed'
       }
     const login = await this.provider.decode({
@@ -70,12 +80,19 @@ export class Keychain extends AiohaProviderBase {
       method: Keychain.mapAiohaKeyTypes(options.keyType)
     })
     if (login.success) this.username = username
+    if (login.success) {
+      return {
+        provider: Providers.Keychain,
+        success: true,
+        result: login.result as unknown as string,
+        username
+      }
+    }
     return {
       provider: Providers.Keychain,
-      success: login.success,
-      error: !login.success ? login.message : undefined,
-      result: login.result as unknown as string,
-      username
+      success: false,
+      errorCode: getErrorCode(login),
+      error: login.message
     }
   }
 
@@ -115,11 +132,17 @@ export class Keychain extends AiohaProviderBase {
       message: memo,
       method: kcKeyType
     })
-    return {
-      success: decoded.success,
-      error: decoded.error ? decoded.message : undefined,
-      result: decoded.result as unknown as string
-    }
+    if (decoded.success)
+      return {
+        success: true,
+        result: decoded.result as unknown as string
+      }
+    else
+      return {
+        success: false,
+        errorCode: getErrorCode(decoded),
+        error: decoded.message
+      }
   }
 
   async signMessage(message: string, keyType: KeyTypes): Promise<OperationResult> {
@@ -133,6 +156,7 @@ export class Keychain extends AiohaProviderBase {
     if (!signBuf.success)
       return {
         success: false,
+        errorCode: getErrorCode(signBuf),
         error: signBuf.error
       }
     return {
@@ -153,6 +177,7 @@ export class Keychain extends AiohaProviderBase {
     if (!signedTx.success)
       return {
         success: false,
+        errorCode: getErrorCode(signedTx),
         error: signedTx.error
       }
     return {
@@ -174,6 +199,7 @@ export class Keychain extends AiohaProviderBase {
     } catch (e) {
       return {
         success: false,
+        errorCode: getErrorCode(e),
         error: (e as KeychainRequestResponse).message
       }
     }
@@ -183,6 +209,7 @@ export class Keychain extends AiohaProviderBase {
     if (!tx.success)
       return {
         success: false,
+        errorCode: getErrorCode(tx),
         error: tx.message
       }
     return {

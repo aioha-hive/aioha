@@ -12,6 +12,15 @@ const HiveAuthError = (e: any): string => {
   else return 'Unknown error'
 }
 
+const HiveAuthErrorCode = (e: any): number => {
+  if (e.toString() === 'Error: expired') return 4002
+  else if (e.toString() === 'Error: cancelled' || e.cmd === 'auth_nack' || e.cmd === 'sign_nack') return 4001
+  else if (e.cmd === 'auth_err' || e.cmd === 'sign_err') return 5903
+  else return 5000
+}
+
+const NO_MEMO = 'Memo operations are unavailable in HiveAuth'
+
 export class HiveAuth extends AiohaProviderBase {
   private provider: Auth
 
@@ -25,6 +34,7 @@ export class HiveAuth extends AiohaProviderBase {
       return {
         provider: Providers.HiveAuth,
         success: false,
+        errorCode: 5003,
         error: 'hiveauth and keyType options must be present'
       }
     try {
@@ -45,12 +55,14 @@ export class HiveAuth extends AiohaProviderBase {
         provider: Providers.HiveAuth,
         success: true,
         result: login.challenge.challenge,
-        publicKey: login.challenge.pubkey
+        publicKey: login.challenge.pubkey,
+        username
       }
     } catch (e) {
       return {
         provider: Providers.HiveAuth,
         success: false,
+        errorCode: HiveAuthErrorCode(e),
         error: HiveAuthError(e)
       }
     }
@@ -60,7 +72,9 @@ export class HiveAuth extends AiohaProviderBase {
     // return the error
     return {
       provider: Providers.HiveAuth,
-      ...(await this.decryptMemo())
+      success: false,
+      errorCode: 4200,
+      error: NO_MEMO
     }
   }
 
@@ -92,7 +106,8 @@ export class HiveAuth extends AiohaProviderBase {
   async decryptMemo(): Promise<OperationResult> {
     return {
       success: false,
-      error: 'Memo cryptography operations are currently unavailable in HiveAuth'
+      errorCode: 4200,
+      error: NO_MEMO
     }
   }
 
@@ -111,6 +126,7 @@ export class HiveAuth extends AiohaProviderBase {
     } catch (e) {
       return {
         success: false,
+        errorCode: HiveAuthErrorCode(e),
         error: HiveAuthError(e)
       }
     }
@@ -122,6 +138,7 @@ export class HiveAuth extends AiohaProviderBase {
     // trying to sign a multisig transaction.
     return {
       success: false,
+      errorCode: 4200,
       error: 'Not implemented'
     }
   }
@@ -139,6 +156,7 @@ export class HiveAuth extends AiohaProviderBase {
     } catch (e) {
       return {
         success: false,
+        errorCode: HiveAuthErrorCode(e),
         error: HiveAuthError(e)
       }
     }

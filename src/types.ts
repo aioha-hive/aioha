@@ -21,28 +21,47 @@ export interface LoginOptions {
   }
 }
 
-export interface LoginResult {
+interface BaseResult {
+  success: boolean
+}
+
+interface LoginResultSuccess extends BaseResult {
+  success: true
+  provider: Providers
+  result: string
+  username: string
+  publicKey?: string
+}
+
+interface LoginResultError extends BaseResult {
+  success: false
   provider?: Providers
-  success: boolean
-  error?: string
-  result?: string
-  username?: string
+  error: string
+  errorCode: number
+}
+
+export type LoginResult = LoginResultSuccess | LoginResultError
+
+interface OperationError extends BaseResult {
+  success: false
+  error: string
+  errorCode: number
+}
+
+interface OperationSuccess extends BaseResult {
+  success: true
+  result: string
   publicKey?: string
 }
 
-interface OperationBaseResult {
-  success: boolean
-  error?: string
+export type OperationResult = OperationSuccess | OperationError
+
+interface SignOperationSuccess extends BaseResult {
+  success: true
+  result: any
 }
 
-export interface OperationResult extends OperationBaseResult {
-  result?: string
-  publicKey?: string
-}
-
-export interface SignOperationResult extends OperationBaseResult {
-  result?: any
-}
+export type SignOperationResult = SignOperationSuccess | OperationError
 
 export interface VoteParams {
   author: string

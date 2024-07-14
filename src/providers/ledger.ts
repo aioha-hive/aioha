@@ -9,6 +9,8 @@ import assert from 'assert'
 
 let CryptoJS: typeof CryptoJSType
 
+const CONN_ERROR = 'Failed to establish connection to the device'
+
 const sha256 = (input: string) => {
   return CryptoJS.SHA256(input).toString(CryptoJS.enc.Hex)
 }
@@ -87,7 +89,8 @@ const searchAccountsAllRolesForUser = async (
 
 const connectionFailedError: SignOperationResult = {
   success: false,
-  error: 'Failed to establish connection to the device'
+  errorCode: 5900,
+  error: CONN_ERROR
 }
 
 export class Ledger extends AiohaProviderBase {
@@ -132,7 +135,9 @@ export class Ledger extends AiohaProviderBase {
     if (!(await this.checkConnection()))
       return {
         provider: Providers.Ledger,
-        ...connectionFailedError
+        success: false,
+        errorCode: 5900,
+        error: CONN_ERROR
       }
     assert(this.provider)
     try {
@@ -144,6 +149,7 @@ export class Ledger extends AiohaProviderBase {
           return {
             provider: Providers.Ledger,
             success: false,
+            errorCode: 5901,
             error: 'Username is not associated with the device'
           }
         }
@@ -167,6 +173,7 @@ export class Ledger extends AiohaProviderBase {
           return {
             provider: Providers.Ledger,
             success: false,
+            errorCode: 5903,
             error: (e as any).message ?? 'Failed to obtain message signature'
           }
         }
@@ -175,6 +182,7 @@ export class Ledger extends AiohaProviderBase {
         return {
           provider: Providers.Ledger,
           success: false,
+          errorCode: 5902,
           error: 'Failed to search accounts'
         }
       }
@@ -182,6 +190,7 @@ export class Ledger extends AiohaProviderBase {
       return {
         provider: Providers.Ledger,
         success: false,
+        errorCode: 5000,
         error: (e as any).message ?? 'Failed to login'
       }
     }
@@ -191,6 +200,7 @@ export class Ledger extends AiohaProviderBase {
     return {
       provider: Providers.Ledger,
       success: false,
+      errorCode: 4200,
       error: 'Memo cryptography is not supported in Ledger provider'
     }
   }
@@ -219,6 +229,7 @@ export class Ledger extends AiohaProviderBase {
   async decryptMemo(memo: string, keyType: KeyTypes): Promise<OperationResult> {
     return {
       success: false,
+      errorCode: 4200,
       error: 'Memo cryptography is not supported in Ledger provider'
     }
   }
@@ -235,6 +246,7 @@ export class Ledger extends AiohaProviderBase {
     } catch (e) {
       return {
         success: false,
+        errorCode: 5903,
         error: (e as any).message ?? 'Unknown error'
       }
     }
@@ -252,6 +264,7 @@ export class Ledger extends AiohaProviderBase {
     } catch (e) {
       return {
         success: false,
+        errorCode: 5903,
         error: (e as any).message ?? 'Unknown error'
       }
     }
@@ -268,6 +281,7 @@ export class Ledger extends AiohaProviderBase {
       if (broadcasted.error)
         return {
           success: false,
+          errorCode: broadcasted.error.code ?? -32603,
           error: broadcasted.error.message ?? 'Failed to broadcast transaction due to unknown error'
         }
       else
@@ -278,6 +292,7 @@ export class Ledger extends AiohaProviderBase {
     } catch (e) {
       return {
         success: false,
+        errorCode: 5000,
         error: 'Failed to sign or broadcast tx due to unknown error'
       }
     }

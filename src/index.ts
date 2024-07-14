@@ -25,11 +25,13 @@ export { Asset, KeyTypes, Providers } from './types.js'
 
 const notLoggedInResult: OperationResult = {
   success: false,
+  errorCode: 4900,
   error: 'Not logged in'
 }
 
 const noMemoAllowResult: OperationResult = {
   success: false,
+  errorCode: 5005,
   error: 'key type cannot be memo'
 }
 
@@ -188,16 +190,19 @@ export class Aioha implements AiohaOperations {
     if (!this.providers[provider])
       return {
         success: false,
+        errorCode: 4201,
         error: provider + ' provider is not registered'
       }
     if (provider !== 'hivesigner' && !username)
       return {
         success: false,
+        errorCode: 5002,
         error: 'username is required'
       }
     if (typeof options !== 'object')
       return {
         success: false,
+        errorCode: 5003,
         error: 'options are required'
       }
     const result = await this.providers[provider]!.login(username, options)
@@ -219,26 +224,31 @@ export class Aioha implements AiohaOperations {
     if (!this.providers[provider])
       return {
         success: false,
+        errorCode: 4201,
         error: provider + ' provider is not registered'
       }
     if (!username)
       return {
         success: false,
+        errorCode: 5002,
         error: 'username is required'
       }
     if (typeof options !== 'object')
       return {
         success: false,
+        errorCode: 5003,
         error: 'options are required'
       }
     if (!options || typeof options.msg !== 'string' || !options.msg.startsWith('#'))
       return {
         success: false,
+        errorCode: 5004,
         error: 'memo to decode must start with #'
       }
     if (provider === Providers.HiveSigner && options.keyType !== KeyTypes.Posting)
       return {
         success: false,
+        errorCode: 5005,
         error: 'memo needs to be decrypted with @hivesigner posting key for HiveSigner provider'
       }
     const result = await this.providers[provider]!.loginAndDecryptMemo(username, options)
@@ -471,6 +481,7 @@ export class Aioha implements AiohaOperations {
     if (accResp.error || !Array.isArray(accResp.result) || accResp.result.length === 0)
       return {
         success: false,
+        errorCode: -32603, // should we return error from hived instead?
         error: 'Failed to fetch pending account rewards'
       }
     else if (
@@ -480,6 +491,7 @@ export class Aioha implements AiohaOperations {
     )
       return {
         success: false,
+        errorCode: 5200,
         error: 'There are no pending rewards to claim'
       }
     return await this.signAndBroadcastTx(
@@ -533,6 +545,7 @@ export class Aioha implements AiohaOperations {
     if (recurrence < 24)
       return {
         success: false,
+        errorCode: -32003, // should we let hived throw this error upon broadcast instead?
         error: 'recurrence must be at least 24 hours'
       }
     return await this.providers[this.getCurrentProvider()!]!.recurrentTransfer(to, amount, currency, recurrence, executions, memo)
