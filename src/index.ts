@@ -35,6 +35,8 @@ const noMemoAllowResult: OperationResult = {
   error: 'key type cannot be memo'
 }
 
+const NON_BROWSER_ERR = 'Provider only available in browser env'
+
 export class Aioha implements AiohaOperations {
   private providers: {
     keychain?: Keychain
@@ -55,10 +57,15 @@ export class Aioha implements AiohaOperations {
     }
   }
 
+  private isBrowser(): boolean {
+    return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined'
+  }
+
   /**
    * Register Hive Keychain provider.
    */
   registerKeychain() {
+    if (!this.isBrowser()) throw new Error(NON_BROWSER_ERR)
     this.providers.keychain = new Keychain()
   }
 
@@ -67,6 +74,7 @@ export class Aioha implements AiohaOperations {
    * @param {HiveSignerOptions} options HiveSigner instantiation options. See https://github.com/ecency/hivesigner-sdk#init-client for details.
    */
   registerHiveSigner(options: HiveSignerOptions) {
+    if (!this.isBrowser()) throw new Error(NON_BROWSER_ERR)
     this.providers.hivesigner = new HiveSigner(this.api, options)
   }
 
@@ -78,6 +86,7 @@ export class Aioha implements AiohaOperations {
    * @param {string} [options.icon] URL to app icon
    */
   registerHiveAuth(options: AppMetaType) {
+    if (!this.isBrowser()) throw new Error(NON_BROWSER_ERR)
     this.providers.hiveauth = new HiveAuth(this.api, options)
   }
 
@@ -92,6 +101,7 @@ export class Aioha implements AiohaOperations {
    * Register Peak Vault provider.
    */
   registerPeakVault() {
+    if (!this.isBrowser()) throw new Error(NON_BROWSER_ERR)
     this.providers.peakvault = new PeakVault()
   }
 
@@ -174,8 +184,10 @@ export class Aioha implements AiohaOperations {
   private setUserAndProvider(username: string, provider: Providers) {
     this.user = username
     this.currentProvider = provider
-    localStorage.setItem('aiohaUsername', this.user)
-    localStorage.setItem('aiohaProvider', this.currentProvider)
+    if (this.isBrowser()) {
+      localStorage.setItem('aiohaUsername', this.user)
+      localStorage.setItem('aiohaProvider', this.currentProvider)
+    }
   }
 
   /**
@@ -266,8 +278,10 @@ export class Aioha implements AiohaOperations {
     await this.providers[this.currentProvider]!.logout()
     delete this.user
     delete this.currentProvider
-    localStorage.removeItem('aiohaUsername')
-    localStorage.removeItem('aiohaProvider')
+    if (this.isBrowser()) {
+      localStorage.removeItem('aiohaUsername')
+      localStorage.removeItem('aiohaProvider')
+    }
   }
 
   /**
@@ -275,8 +289,8 @@ export class Aioha implements AiohaOperations {
    * @returns boolean of whether an authentication has been loaded or not.
    */
   loadAuth(): boolean {
-    const user = localStorage.getItem('aiohaUsername')
-    const provider = localStorage.getItem('aiohaProvider') as Providers | null
+    const user = this.isBrowser() ? localStorage.getItem('aiohaUsername') : null
+    const provider = (this.isBrowser() ? localStorage.getItem('aiohaProvider') : null) as Providers | null
     if (!provider || !user || !this.providers[provider] || !this.providers[provider]!.loadAuth(user)) return false
     this.user = user
     this.currentProvider = provider
