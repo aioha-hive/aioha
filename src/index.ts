@@ -274,8 +274,9 @@ export class Aioha implements AiohaOperations {
    * Logout the current authenticated user.
    */
   async logout(): Promise<void> {
-    if (!this.user || !this.currentProvider) throw new Error('Not logged in')
-    await this.providers[this.currentProvider]!.logout()
+    if (this.user && this.currentProvider) {
+      await this.providers[this.currentProvider]!.logout()
+    }
     delete this.user
     delete this.currentProvider
     if (this.isBrowser()) {
