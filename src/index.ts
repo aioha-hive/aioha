@@ -15,10 +15,12 @@ import {
   Providers,
   VoteParams
 } from './types.js'
+import { SimpleEventEmitter } from './lib/event-emitter.js'
 import { AppMetaType } from './lib/hiveauth-wrapper.js'
 import { createVote } from './opbuilder.js'
 import { DEFAULT_API, getAccounts } from './rpc.js'
 import { AiohaOperations } from './providers/provider.js'
+import { Events } from './types.js'
 export { constructTxHeader } from './opbuilder.js'
 export { broadcastTx, call, hivePerVests } from './rpc.js'
 export { Asset, KeyTypes, Providers } from './types.js'
@@ -47,6 +49,7 @@ export class Aioha implements AiohaOperations {
   }
   private user?: string
   private currentProvider?: Providers
+  private eventEmitter: SimpleEventEmitter
   private vscNetId = 'testnet/0bf2e474-6b9e-4165-ad4e-a0d78968d20c'
   private api = DEFAULT_API
 
@@ -55,6 +58,7 @@ export class Aioha implements AiohaOperations {
     if (api) {
       this.setApi(api)
     }
+    this.eventEmitter = new SimpleEventEmitter()
   }
 
   private isBrowser(): boolean {
@@ -182,12 +186,14 @@ export class Aioha implements AiohaOperations {
   }
 
   private setUserAndProvider(username: string, provider: Providers) {
+    const previouslyConnected = this.isLoggedIn()
     this.user = username
     this.currentProvider = provider
     if (this.isBrowser()) {
       localStorage.setItem('aiohaUsername', this.user)
       localStorage.setItem('aiohaProvider', this.currentProvider)
     }
+    !previouslyConnected ? this.eventEmitter.emit('connect') : this.eventEmitter.emit('account_changed')
   }
 
   /**
@@ -217,7 +223,15 @@ export class Aioha implements AiohaOperations {
         errorCode: 5003,
         error: 'options are required'
       }
-    const result = await this.providers[provider]!.login(username, options)
+    const result = await this.providers[provider]!.login(username, {
+      ...options,
+      hiveauth: {
+        cbWait: (payload, evt, cancel) => {
+          this.eventEmitter.emit('hiveauth_login_request', payload, evt, cancel)
+          options.hiveauth!.cbWait!(payload, evt, cancel)
+        }
+      }
+    })
     if (result.success) {
       this.setUserAndProvider(result.username ?? username, provider)
     }
@@ -283,6 +297,7 @@ export class Aioha implements AiohaOperations {
       localStorage.removeItem('aiohaUsername')
       localStorage.removeItem('aiohaProvider')
     }
+    this.eventEmitter.emit('disconnect')
   }
 
   /**
@@ -295,6 +310,7 @@ export class Aioha implements AiohaOperations {
     if (!provider || !user || !this.providers[provider] || !this.providers[provider]!.loadAuth(user)) return false
     this.user = user
     this.currentProvider = provider
+    this.eventEmitter.emit('connect')
     return true
   }
 
@@ -751,6 +767,17 @@ export class Aioha implements AiohaOperations {
         payload: payload
       }
     })
+  }
+
+  // Event emitters
+  on(eventName: Events, listener: Function) {
+    this.eventEmitter.on(eventName, listener)
+  }
+  once(eventName: Events, listener: Function) {
+    this.eventEmitter.once(eventName, listener)
+  }
+  off(eventName: Events, listener?: Function) {
+    this.eventEmitter.off(eventName, listener)
   }
 }
 

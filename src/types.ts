@@ -73,3 +73,5 @@ export enum Asset {
   HIVE = 'HIVE',
   HBD = 'HBD'
 }
+
+export type Events = 'connect' | 'disconnect' | 'account_changed' | 'hiveauth_login_request'
