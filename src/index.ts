@@ -271,12 +271,6 @@ export class Aioha implements AiohaOperations {
         errorCode: 5004,
         error: 'memo to decode must start with #'
       }
-    if (provider === Providers.HiveSigner && options.keyType !== KeyTypes.Posting)
-      return {
-        success: false,
-        errorCode: 5005,
-        error: 'memo needs to be decrypted with @hivesigner posting key for HiveSigner provider'
-      }
     const result = await this.providers[provider]!.loginAndDecryptMemo(username, options)
     if (result.success) {
       this.setUserAndProvider(result.username ?? username, provider)
