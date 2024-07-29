@@ -122,7 +122,7 @@ export class HiveSigner extends AiohaProviderBase {
   }
 
   async decryptMemo(memo: string, keyType: KeyTypes): Promise<OperationResult> {
-    if (keyType !== 'posting')
+    if (keyType !== KeyTypes.Posting)
       return {
         success: false,
         errorCode: 5005,
@@ -273,7 +273,7 @@ export class HiveSigner extends AiohaProviderBase {
   async customJSON(keyType: KeyTypes, id: string, json: string): Promise<SignOperationResult> {
     assert(this.username)
     const requiredAuths = keyType === KeyTypes.Active ? [this.username] : []
-    const requiredPostingAuths = keyType === 'posting' ? [this.username] : []
+    const requiredPostingAuths = keyType === KeyTypes.Posting ? [this.username] : []
     try {
       const tx = await this.provider.customJson(requiredAuths, requiredPostingAuths, id, json)
       return {
