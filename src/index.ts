@@ -772,12 +772,15 @@ export class Aioha implements AiohaOperations {
   // Event emitters
   on(eventName: Events, listener: Function) {
     this.eventEmitter.on(eventName, listener)
+    return this
   }
   once(eventName: Events, listener: Function) {
     this.eventEmitter.once(eventName, listener)
+    return this
   }
   off(eventName: Events, listener?: Function) {
     this.eventEmitter.off(eventName, listener)
+    return this
   }
 }
 
