@@ -6,7 +6,8 @@ export enum Providers {
   HiveSigner = 'hivesigner',
   HiveAuth = 'hiveauth',
   Ledger = 'ledger',
-  PeakVault = 'peakvault'
+  PeakVault = 'peakvault',
+  Custom = 'custom'
 }
 
 export interface LoginOptions {

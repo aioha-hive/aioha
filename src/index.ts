@@ -19,7 +19,7 @@ import { SimpleEventEmitter } from './lib/event-emitter.js'
 import { AppMetaType } from './lib/hiveauth-wrapper.js'
 import { createVote } from './opbuilder.js'
 import { DEFAULT_API, getAccounts } from './rpc.js'
-import { AiohaOperations } from './providers/provider.js'
+import { AiohaOperations, AiohaProviderBase } from './providers/provider.js'
 import { Events } from './types.js'
 export { constructTxHeader } from './opbuilder.js'
 export { broadcastTx, call, hivePerVests } from './rpc.js'
@@ -46,6 +46,7 @@ export class Aioha implements AiohaOperations {
     hiveauth?: HiveAuth
     ledger?: Ledger
     peakvault?: PeakVault
+    custom?: AiohaProviderBase
   }
   private user?: string
   private currentProvider?: Providers
@@ -107,6 +108,10 @@ export class Aioha implements AiohaOperations {
   registerPeakVault() {
     if (!this.isBrowser()) throw new Error(NON_BROWSER_ERR)
     this.providers.peakvault = new PeakVault()
+  }
+
+  registerCustomProvider(providerImpl: AiohaProviderBase) {
+    this.providers.custom = providerImpl
   }
 
   /**
