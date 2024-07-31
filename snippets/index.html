@@ -40,6 +40,9 @@
             scope: ['login', 'vote']
           }
         })
+        aioha.on('connect', () => console.info('wallet connected, username:', aioha.getCurrentUser()))
+        aioha.on('disconnect', () => console.info('wallet disconnected'))
+        aioha.on('hiveauth_login_request', (payload) => console.info('hiveauth login requested, qr payload:', payload))
         const xferOp = () => [
           'transfer',
           {
