@@ -3,7 +3,7 @@ import { encodeOps } from 'hive-uri'
 import { CommentOptionsOperation, Operation, Transaction } from '@hiveio/dhive'
 import { ClientConfig } from 'hivesigner/lib/types/client-config.interface.js'
 import { AiohaProviderBase } from './provider.js'
-import { KeyTypes, LoginOptions, LoginResult, OperationResult, Providers, SignOperationResult } from '../types.js'
+import { KeyTypes, LoginOptions, LoginOptionsNI, LoginResult, OperationResult, Providers, SignOperationResult } from '../types.js'
 import { KeyType } from '../lib/hiveauth-wrapper.js'
 import assert from 'assert'
 import { createComment, createCustomJSON, createVote, deleteComment } from '../opbuilder.js'
@@ -27,6 +27,10 @@ const authorizedOps = [
 const getErrorCode = (error: HiveSignerError['error']): number => {
   if (error === 'server_error') return -32603
   else return 4100
+}
+
+const isExpired = (tsSec: number): boolean => {
+  return isNaN(tsSec) || new Date().getTime() / 1000 >= tsSec
 }
 
 export class HiveSigner extends AiohaProviderBase {
@@ -90,6 +94,39 @@ export class HiveSigner extends AiohaProviderBase {
     }
   }
 
+  loginNonInteractive(username: string, options: LoginOptionsNI): LoginResult {
+    if (
+      !options ||
+      !options.hivesigner ||
+      typeof options.hivesigner.accessToken !== 'string' ||
+      typeof options.hivesigner.expiry !== 'number'
+    )
+      return {
+        provider: Providers.HiveSigner,
+        success: false,
+        errorCode: 5003,
+        error: 'hivesigner options are required'
+      }
+    else if (isExpired(options.hivesigner.expiry))
+      return {
+        provider: Providers.HiveSigner,
+        success: false,
+        errorCode: 5003,
+        error: 'already expired'
+      }
+    this.provider.setAccessToken(options.hivesigner.accessToken)
+    this.username = username
+    localStorage.setItem('hivesignerToken', options.hivesigner.accessToken)
+    localStorage.setItem('hivesignerExpiry', options.hivesigner.expiry.toString())
+    localStorage.setItem('hivesignerUsername', username)
+    return {
+      provider: Providers.HiveSigner,
+      success: true,
+      result: '',
+      username
+    }
+  }
+
   async logout(): Promise<void> {
     try {
       await this.provider.revokeToken()
@@ -111,7 +148,7 @@ export class HiveSigner extends AiohaProviderBase {
     const loggedInUser = localStorage.getItem('hivesignerUsername')
     if (!token || !exp || !loggedInUser) return false
     const expSeconds = parseInt(exp)
-    if (isNaN(expSeconds) || new Date().getTime() / 1000 >= expSeconds) return false
+    if (isExpired(expSeconds)) return false
     this.provider.setAccessToken(token)
     this.username = loggedInUser
     return true

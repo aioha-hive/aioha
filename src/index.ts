@@ -13,7 +13,8 @@ import {
   OperationResult,
   SignOperationResult,
   Providers,
-  VoteParams
+  VoteParams,
+  LoginOptionsNI
 } from './types.js'
 import { SimpleEventEmitter } from './lib/event-emitter.js'
 import { AppMetaType } from './lib/hiveauth-wrapper.js'
@@ -201,22 +202,14 @@ export class Aioha implements AiohaOperations {
     !previouslyConnected ? this.eventEmitter.emit('connect') : this.eventEmitter.emit('account_changed')
   }
 
-  /**
-   * Authenticate a Hive account by requesting a message signature.
-   * @param {string} provider The provider to use for auth which must be registered already.
-   * @param {string} username Hive username
-   * @param {LoginOptions} options Login options including message to sign and provider specific options.
-   * @returns The login result.
-   */
-  async login(provider: Providers, username: string, options: LoginOptions): Promise<LoginResult> {
-    if (this.isLoggedIn()) throw new Error('already logged in')
+  private loginCheck(provider: Providers, username: string, options: LoginOptions | LoginOptionsNI): LoginResult {
     if (!this.providers[provider])
       return {
         success: false,
         errorCode: 4201,
         error: provider + ' provider is not registered'
       }
-    if (provider !== 'hivesigner' && !username)
+    if (!username)
       return {
         success: false,
         errorCode: 5002,
@@ -228,6 +221,25 @@ export class Aioha implements AiohaOperations {
         errorCode: 5003,
         error: 'options are required'
       }
+    return {
+      provider: Providers.Custom,
+      success: true,
+      result: '',
+      username
+    }
+  }
+
+  /**
+   * Authenticate a Hive account by requesting a message signature.
+   * @param {string} provider The provider to use for auth which must be registered already.
+   * @param {string} username Hive username
+   * @param {LoginOptions} options Login options including message to sign and provider specific options.
+   * @returns The login result.
+   */
+  async login(provider: Providers, username: string, options: LoginOptions): Promise<LoginResult> {
+    if (this.isLoggedIn()) throw new Error('already logged in')
+    const check = this.loginCheck(provider, username, options)
+    if (!check.success) return check
     const result = await this.providers[provider]!.login(username, {
       ...options,
       hiveauth: {
@@ -252,24 +264,8 @@ export class Aioha implements AiohaOperations {
    */
   async loginAndDecryptMemo(provider: Providers, username: string, options: LoginOptions): Promise<LoginResult> {
     if (this.isLoggedIn()) throw new Error('already logged in')
-    if (!this.providers[provider])
-      return {
-        success: false,
-        errorCode: 4201,
-        error: provider + ' provider is not registered'
-      }
-    if (!username)
-      return {
-        success: false,
-        errorCode: 5002,
-        error: 'username is required'
-      }
-    if (typeof options !== 'object')
-      return {
-        success: false,
-        errorCode: 5003,
-        error: 'options are required'
-      }
+    const check = this.loginCheck(provider, username, options)
+    if (!check.success) return check
     if (!options || typeof options.msg !== 'string' || !options.msg.startsWith('#'))
       return {
         success: false,
@@ -277,6 +273,24 @@ export class Aioha implements AiohaOperations {
         error: 'memo to decode must start with #'
       }
     const result = await this.providers[provider]!.loginAndDecryptMemo(username, options)
+    if (result.success) {
+      this.setUserAndProvider(result.username ?? username, provider)
+    }
+    return result
+  }
+
+  /**
+   * Non-interactive login when auth info is already available (i.e. one-click login).
+   * @param provider The provider to use for auth which must be registered already.
+   * @param username Hive username
+   * @param options Non-interactive login options
+   * @returns The login result with result being an empty-string.
+   */
+  loginNonInteractive(provider: Providers, username: string, options: LoginOptionsNI): LoginResult {
+    if (this.isLoggedIn()) throw new Error('already logged in')
+    const check = this.loginCheck(provider, username, options)
+    if (!check.success) return check
+    const result = this.providers[provider]!.loginNonInteractive(username, options)
     if (result.success) {
       this.setUserAndProvider(result.username ?? username, provider)
     }

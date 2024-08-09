@@ -1,5 +1,5 @@
 import { AuthorityType, CommentOptionsOperation, Operation, Transaction, WithdrawVestingOperation } from '@hiveio/dhive'
-import { Asset, KeyTypes, LoginOptions, LoginResult, OperationResult, SignOperationResult } from '../types.js'
+import { Asset, KeyTypes, LoginOptions, LoginOptionsNI, LoginResult, OperationResult, SignOperationResult } from '../types.js'
 import {
   createVote,
   createComment,
@@ -37,6 +37,14 @@ export abstract class AiohaProviderBase implements AiohaOperations {
   abstract signMessage(message: string, keyType: KeyTypes): Promise<OperationResult>
   abstract signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResult>
   abstract signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult>
+
+  loginNonInteractive(username: string, options: LoginOptionsNI): LoginResult {
+    return {
+      success: false,
+      errorCode: 4200,
+      error: 'non-interactive login is not supported for this provider'
+    }
+  }
 
   async vote(author: string, permlink: string, weight: number): Promise<SignOperationResult> {
     return await this.signAndBroadcastTx([createVote(this.getUser()!, author, permlink, weight)], KeyTypes.Posting)

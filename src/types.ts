@@ -22,6 +22,14 @@ export interface LoginOptions {
   }
 }
 
+export interface LoginOptionsNI {
+  ignorePersistence?: boolean
+  hivesigner?: {
+    accessToken: string
+    expiry: number
+  }
+}
+
 interface BaseResult {
   success: boolean
 }
