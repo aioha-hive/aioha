@@ -290,6 +290,16 @@ export class Aioha implements AiohaOperations {
     if (this.isLoggedIn()) throw new Error('already logged in')
     const check = this.loginCheck(provider, username, options)
     if (!check.success) return check
+    if (!options.ignorePersistence) {
+      const authLoaded = this.loadAuth()
+      if (authLoaded)
+        return {
+          success: true,
+          provider: this.getCurrentProvider()!,
+          username: this.getCurrentUser()!,
+          result: ''
+        }
+    }
     const result = this.providers[provider]!.loginNonInteractive(username, options)
     if (result.success) {
       this.setUserAndProvider(result.username ?? username, provider)
