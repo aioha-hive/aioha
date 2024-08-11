@@ -209,7 +209,7 @@ export class Aioha implements AiohaOperations {
         errorCode: 4201,
         error: provider + ' provider is not registered'
       }
-    if (!username)
+    if (!username && provider !== Providers.HiveSigner)
       return {
         success: false,
         errorCode: 5002,
