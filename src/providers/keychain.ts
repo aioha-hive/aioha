@@ -1,4 +1,4 @@
-import { KeychainRequestResponse, KeychainSignTxRequestResponse } from 'keychain-sdk'
+import { KeychainRequestResponse } from 'keychain-sdk'
 import { Operation, Transaction, CommentOptionsOperation } from '@hiveio/dhive'
 import { AiohaProviderBase } from './provider.js'
 import { Asset, KeyTypes, LoginOptions, LoginResult, OperationResult, Providers, SignOperationResult } from '../types.js'

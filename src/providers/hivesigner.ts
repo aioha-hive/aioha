@@ -4,7 +4,6 @@ import { CommentOptionsOperation, Operation, Transaction } from '@hiveio/dhive'
 import { ClientConfig } from 'hivesigner/lib/types/client-config.interface.js'
 import { AiohaProviderBase } from './provider.js'
 import { KeyTypes, LoginOptions, LoginOptionsNI, LoginResult, OperationResult, Providers, SignOperationResult } from '../types.js'
-import { KeyType } from '../lib/hiveauth-wrapper.js'
 import assert from 'assert'
 import { createComment, createCustomJSON, createVote, deleteComment } from '../opbuilder.js'
 
@@ -187,7 +186,7 @@ export class HiveSigner extends AiohaProviderBase {
     }
   }
 
-  async signTx(tx: Transaction, keyType: KeyType): Promise<OperationResult> {
+  async signTx(tx: Transaction, keyType: KeyTypes): Promise<OperationResult> {
     return {
       success: false,
       errorCode: 4200,
@@ -195,7 +194,7 @@ export class HiveSigner extends AiohaProviderBase {
     }
   }
 
-  async signAndBroadcastTx(tx: Operation[], keyType: KeyType): Promise<SignOperationResult> {
+  async signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult> {
     for (let i in tx) if (!authorizedOps.includes(tx[i][0])) return await this.signTxInWindow(tx)
     try {
       const broadcasted = await this.provider.broadcast(tx)

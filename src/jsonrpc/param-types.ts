@@ -1,5 +1,5 @@
 import type { Providers, KeyTypes } from '../types.js'
-import type { CommentOptionsOperation, Operation, Transaction } from '@hiveio/dhive'
+import type { Operation, Transaction } from '@hiveio/dhive'
 
 export interface IsProviderRegistered {
   provider: Providers
