@@ -34,7 +34,7 @@ interface BaseResult {
   success: boolean
 }
 
-interface LoginResultSuccess extends BaseResult {
+export interface LoginResultSuccess extends BaseResult {
   success: true
   provider: Providers
   result: string
@@ -51,13 +51,13 @@ interface LoginResultError extends BaseResult {
 
 export type LoginResult = LoginResultSuccess | LoginResultError
 
-interface OperationError extends BaseResult {
+export interface OperationError extends BaseResult {
   success: false
   error: string
   errorCode: number
 }
 
-interface OperationSuccess extends BaseResult {
+export interface OperationSuccess extends BaseResult {
   success: true
   result: string
   publicKey?: string

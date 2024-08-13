@@ -14,31 +14,46 @@ import {
   SignOperationResult,
   Providers,
   VoteParams,
-  LoginOptionsNI
+  LoginOptionsNI,
+  OperationError
 } from './types.js'
 import { SimpleEventEmitter } from './lib/event-emitter.js'
 import { AppMetaType } from './lib/hiveauth-wrapper.js'
 import { createVote } from './opbuilder.js'
-import { DEFAULT_API, getAccounts } from './rpc.js'
+import { DEFAULT_API, getAccounts, call } from './rpc.js'
 import { AiohaOperations, AiohaProviderBase } from './providers/provider.js'
 import { Events } from './types.js'
 export { constructTxHeader } from './opbuilder.js'
 export { broadcastTx, call, hivePerVests } from './rpc.js'
 export { Asset, KeyTypes, Providers } from './types.js'
+import { AiohaRpcError, RequestArguments } from './jsonrpc/eip1193-types.js'
+import { IsProviderRegistered, LoginParam } from './jsonrpc/param-types.js'
+import { AiohaExtension, CoreRpc } from './jsonrpc/methods.js'
 
-const notLoggedInResult: OperationResult = {
+const notLoggedInResult: OperationError = {
   success: false,
   errorCode: 4900,
   error: 'Not logged in'
 }
 
-const noMemoAllowResult: OperationResult = {
+const noMemoAllowResult: OperationError = {
   success: false,
   errorCode: 5005,
   error: 'key type cannot be memo'
 }
 
 const NON_BROWSER_ERR = 'Provider only available in browser env'
+
+const CoreRpcGetters: {
+  [method: string]: (core: Aioha, params?: any) => any
+} = {
+  get_registered_providers: (core: Aioha) => core.getProviders(),
+  get_current_provider: (core: Aioha) => core.getCurrentProvider(),
+  get_current_user: (core: Aioha) => core.getCurrentUser(),
+  is_logged_in: (core: Aioha) => core.isLoggedIn(),
+  is_provider_registered: (core: Aioha, params: IsProviderRegistered) =>
+    params.enabled ? core.isProviderEnabled(params.provider) : core.isProviderRegistered(params.provider)
+}
 
 export class Aioha implements AiohaOperations {
   private providers: {
@@ -52,6 +67,7 @@ export class Aioha implements AiohaOperations {
   private user?: string
   private currentProvider?: Providers
   private eventEmitter: SimpleEventEmitter
+  private extensions: AiohaExtension[]
   private vscNetId = 'testnet/0bf2e474-6b9e-4165-ad4e-a0d78968d20c'
   private api = DEFAULT_API
 
@@ -61,10 +77,15 @@ export class Aioha implements AiohaOperations {
       this.setApi(api)
     }
     this.eventEmitter = new SimpleEventEmitter()
+    this.extensions = [CoreRpc]
   }
 
   private isBrowser(): boolean {
     return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined'
+  }
+
+  registerExtension(extension: AiohaExtension) {
+    this.extensions.push(extension)
   }
 
   /**
@@ -227,6 +248,58 @@ export class Aioha implements AiohaOperations {
       result: '',
       username
     }
+  }
+
+  async request(args: RequestArguments): Promise<unknown> {
+    // 0. pre-validation
+    if (typeof args !== 'object' || typeof args.method !== 'string' || (args.params && typeof args.params !== 'object'))
+      return Promise.reject(new AiohaRpcError(-32600, 'Invalid request'))
+
+    // 1. Provider specific methods
+    if (this.isLoggedIn()) {
+      try {
+        const result = await this.providers[this.getCurrentProvider()!]!.request(args)
+        return result
+      } catch (e: any) {
+        if (e.name !== 'AiohaRpcError' || e.code !== 4200) throw e
+      }
+    }
+
+    // 2. aioha_api.* getter methods
+    if (args.method.startsWith('aioha_api.')) {
+      const submethod = args.method.replace('aioha_api.', '')
+      if (typeof CoreRpcGetters[submethod] === 'function') {
+        return CoreRpcGetters[submethod](this, args.params)
+      }
+    }
+
+    // 3. Extensions
+    for (const ext in this.extensions) {
+      const submethod = args.method.replace(this.extensions[ext].getMethodPrefix(), '')
+      if (this.extensions[ext].isValidMethod(submethod)) {
+        if (this.extensions[ext].isAuthRequired(submethod) && !this.isLoggedIn())
+          throw new AiohaRpcError(notLoggedInResult.errorCode, notLoggedInResult.error)
+        else if (this.extensions[ext].isLoginMethod(submethod)) {
+          if (!args.params) throw new AiohaRpcError(5003, 'Login params are required')
+          const loginParams = args.params as LoginParam
+          const loginCheck = this.loginCheck(loginParams.provider, loginParams.username, {
+            msg: loginParams.message,
+            keyType: loginParams.key_type
+          })
+          if (!loginCheck.success) throw new AiohaRpcError(loginCheck.errorCode, loginCheck.error)
+        }
+        const result = await this.extensions[ext].request(this.providers[this.getCurrentProvider()!]!, submethod, args.params)
+        if (this.extensions[ext].isLoginMethod(submethod)) {
+          this.setUserAndProvider(result.username, result.provider)
+        }
+        return result
+      }
+    }
+
+    // 4. Hive API call
+    const apiRequest = await call(args.method, args.params, this.api)
+    if (apiRequest.error) throw new Error(apiRequest.error)
+    else return apiRequest.result
   }
 
   /**

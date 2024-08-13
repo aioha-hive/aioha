@@ -165,6 +165,19 @@
             )
           )
         }
+        document.getElementById('rpc-send').onclick = async () => {
+          let payload = document.getElementById('rpc-body').value
+          try {
+            payload = JSON.parse(payload)
+          } catch {
+            return console.error('Failed to parse RPC body')
+          }
+          try {
+            console.log(await aioha.request(payload))
+          } catch (e) {
+            console.error(e.code, e.message)
+          }
+        }
       }, 1000)
     </script>
   </head>
@@ -242,5 +255,9 @@
     <input type="radio" id="vsc-radio-active" name="vsc-call-auth" value="vsc-call-active" />
     <label for="vsc-radio-active">Active</label><br /><br />
     <button id="vsc-call">Call Contract</button>
+    <br />
+    <h2>Send RPC request</h2>
+    <textarea id="rpc-body" placeholder="Request Body" style="width: 300px; height: 50px; margin-bottom: 10px"></textarea><br />
+    <button id="rpc-send">Send Request</button>
   </body>
 </html>

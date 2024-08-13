@@ -16,6 +16,7 @@ import {
   deleteComment
 } from '../opbuilder.js'
 import { hivePerVests, getAccounts, getAccountsErrored } from '../rpc.js'
+import { RequestArguments, AiohaRpcError } from '../jsonrpc/eip1193-types.js'
 
 export abstract class AiohaProviderBase implements AiohaOperations {
   protected api: string
@@ -44,6 +45,10 @@ export abstract class AiohaProviderBase implements AiohaOperations {
       errorCode: 4200,
       error: 'non-interactive login is not supported for this provider'
     }
+  }
+
+  request(args: RequestArguments): Promise<unknown> {
+    return Promise.reject(new AiohaRpcError(4200, 'Method not found'))
   }
 
   async vote(author: string, permlink: string, weight: number): Promise<SignOperationResult> {
