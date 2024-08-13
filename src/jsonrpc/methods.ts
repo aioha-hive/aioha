@@ -4,6 +4,7 @@ import type { Login, MessageKeyType, SignBroadcastTx, SignTx } from './param-typ
 import { AiohaRpcError } from './eip1193-types.js'
 
 export interface AiohaExtension {
+  name: string
   isValidMethod: (method: string) => boolean
   isAuthRequired: (method: string) => boolean
   isLoginMethod: (method: string) => boolean
@@ -49,6 +50,7 @@ const CoreRpcMethods: {
 }
 
 export const CoreRpc: AiohaExtension = {
+  name: 'Core',
   isValidMethod: (method: string) => {
     return typeof CoreRpcMethods[method] === 'function'
   },

@@ -1,8 +1,25 @@
 import { SignedTransaction } from '@hiveio/dhive'
+import { AiohaRpcError } from './jsonrpc/eip1193-types'
 
 export const DEFAULT_API = 'https://techcoderx.com'
+export const FALLBACK_APIS = [
+  'https://api.hive.blog',
+  'https://api.deathwing.me',
+  'https://hive-api.arcange.eu',
+  'https://api.openhive.network',
+  'https://rpc.mahdiyari.info',
+  'https://hive-api.3speak.tv',
+  'https://api.c0ff33a.uk',
+  'https://anyx.io',
+  'https://hiveapi.actifit.io'
+]
 
-export const call = async (method: string, params: any, api: string = DEFAULT_API) => {
+export const call = async (
+  method: string,
+  params: any,
+  api: string = DEFAULT_API,
+  fallbackApis: string[] = FALLBACK_APIS
+): Promise<any> => {
   const req = await fetch(api, {
     method: 'POST',
     headers: {
@@ -15,6 +32,10 @@ export const call = async (method: string, params: any, api: string = DEFAULT_AP
       params: params
     })
   })
+  if (req.status >= 400) {
+    if (fallbackApis.length === 0) throw new AiohaRpcError(-32603, 'Failed to fetch')
+    return await call(method, params, fallbackApis[0], fallbackApis.slice(1, fallbackApis.length))
+  }
   const resp = await req.json()
   return resp
 }

@@ -20,7 +20,7 @@ import {
 import { SimpleEventEmitter } from './lib/event-emitter.js'
 import { AppMetaType } from './lib/hiveauth-wrapper.js'
 import { createVote } from './opbuilder.js'
-import { DEFAULT_API, getAccounts, call } from './rpc.js'
+import { DEFAULT_API, FALLBACK_APIS, getAccounts, call } from './rpc.js'
 import { AiohaOperations, AiohaProviderBase } from './providers/provider.js'
 import { Events } from './types.js'
 export { constructTxHeader } from './opbuilder.js'
@@ -70,11 +70,12 @@ export class Aioha implements AiohaOperations {
   private extensions: AiohaExtension[]
   private vscNetId = 'testnet/0bf2e474-6b9e-4165-ad4e-a0d78968d20c'
   private api = DEFAULT_API
+  private fallbackApis = FALLBACK_APIS
 
-  constructor(api?: string) {
+  constructor(api?: string, fallbackApis?: string[]) {
     this.providers = {}
     if (api) {
-      this.setApi(api)
+      this.setApi(api, fallbackApis)
     }
     this.eventEmitter = new SimpleEventEmitter()
     this.extensions = [CoreRpc]
@@ -203,12 +204,30 @@ export class Aioha implements AiohaOperations {
   }
 
   /**
+   * Get instance of the current provider. Throws an error if not logged in.
+   * @returns Instance of the provider that implements AiohaProviderBase
+   */
+  getCurrentProviderInstance() {
+    if (!this.currentProvider) throw new Error('Not logged in')
+    return this.providers[this.currentProvider]
+  }
+
+  /**
+   * List all registered extension names.
+   * @returns List of extension names
+   */
+  listExtensions() {
+    return this.extensions.map((e) => e.name)
+  }
+
+  /**
    * Set Hive API URL used by some providers for API calls.
    * @param api Hive API URL
    */
-  setApi(api: string): void {
+  setApi(api: string, fallbackApis?: string[]): void {
     if (!api.startsWith('http://') && !api.startsWith('https://')) throw new Error('api must start from http:// or https://')
     this.api = api
+    if (fallbackApis) this.fallbackApis = fallbackApis
     for (const p in this.providers) this.providers[p as Providers]?.setApi(api)
   }
 
@@ -306,7 +325,7 @@ export class Aioha implements AiohaOperations {
     }
 
     // 4. Hive API call
-    const apiRequest = await call(args.method, args.params, this.api)
+    const apiRequest = await call(args.method, args.params, this.api, this.fallbackApis)
     if (apiRequest.error) throw new Error(apiRequest.error)
     else return apiRequest.result
   }
