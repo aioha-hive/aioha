@@ -1,7 +1,6 @@
 // HiveAuth wrapper with types
 // https://github.com/hiveauth/hive-auth-wrapper/blob/master/has-wrapper.js
 import type CryptoJSType from 'crypto-js'
-import assert from 'assert'
 
 let CryptoJS: typeof CryptoJSType
 
@@ -151,9 +150,16 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+class HiveAuthInternalError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'HiveAuthInternalError'
+  }
+}
+
 async function attach(uuid: string) {
   return new Promise(async (resolve, reject) => {
-    assert(uuid && typeof uuid == 'string', 'missing or invalid uuid')
+    if (typeof uuid !== 'string') return reject(new HiveAuthInternalError('invalid uuid'))
     // Send the attach request to the HAS
     const payload = { cmd: CMD.ATTACH_REQ, uuid }
     send(JSON.stringify(payload))
@@ -220,7 +226,7 @@ export class Auth {
   token?: string
 
   constructor(appMetadata: AppMetaType) {
-    assert(appMetadata && appMetadata.name && typeof appMetadata.name == 'string', 'missing or invalid app metadata name')
+    if (!appMetadata || typeof appMetadata.name !== 'string') throw new Error('missing or invalid app metadata name')
     this.appMeta = appMetadata
   }
 
@@ -239,13 +245,26 @@ export class Auth {
   }
 }
 
+const check = async (auth?: Auth | null, challenge?: ChallengeDataType) => {
+  if (!CryptoJS) return 'call initCrypto() first'
+  if (auth) {
+    if (!auth.username && typeof auth.username !== 'string') return 'invalid auth.username'
+    else if (!auth.key || typeof auth.key !== 'string') return 'missing or invalid auth.key'
+    else if (!auth.token || typeof auth.token !== 'string') return 'missing or invalid token'
+  }
+  if (challenge) {
+    if (challenge.key_type && typeof challenge.key_type !== 'string') return 'missing or invalid challenge_data.key_type'
+    if (challenge.challenge && typeof challenge.challenge == 'string') return 'missing or invalid challenge_data.challenge'
+  }
+  if (!(await checkConnection())) return 'failed to connect to HiveAuth server'
+  return null
+}
+
 export default {
   setOptions: function (options: HAS_options_type) {
-    assert(!options.host || options.host.match('^((ws|wss)?://)'), 'invalid host URL')
-    assert(
-      !options.auth_key_secret || (typeof options.auth_key_secret == 'string' && options.auth_key_secret != ''),
-      'invalid auth_key_secret'
-    )
+    if (options.host && !options.host.match('^((ws|wss)?://)')) throw new Error('invalid host URL')
+    if (options.auth_key_secret && (typeof options.auth_key_secret !== 'string' || options.auth_key_secret === ''))
+      throw new Error('invalid auth_key_secret')
     if (options.host) {
       HAS_options.host = options.host
     }
@@ -293,17 +312,9 @@ export default {
   ) {
     return new Promise<AuthAckDataType>(async (resolve, reject) => {
       try {
-        assert(CryptoJS, 'call initCrypto() first')
-        assert(typeof username == 'string' && username.length >= 3, 'missing or invalid auth.username')
-        assert(
-          !challenge_data || (challenge_data.key_type && typeof challenge_data.key_type == 'string'),
-          'missing or invalid challenge_data.key_type'
-        )
-        assert(
-          !challenge_data || (challenge_data.challenge && typeof challenge_data.challenge == 'string'),
-          'missing or invalid challenge_data.challenge'
-        )
-        assert(await checkConnection(), `Failed to connect to HiveAuth server ${trace ? HAS_options.host : ''}`)
+        const initialChecks = await check(null, challenge_data)
+        if (typeof initialChecks === 'string') return reject(new HiveAuthInternalError(initialChecks))
+        if (typeof username !== 'string' || username.length < 3) return reject(new HiveAuthInternalError('invalid username'))
 
         // initialize key to encrypt communication with PKSA
         const auth_key = auth.key || window.crypto.randomUUID()
@@ -429,18 +440,14 @@ export default {
     cbWait?: (evt: MessageType, cancel: () => void) => any
   ) {
     return new Promise<MessageType>(async (resolve, reject) => {
-      assert(CryptoJS, 'call initCrypto() first')
-      assert(auth, 'missing auth')
-      assert(auth.username && typeof auth.username == 'string', 'missing or invalid username')
-      assert(auth.key && typeof auth.key == 'string', 'missing or invalid encryption key')
-      assert(auth.token && typeof auth.token == 'string', 'missing or invalid token')
-      assert(ops && Array.isArray(ops) && ops.length > 0, 'missing or invalid ops')
-      assert(await checkConnection(), 'not connected to server')
+      const initialChecks = await check(auth)
+      if (typeof initialChecks === 'string') return reject(new HiveAuthInternalError(initialChecks))
+      if (!ops || !Array.isArray(ops) || ops.length === 0) return reject(new HiveAuthInternalError('missing or invalid ops'))
 
       // Encrypt the ops with the key we provided to the PKSA
       const data = CryptoJS.AES.encrypt(
         JSON.stringify({ key_type: key_type, ops: ops, broadcast, nonce: Date.now() }),
-        auth.key
+        auth.key!
       ).toString()
       // Send the sign request to the HAS
       const payload = { cmd: CMD.SIGN_REQ, account: auth.username, data: data, token: auth.token }
@@ -520,22 +527,11 @@ export default {
    */
   challenge: function (auth: Auth, challenge_data: ChallengeDataType, cbWait?: (evt: MessageType, cancel: () => void) => any) {
     return new Promise<ChallengeResult>(async (resolve, reject) => {
-      assert(CryptoJS, 'call initCrypto() first')
-      assert(auth, 'missing auth')
-      assert(auth.username && typeof auth.username == 'string', 'missing or invalid username')
-      assert(auth.key && typeof auth.key == 'string', 'missing or invalid encryption key')
-      assert(auth.token && typeof auth.token == 'string', 'missing or invalid token')
-      assert(
-        challenge_data && challenge_data.key_type && typeof challenge_data.key_type == 'string',
-        'missing or invalid challenge_data.key_type'
-      )
-      assert(
-        challenge_data && challenge_data.challenge && typeof challenge_data.challenge == 'string',
-        'missing or invalid challenge_data.challenge'
-      )
-      assert(await checkConnection(), 'not connected to server')
+      const initialChecks = await check(auth, challenge_data)
+      if (typeof initialChecks === 'string') return reject(new HiveAuthInternalError(initialChecks))
+
       // Encrypt the challenge data with the key we provided to the PKSA
-      const data = CryptoJS.AES.encrypt(JSON.stringify(challenge_data), auth.key).toString()
+      const data = CryptoJS.AES.encrypt(JSON.stringify(challenge_data), auth.key!).toString()
       // Send the challenge request to the HAS
       const payload = { cmd: CMD.CHALLENGE_REQ, account: auth.username, data: data, token: auth.token }
       send(JSON.stringify(payload))

@@ -5,7 +5,6 @@ import { LoginOptions, LoginResult, OperationResult, SignOperationResult, KeyTyp
 import { broadcastTx, getKeyRefs } from '../rpc.js'
 import { constructTxHeader } from '../opbuilder.js'
 import type CryptoJSType from 'crypto-js'
-import assert from 'assert'
 
 let CryptoJS: typeof CryptoJSType
 
@@ -139,11 +138,10 @@ export class Ledger extends AiohaProviderBase {
         errorCode: 5900,
         error: CONN_ERROR
       }
-    assert(this.provider)
     try {
       // username check
       try {
-        const userFound = await searchAccountsAllRolesForUser(this.provider, username)
+        const userFound = await searchAccountsAllRolesForUser(this.provider!, username)
         if (!userFound) {
           await this.closeConnection()
           return {
@@ -157,7 +155,7 @@ export class Ledger extends AiohaProviderBase {
           // obtain signature
           // message signing is supported as of v1.2.0 however it isn't on ledger live yet :\
           // const signature = await app.signMessage(options.msg ?? 'Aioha app login', userFound.path)
-          const signature = await this.provider.signHash(sha256(options.msg ?? 'Aioha app login'), userFound.path)
+          const signature = await this.provider!.signHash(sha256(options.msg ?? 'Aioha app login'), userFound.path)
           this.username = username
           this.path = userFound.path
           localStorage.setItem('ledgerPath', this.path)
@@ -236,9 +234,9 @@ export class Ledger extends AiohaProviderBase {
 
   async signMessage(message: string, keyType: KeyTypes): Promise<OperationResult> {
     if (!(await this.checkConnection())) return connectionFailedError
-    assert(this.provider && this.path)
+    if (!this.path) throw new Error('no path?')
     try {
-      const signature = await this.provider.signHash(sha256(message), this.path)
+      const signature = await this.provider!.signHash(sha256(message), this.path)
       return {
         success: true,
         result: signature
@@ -254,9 +252,9 @@ export class Ledger extends AiohaProviderBase {
 
   async signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResult> {
     if (!(await this.checkConnection())) return connectionFailedError
-    assert(this.provider && this.path)
+    if (!this.path) throw new Error('no path?')
     try {
-      const signedTx = await this.provider.signTransaction(tx, this.path)
+      const signedTx = await this.provider!.signTransaction(tx, this.path)
       return {
         success: true,
         result: signedTx

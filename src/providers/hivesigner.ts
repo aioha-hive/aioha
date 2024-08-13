@@ -4,7 +4,6 @@ import { CommentOptionsOperation, Operation, Transaction } from '@hiveio/dhive'
 import { HiveSignerError, ClientConfig } from '../lib/hivesigner-types.js'
 import { AiohaProviderBase } from './provider.js'
 import { KeyTypes, LoginOptions, LoginOptionsNI, LoginResult, OperationResult, Providers, SignOperationResult } from '../types.js'
-import assert from 'assert'
 import { createComment, createCustomJSON, createVote, deleteComment } from '../opbuilder.js'
 
 // https://github.com/ecency/hivesigner-api/blob/9fa9f51f319b5d9f9d86a4a028fcdf71b10b7836/config.json
@@ -245,15 +244,14 @@ export class HiveSigner extends AiohaProviderBase {
   }
 
   async vote(author: string, permlink: string, weight: number): Promise<SignOperationResult> {
-    assert(typeof this.username === 'string')
     try {
-      const tx = await this.provider.vote(this.username, author, permlink, weight)
+      const tx = await this.provider.vote(this.username!, author, permlink, weight)
       return {
         success: true,
         result: tx.result.id
       }
     } catch (e) {
-      return await this.errorFallback(e as HiveSignerError, [createVote(this.username, author, permlink, weight)])
+      return await this.errorFallback(e as HiveSignerError, [createVote(this.username!, author, permlink, weight)])
     }
   }
 
@@ -266,10 +264,9 @@ export class HiveSigner extends AiohaProviderBase {
     json: string,
     options?: CommentOptionsOperation[1] | undefined
   ): Promise<SignOperationResult> {
-    assert(this.username)
     if (!options) {
       try {
-        const tx = await this.provider.comment(pa ?? '', pp ?? '', this.username, permlink, title, body, json)
+        const tx = await this.provider.comment(pa ?? '', pp ?? '', this.username!, permlink, title, body, json)
         return {
           success: true,
           result: tx.result.id
@@ -277,34 +274,32 @@ export class HiveSigner extends AiohaProviderBase {
       } catch (e) {
         return await this.errorFallback(
           e as HiveSignerError,
-          createComment(pa, pp, this.username, permlink, title, body, json) as Operation[]
+          createComment(pa, pp, this.username!, permlink, title, body, json) as Operation[]
         )
       }
     } else {
       return await this.signAndBroadcastTx(
-        createComment(pa, pp, this.username, permlink, title, body, json, options) as Operation[],
+        createComment(pa, pp, this.username!, permlink, title, body, json, options) as Operation[],
         KeyTypes.Posting
       )
     }
   }
 
   async deleteComment(permlink: string): Promise<SignOperationResult> {
-    assert(this.username)
     try {
-      const tx = await this.provider.deleteComment(this.username, permlink)
+      const tx = await this.provider.deleteComment(this.username!, permlink)
       return {
         success: true,
         result: tx.result.id
       }
     } catch (e) {
-      return await this.errorFallback(e as HiveSignerError, [deleteComment(this.username, permlink)])
+      return await this.errorFallback(e as HiveSignerError, [deleteComment(this.username!, permlink)])
     }
   }
 
   async customJSON(keyType: KeyTypes, id: string, json: string): Promise<SignOperationResult> {
-    assert(this.username)
-    const requiredAuths = keyType === KeyTypes.Active ? [this.username] : []
-    const requiredPostingAuths = keyType === KeyTypes.Posting ? [this.username] : []
+    const requiredAuths = keyType === KeyTypes.Active ? [this.username!] : []
+    const requiredPostingAuths = keyType === KeyTypes.Posting ? [this.username!] : []
     try {
       const tx = await this.provider.customJson(requiredAuths, requiredPostingAuths, id, json)
       return {

@@ -4,6 +4,7 @@ import { AiohaProviderBase } from './provider.js'
 import { KeyTypes, LoginOptions, LoginResult, OperationResult, Providers, SignOperationResult } from '../types.js'
 
 const HiveAuthError = (e: any): string => {
+  if (e.name === 'HiveAuthInternalError') return e.message
   if (e.toString() === 'Error: expired') return 'HiveAuth authentication request expired'
   else if (e.toString() === 'Error: cancelled') return 'HiveAuth authentication request cancelled'
   else if (e.cmd === 'auth_nack') return 'HiveAuth authentication request rejected'

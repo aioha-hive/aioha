@@ -2,7 +2,6 @@ import { KeychainRequestResponse } from 'keychain-sdk'
 import { Operation, Transaction, CommentOptionsOperation } from '@hiveio/dhive'
 import { AiohaProviderBase } from './provider.js'
 import { Asset, KeyTypes, LoginOptions, LoginResult, OperationResult, Providers, SignOperationResult } from '../types.js'
-import assert from 'assert'
 import { KeychainMini } from '../lib/keychain-mini.js'
 
 enum KeychainKeyTypes {
@@ -19,11 +18,12 @@ const getErrorCode = (resp: any): number => {
 
 export class Keychain extends AiohaProviderBase {
   private provider: KeychainMini
-  private username?: string
+  private username: string
 
   constructor() {
     super('') // api url isn't used here
     this.provider = new KeychainMini()
+    this.username = ''
   }
 
   async login(username: string, options: LoginOptions): Promise<LoginResult> {
@@ -96,7 +96,7 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async logout(): Promise<void> {
-    delete this.username
+    this.username = ''
   }
 
   loadAuth(username: string): boolean {
@@ -124,7 +124,6 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async decryptMemo(memo: string, keyType: KeyTypes): Promise<OperationResult> {
-    assert(typeof this.username === 'string')
     const kcKeyType = Keychain.mapAiohaKeyTypes(keyType)
     const decoded = await this.provider.decode({
       username: this.username,
@@ -145,7 +144,6 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async signMessage(message: string, keyType: KeyTypes): Promise<OperationResult> {
-    assert(typeof this.username === 'string')
     const kcKeyType = Keychain.mapAiohaKeyTypes(keyType)
     const signBuf = await this.provider.signBuffer({
       username: this.username,
@@ -166,7 +164,6 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResult> {
-    assert(typeof this.username === 'string')
     const kcKeyType = Keychain.mapAiohaKeyTypes(keyType)
     const signedTx = await this.provider.signTx({
       username: this.username,
@@ -186,7 +183,6 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult> {
-    assert(typeof this.username === 'string')
     const kcKeyType = Keychain.mapAiohaKeyTypes(keyType)
     try {
       const broadcastedTx = await this.provider.broadcast({
@@ -218,7 +214,6 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async vote(author: string, permlink: string, weight: number): Promise<SignOperationResult> {
-    assert(typeof this.username === 'string')
     const tx = await this.provider.vote({
       username: this.username,
       author,
@@ -237,7 +232,6 @@ export class Keychain extends AiohaProviderBase {
     json: string,
     options?: CommentOptionsOperation[1] | undefined
   ): Promise<SignOperationResult> {
-    assert(this.username)
     const tx = await this.provider.post({
       username: this.username,
       permlink,
@@ -252,7 +246,6 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async customJSON(keyType: KeyTypes, id: string, json: string, displayTitle?: string): Promise<SignOperationResult> {
-    assert(this.username)
     return this.txResult(
       await this.provider.custom({
         username: this.username,
@@ -265,7 +258,6 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async transfer(to: string, amount: number, currency: Asset, memo?: string): Promise<SignOperationResult> {
-    assert(this.username)
     return this.txResult(
       await this.provider.transfer({
         username: this.username,
@@ -286,7 +278,6 @@ export class Keychain extends AiohaProviderBase {
     executions: number,
     memo?: string
   ): Promise<SignOperationResult> {
-    assert(this.username)
     return this.txResult(
       await this.provider.recurrentTransfer({
         username: this.username,
@@ -301,7 +292,6 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async stakeHive(amount: number, to?: string): Promise<SignOperationResult> {
-    assert(this.username)
     return this.txResult(
       await this.provider.powerUp({
         username: this.username,
@@ -312,7 +302,6 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async unstakeHive(amount: number): Promise<SignOperationResult> {
-    assert(this.username)
     return this.txResult(
       await this.provider.powerDown({
         username: this.username,
@@ -322,7 +311,6 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async delegateStakedHive(to: string, amount: number): Promise<SignOperationResult> {
-    assert(this.username)
     return this.txResult(
       await this.provider.delegation({
         username: this.username,
@@ -334,7 +322,6 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async delegateVests(to: string, amount: number): Promise<SignOperationResult> {
-    assert(this.username)
     return this.txResult(
       await this.provider.delegation({
         username: this.username,
@@ -346,7 +333,6 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async voteWitness(witness: string, approve: boolean): Promise<SignOperationResult> {
-    assert(this.username)
     return this.txResult(
       await this.provider.witnessVote({
         username: this.username,
@@ -357,7 +343,6 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async voteProposals(proposals: number[], approve: boolean): Promise<SignOperationResult> {
-    assert(this.username)
     return this.txResult(
       await this.provider.updateProposalVote({
         username: this.username,
@@ -369,7 +354,6 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async setProxy(proxy: string): Promise<SignOperationResult> {
-    assert(this.username)
     return this.txResult(
       await this.provider.proxy({
         username: this.username,
@@ -379,7 +363,6 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async addAccountAuthority(username: string, role: KeyTypes, weight: number): Promise<SignOperationResult> {
-    assert(this.username)
     return this.txResult(
       await this.provider.addAccountAuthority({
         username: this.username,
@@ -391,7 +374,6 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async removeAccountAuthority(username: string, role: KeyTypes): Promise<SignOperationResult> {
-    assert(this.username)
     return this.txResult(
       await this.provider.removeAccountAuthority({
         username: this.username,
@@ -402,7 +384,6 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async addKeyAuthority(publicKey: string, role: KeyTypes, weight: number): Promise<SignOperationResult> {
-    assert(this.username)
     return this.txResult(
       await this.provider.addKeyAuthority({
         username: this.username,
@@ -414,7 +395,6 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async removeKeyAuthority(publicKey: string, role: KeyTypes): Promise<SignOperationResult> {
-    assert(this.username)
     return this.txResult(
       await this.provider.removeKeyAuthority({
         username: this.username,
