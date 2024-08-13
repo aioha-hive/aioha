@@ -4,7 +4,7 @@ import { HiveSigner } from './providers/hivesigner.js'
 import { Keychain } from './providers/keychain.js'
 import { Ledger } from './providers/ledger.js'
 import { PeakVault } from './providers/peakvault.js'
-import { ClientConfig as HiveSignerOptions } from 'hivesigner/lib/types/client-config.interface.js'
+import { ClientConfig as HiveSignerOptions } from './lib/hivesigner-types.js'
 import {
   Asset,
   KeyTypes,

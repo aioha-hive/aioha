@@ -1,16 +1,11 @@
-import { Client } from 'hivesigner'
-import { encodeOps } from 'hive-uri'
+import { Client } from '../lib/hivesigner.js'
+import { encodeOps } from '../lib/hive-uri.js'
 import { CommentOptionsOperation, Operation, Transaction } from '@hiveio/dhive'
-import { ClientConfig } from 'hivesigner/lib/types/client-config.interface.js'
+import { HiveSignerError, ClientConfig } from '../lib/hivesigner-types.js'
 import { AiohaProviderBase } from './provider.js'
 import { KeyTypes, LoginOptions, LoginOptionsNI, LoginResult, OperationResult, Providers, SignOperationResult } from '../types.js'
 import assert from 'assert'
 import { createComment, createCustomJSON, createVote, deleteComment } from '../opbuilder.js'
-
-interface HiveSignerError {
-  error: 'unauthorized_client' | 'unauthorized_access' | 'invalid_grant' | 'invalid_scope' | 'server_error'
-  error_description: string
-}
 
 // https://github.com/ecency/hivesigner-api/blob/9fa9f51f319b5d9f9d86a4a028fcdf71b10b7836/config.json
 const authorizedOps = [

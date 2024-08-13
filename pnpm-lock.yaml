@@ -23,12 +23,6 @@ dependencies:
   hive-tx:
     specifier: ^5.4.3
     version: 5.4.3
-  hive-uri:
-    specifier: ^0.2.5
-    version: 0.2.5
-  hivesigner:
-    specifier: ^3.3.4
-    version: 3.3.4
   keychain-sdk:
     specifier: ^0.6.1
     version: 0.6.1
@@ -57,13 +51,6 @@ devDependencies:
     version: 5.1.4(webpack@5.91.0)
 
 packages:
-
-  /@babel/runtime@7.24.4:
-    resolution: {integrity: sha512-dkxf7+hn8mFBwKjs9bvBlArzLVxVbS8usaPUDd5p2a9JCL9tB8OaOVN1isD4+Xyk4ns89/xeOmbQvgdK7IIVdA==}
-    engines: {node: '>=6.9.0'}
-    dependencies:
-      regenerator-runtime: 0.14.1
-    dev: false
 
   /@colors/colors@1.6.0:
     resolution: {integrity: sha512-Ir+AOibqzrIsL6ajt3Rz3LskB7OiMVHqltZmspbW/TJuTVuyOMirVqAkjfY6JISiLHgyNqicAC8AyHHGzNd/dA==}
@@ -1093,20 +1080,6 @@ packages:
       - debug
     dev: false
 
-  /hive-uri@0.2.5:
-    resolution: {integrity: sha512-oSFqa39/Frs8XaA6oAT1W/5KtkInfp8u0Yv58YGok1klu7M8rPYMg3v9m/0rdvrRLSheAYwip88l60at2kPtYA==}
-    dev: false
-
-  /hivesigner@3.3.4:
-    resolution: {integrity: sha512-n+fpsmc3FvkwXwhSTHJgChq97YeL2bEcJz/Awn9o+boFnIxqrxg4Y3i4sMMR8j+kJnwDV9c5JIMF4zQVxPSPJQ==}
-    dependencies:
-      '@babel/runtime': 7.24.4
-      cross-fetch: 3.1.8
-      hive-uri: 0.2.5
-    transitivePeerDependencies:
-      - encoding
-    dev: false
-
   /hmac-drbg@1.0.1:
     resolution: {integrity: sha512-Tti3gMqLdZfhOQY1Mzf/AanLiqh1WTiJgEj26ZuYQ9fbkLomzGchCws4FyrSd4VkpBfiNhaE1On+lOz894jvXg==}
     dependencies:
@@ -1481,10 +1454,6 @@ packages:
     dependencies:
       resolve: 1.22.8
     dev: true
-
-  /regenerator-runtime@0.14.1:
-    resolution: {integrity: sha512-dYnhHh0nJoMfnkZs6GmmhFknAGRrLznOu5nc9ML+EJxGvrx6H7teuevqVqCuPcPK//3eDrrjQhehXVx9cnkGdw==}
-    dev: false
 
   /resolve-cwd@3.0.0:
     resolution: {integrity: sha512-OrZaX2Mb+rJCpH/6CpSqt9xFVpN++x01XnN2ie9g6P5/3xelLAkXWVADpdz1IHD/KFfEXyE6V0U01OQ3UO2rEg==}
