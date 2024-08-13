@@ -224,6 +224,12 @@ export class Aioha implements AiohaOperations {
   }
 
   private loginCheck(provider: Providers, username: string, options: LoginOptions | LoginOptionsNI): LoginResult {
+    if (this.isLoggedIn())
+      return {
+        success: false,
+        errorCode: 4901,
+        error: 'Already logged in'
+      }
     if (!this.providers[provider])
       return {
         success: false,
@@ -280,6 +286,7 @@ export class Aioha implements AiohaOperations {
         if (this.extensions[ext].isAuthRequired(submethod) && !this.isLoggedIn())
           throw new AiohaRpcError(notLoggedInResult.errorCode, notLoggedInResult.error)
         else if (this.extensions[ext].isLoginMethod(submethod)) {
+          if (this.isLoggedIn()) throw new AiohaRpcError(4901, 'Already logged in')
           if (!args.params) throw new AiohaRpcError(5003, 'Login params are required')
           const loginParams = args.params as LoginParam
           const loginCheck = this.loginCheck(loginParams.provider, loginParams.username, {
@@ -291,6 +298,8 @@ export class Aioha implements AiohaOperations {
         const result = await this.extensions[ext].request(this.providers[this.getCurrentProvider()!]!, submethod, args.params)
         if (this.extensions[ext].isLoginMethod(submethod)) {
           this.setUserAndProvider(result.username, result.provider)
+        } else if (this.extensions[ext].isLogoutMethod(submethod)) {
+          this.handleLogout()
         }
         return result
       }
@@ -310,7 +319,6 @@ export class Aioha implements AiohaOperations {
    * @returns The login result.
    */
   async login(provider: Providers, username: string, options: LoginOptions): Promise<LoginResult> {
-    if (this.isLoggedIn()) throw new Error('already logged in')
     const check = this.loginCheck(provider, username, options)
     if (!check.success) return check
     const result = await this.providers[provider]!.login(username, {
@@ -336,7 +344,6 @@ export class Aioha implements AiohaOperations {
    * @returns The login result.
    */
   async loginAndDecryptMemo(provider: Providers, username: string, options: LoginOptions): Promise<LoginResult> {
-    if (this.isLoggedIn()) throw new Error('already logged in')
     const check = this.loginCheck(provider, username, options)
     if (!check.success) return check
     if (!options || typeof options.msg !== 'string' || !options.msg.startsWith('#'))
@@ -387,6 +394,10 @@ export class Aioha implements AiohaOperations {
     if (this.user && this.currentProvider) {
       await this.providers[this.currentProvider]!.logout()
     }
+    this.handleLogout()
+  }
+
+  private handleLogout() {
     delete this.user
     delete this.currentProvider
     if (this.isBrowser()) {

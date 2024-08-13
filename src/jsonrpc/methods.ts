@@ -7,6 +7,7 @@ export interface AiohaExtension {
   isValidMethod: (method: string) => boolean
   isAuthRequired: (method: string) => boolean
   isLoginMethod: (method: string) => boolean
+  isLogoutMethod: (method: string) => boolean
   getMethodPrefix: () => string
   request: (core: AiohaProviderBase, method: string, params: any) => Promise<any>
 }
@@ -25,6 +26,13 @@ const CoreRpcMethods: {
       msg: params.message,
       keyType: params.key_type
     })
+  },
+  logout: async (core: AiohaProviderBase): Promise<OperationResult> => {
+    await core.logout()
+    return {
+      success: true,
+      result: ''
+    }
   },
   decrypt_memo: (core: AiohaProviderBase, params: MessageKeyType): Promise<OperationResult> => {
     return core.decryptMemo(params.message, params.key_type)
@@ -49,6 +57,9 @@ export const CoreRpc: AiohaExtension = {
   },
   isLoginMethod: (method: string) => {
     return method === 'login' || method === 'login_memo'
+  },
+  isLogoutMethod: (method: string) => {
+    return method === 'logout'
   },
   getMethodPrefix: () => {
     return 'aioha_api.'
