@@ -3,7 +3,6 @@ import { Operation, Transaction, CommentOptionsOperation } from '@hiveio/dhive'
 import { AiohaProviderBase } from './provider.js'
 import { Asset, KeyTypes, LoginOptions, LoginResult, OperationResult, Providers, SignOperationResult } from '../types.js'
 import assert from 'assert'
-import { createUnstakeHiveByVests, deleteComment } from '../opbuilder.js'
 import { KeychainMini } from '../lib/keychain-mini.js'
 
 enum KeychainKeyTypes {
@@ -252,11 +251,6 @@ export class Keychain extends AiohaProviderBase {
     return this.txResult(tx)
   }
 
-  async deleteComment(permlink: string): Promise<SignOperationResult> {
-    assert(this.username)
-    return await this.signAndBroadcastTx([deleteComment(this.username, permlink)], KeyTypes.Posting)
-  }
-
   async customJSON(keyType: KeyTypes, id: string, json: string, displayTitle?: string): Promise<SignOperationResult> {
     assert(this.username)
     return this.txResult(
@@ -325,11 +319,6 @@ export class Keychain extends AiohaProviderBase {
         hive_power: amount.toFixed(3)
       })
     )
-  }
-
-  async unstakeHiveByVests(vests: number): Promise<SignOperationResult> {
-    assert(this.username)
-    return await this.signAndBroadcastTx([createUnstakeHiveByVests(this.username, vests)], KeyTypes.Active)
   }
 
   async delegateStakedHive(to: string, amount: number): Promise<SignOperationResult> {
