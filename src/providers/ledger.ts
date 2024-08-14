@@ -31,6 +31,23 @@ const makePath = (role: SlipRole, accountIdx: number, keyIdx: number) => {
   return `m/48'/13'/${role}'/${accountIdx}'/${keyIdx}'`
 }
 
+// list of error codes: https://gitlab.com/engrave/ledger/app-hive/-/blob/master/doc/COMMANDS.md#status-words
+const errorCodes: {
+  [code: number]: {
+    code: number
+    msg: string
+  }
+} = {
+  0x6985: {
+    code: 4001,
+    msg: 'Request has been rejected'
+  },
+  0xb006: {
+    code: 5904,
+    msg: 'Hash signing is not enabled'
+  }
+}
+
 // https://gitlab.com/engrave/ledger/hiveledger/-/blob/main/src/modules/hive/accountDiscovery/discoverAccounts/discoverAccounts.ts
 const searchAccounts = async (role: SlipRole, app: LedgerApp, targetUser?: string, api?: string) => {
   const foundAccounts: DiscoveredAccs[] = []
@@ -160,16 +177,17 @@ export class Ledger extends AiohaProviderBase {
             publicKey: userFound.pubkey,
             username
           }
-        } catch (e) {
+        } catch (e: any) {
           await this.closeConnection()
+          const statusCode: number = e.statusCode
           return {
             provider: Providers.Ledger,
             success: false,
-            errorCode: 5903,
-            error: (e as any).message ?? 'Failed to obtain message signature'
+            errorCode: errorCodes[statusCode] ? errorCodes[statusCode].code : 5903,
+            error: errorCodes[statusCode] ? errorCodes[statusCode].msg : e.message ?? e.toString()
           }
         }
-      } catch {
+      } catch (e) {
         await this.closeConnection()
         return {
           provider: Providers.Ledger,
@@ -235,11 +253,12 @@ export class Ledger extends AiohaProviderBase {
         success: true,
         result: signature
       }
-    } catch (e) {
+    } catch (e: any) {
+      const statusCode: number = e.statusCode
       return {
         success: false,
-        errorCode: 5903,
-        error: (e as any).message ?? 'Unknown error'
+        errorCode: errorCodes[statusCode] ? errorCodes[statusCode].code : 5903,
+        error: errorCodes[statusCode] ? errorCodes[statusCode].msg : e.message ?? e.toString()
       }
     }
   }
@@ -253,11 +272,12 @@ export class Ledger extends AiohaProviderBase {
         success: true,
         result: signedTx
       }
-    } catch (e) {
+    } catch (e: any) {
+      const statusCode: number = e.statusCode
       return {
         success: false,
-        errorCode: 5903,
-        error: (e as any).message ?? 'Unknown error'
+        errorCode: errorCodes[statusCode] ? errorCodes[statusCode].code : 5903,
+        error: errorCodes[statusCode] ? errorCodes[statusCode].msg : e.message ?? e.toString()
       }
     }
   }
