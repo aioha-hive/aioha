@@ -315,14 +315,16 @@ export class Aioha implements AiohaOperations {
             keyType: loginParams.key_type
           })
           if (!loginCheck.success) throw new AiohaRpcError(loginCheck.errorCode, loginCheck.error)
-        }
-        const result = await this.extensions[ext].request(this.providers[this.getCurrentProvider()!]!, submethod, args.params)
-        if (this.extensions[ext].isLoginMethod(submethod)) {
+          const result = await this.extensions[ext].request(this.providers[loginParams.provider]!, submethod, args.params)
           this.setUserAndProvider(result.username, result.provider)
-        } else if (this.extensions[ext].isLogoutMethod(submethod)) {
-          this.handleLogout()
+          return result
+        } else {
+          const result = await this.extensions[ext].request(this.providers[this.getCurrentProvider()!]!, submethod, args.params)
+          if (this.extensions[ext].isLogoutMethod(submethod)) {
+            this.handleLogout()
+          }
+          return result
         }
-        return result
       }
     }
 
