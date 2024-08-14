@@ -122,6 +122,8 @@ export class Aioha implements AiohaOperations {
    * Register Ledger provider.
    */
   registerLedger() {
+    // the provider defined assumes browser env although we could make it work on nodejs
+    if (!this.isBrowser()) throw new Error(NON_BROWSER_ERR)
     this.providers.ledger = new Ledger(this.api)
   }
 

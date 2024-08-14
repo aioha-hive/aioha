@@ -4,15 +4,9 @@ import { Transaction, Operation } from '@hiveio/dhive'
 import { LoginOptions, LoginResult, OperationResult, SignOperationResult, KeyTypes, Providers } from '../types.js'
 import { broadcastTx, getKeyRefs } from '../rpc.js'
 import { constructTxHeader } from '../opbuilder.js'
-import type CryptoJSType from 'crypto-js'
-
-let CryptoJS: typeof CryptoJSType
+import { sha256 } from '../lib/sha256-browser.js'
 
 const CONN_ERROR = 'Failed to establish connection to the device'
-
-const sha256 = (input: string) => {
-  return CryptoJS.SHA256(input).toString(CryptoJS.enc.Hex)
-}
 
 enum SlipRole {
   owner = 0,
@@ -96,6 +90,7 @@ export class Ledger extends AiohaProviderBase {
   private path?: string
   private username?: string
   private provider?: LedgerApp
+  sha256 = sha256
 
   constructor(api: string) {
     super(api)
@@ -116,7 +111,6 @@ export class Ledger extends AiohaProviderBase {
         this.provider = new LedgerApp(t)
         t.on('disconnect', () => delete this.provider)
       }
-      CryptoJS = (await import(/* webpackChunkName: 'cryptojs' */ 'crypto-js')).default
       return true
     } catch {
       return false
@@ -155,7 +149,7 @@ export class Ledger extends AiohaProviderBase {
           // obtain signature
           // message signing is supported as of v1.2.0 however it isn't on ledger live yet :\
           // const signature = await app.signMessage(options.msg ?? 'Aioha app login', userFound.path)
-          const signature = await this.provider!.signHash(sha256(options.msg ?? 'Aioha app login'), userFound.path)
+          const signature = await this.provider!.signHash(await this.sha256(options.msg ?? 'Aioha app login'), userFound.path)
           this.username = username
           this.path = userFound.path
           localStorage.setItem('ledgerPath', this.path)
@@ -236,7 +230,7 @@ export class Ledger extends AiohaProviderBase {
     if (!(await this.checkConnection())) return connectionFailedError
     if (!this.path) throw new Error('no path?')
     try {
-      const signature = await this.provider!.signHash(sha256(message), this.path)
+      const signature = await this.provider!.signHash(await this.sha256(message), this.path)
       return {
         success: true,
         result: signature
