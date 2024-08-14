@@ -1,5 +1,5 @@
 import { SignedTransaction } from '@hiveio/dhive'
-import { AiohaRpcError } from './jsonrpc/eip1193-types'
+import { AiohaRpcError } from './jsonrpc/eip1193-types.js'
 
 export const DEFAULT_API = 'https://techcoderx.com'
 export const FALLBACK_APIS = [
