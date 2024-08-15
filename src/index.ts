@@ -68,6 +68,7 @@ export class Aioha implements AiohaOperations {
   private currentProvider?: Providers
   private eventEmitter: SimpleEventEmitter
   private extensions: AiohaExtension[]
+  protected publicKey?: string
   private vscNetId = 'testnet/0bf2e474-6b9e-4165-ad4e-a0d78968d20c'
   private api = DEFAULT_API
   private fallbackApis = FALLBACK_APIS
@@ -83,6 +84,20 @@ export class Aioha implements AiohaOperations {
 
   private isBrowser(): boolean {
     return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined'
+  }
+
+  private setPublicKey(newPubKey?: string) {
+    if (typeof newPubKey !== 'undefined') {
+      this.publicKey = newPubKey
+      localStorage.setItem('aiohaPubKey', newPubKey)
+    } else {
+      delete this.publicKey
+      localStorage.removeItem('aiohaPubKey')
+    }
+  }
+
+  getPublicKey() {
+    return this.publicKey
   }
 
   registerExtension(extension: AiohaExtension) {
@@ -233,7 +248,7 @@ export class Aioha implements AiohaOperations {
     for (const p in this.providers) this.providers[p as Providers]?.setApi(api)
   }
 
-  private setUserAndProvider(username: string, provider: Providers) {
+  private setUserAndProvider(username: string, provider: Providers, newPubKey?: string) {
     const previouslyConnected = this.isLoggedIn()
     this.user = username
     this.currentProvider = provider
@@ -241,6 +256,7 @@ export class Aioha implements AiohaOperations {
       localStorage.setItem('aiohaUsername', this.user)
       localStorage.setItem('aiohaProvider', this.currentProvider)
     }
+    this.setPublicKey(newPubKey)
     !previouslyConnected ? this.eventEmitter.emit('connect') : this.eventEmitter.emit('account_changed')
   }
 
@@ -316,7 +332,7 @@ export class Aioha implements AiohaOperations {
           })
           if (!loginCheck.success) throw new AiohaRpcError(loginCheck.errorCode, loginCheck.error)
           const result = await this.extensions[ext].request(this.providers[loginParams.provider]!, submethod, args.params)
-          this.setUserAndProvider(result.username, result.provider)
+          this.setUserAndProvider(result.username, result.provider, result.publicKey)
           return result
         } else {
           const result = await this.extensions[ext].request(this.providers[this.getCurrentProvider()!]!, submethod, args.params)
@@ -354,7 +370,7 @@ export class Aioha implements AiohaOperations {
       }
     })
     if (result.success) {
-      this.setUserAndProvider(result.username ?? username, provider)
+      this.setUserAndProvider(result.username ?? username, provider, result.publicKey)
     }
     return result
   }
@@ -405,7 +421,7 @@ export class Aioha implements AiohaOperations {
     }
     const result = this.providers[provider]!.loginNonInteractive(username, options)
     if (result.success) {
-      this.setUserAndProvider(result.username ?? username, provider)
+      this.setUserAndProvider(result.username ?? username, provider, result.publicKey)
     }
     return result
   }
