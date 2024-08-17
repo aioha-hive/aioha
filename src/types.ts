@@ -1,5 +1,4 @@
-import { MessageType as HaMsgType, KeyType as KeyTypes } from './lib/hiveauth-wrapper.js'
-export { KeyType as KeyTypes } from './lib/hiveauth-wrapper.js'
+import type { MessageType as HaMsgType } from './lib/hiveauth-wrapper.js'
 
 export enum Providers {
   Keychain = 'keychain',
@@ -8,6 +7,12 @@ export enum Providers {
   Ledger = 'ledger',
   PeakVault = 'peakvault',
   Custom = 'custom'
+}
+
+export enum KeyTypes {
+  Posting = 'posting',
+  Active = 'active',
+  Memo = 'memo'
 }
 
 export interface LoginOptions {

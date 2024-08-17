@@ -1,6 +1,7 @@
 // HiveAuth wrapper with types
 // https://github.com/hiveauth/hive-auth-wrapper/blob/master/has-wrapper.js
 import type CryptoJSType from 'crypto-js'
+import { KeyTypes } from '../types.js'
 
 let CryptoJS: typeof CryptoJSType
 
@@ -46,13 +47,8 @@ export type AppMetaType = {
   icon?: string
 }
 
-export enum KeyType {
-  Posting = 'posting',
-  Active = 'active',
-  Memo = 'memo'
-}
 type ChallengeDataType = {
-  key_type: KeyType
+  key_type: KeyTypes
   challenge: string
 }
 
@@ -434,7 +430,7 @@ export default {
    */
   signTx: function (
     auth: Auth,
-    key_type: KeyType,
+    key_type: KeyTypes,
     ops: any,
     broadcast: boolean,
     cbWait?: (evt: MessageType, cancel: () => void) => any

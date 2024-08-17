@@ -1,5 +1,5 @@
 import { Operation } from '@hiveio/dhive'
-import HaWrapper, { Auth, AppMetaType, KeyType } from '../lib/hiveauth-wrapper.js'
+import HaWrapper, { Auth, AppMetaType } from '../lib/hiveauth-wrapper.js'
 import { AiohaProviderBase } from './provider.js'
 import { KeyTypes, LoginOptions, LoginResult, OperationResult, Providers, SignOperationResult } from '../types.js'
 
@@ -133,7 +133,7 @@ export class HiveAuth extends AiohaProviderBase {
     }
   }
 
-  async signTx(tx: any, keyType: KeyType): Promise<OperationResult> {
+  async signTx(tx: any, keyType: KeyTypes): Promise<OperationResult> {
     // the HiveAuth sign tx without broadcast implementation at protocol level is not the same as keychain
     // as it only accepts array of tx operations as inputs without tx headers which is not very useful when
     // trying to sign a multisig transaction.
@@ -144,7 +144,7 @@ export class HiveAuth extends AiohaProviderBase {
     }
   }
 
-  async signAndBroadcastTx(tx: Operation[], keyType: KeyType): Promise<SignOperationResult> {
+  async signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult> {
     try {
       await HaWrapper.initCrypto()
       const broadcasted = await HaWrapper.signTx(this.provider, keyType, tx, true, (msg) => {
