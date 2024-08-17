@@ -90,10 +90,10 @@ export class Aioha implements AiohaOperations {
   private setPublicKey(newPubKey?: string) {
     if (typeof newPubKey !== 'undefined') {
       this.publicKey = newPubKey
-      localStorage.setItem('aiohaPubKey', newPubKey)
+      if (this.isBrowser()) localStorage.setItem('aiohaPubKey', newPubKey)
     } else {
       delete this.publicKey
-      localStorage.removeItem('aiohaPubKey')
+      if (this.isBrowser()) localStorage.removeItem('aiohaPubKey')
     }
   }
 
@@ -455,7 +455,7 @@ export class Aioha implements AiohaOperations {
   loadAuth(): boolean {
     const user = this.isBrowser() ? localStorage.getItem('aiohaUsername') : null
     const provider = (this.isBrowser() ? localStorage.getItem('aiohaProvider') : null) as Providers | null
-    const publicKey = localStorage.getItem('aiohaPubKey')
+    const publicKey = this.isBrowser() ? localStorage.getItem('aiohaPubKey') : null
     if (!provider || !user || !this.providers[provider] || !this.providers[provider]!.loadAuth(user)) return false
     if (publicKey) this.setPublicKey(publicKey)
     this.user = user
