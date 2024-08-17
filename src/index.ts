@@ -444,6 +444,7 @@ export class Aioha implements AiohaOperations {
       localStorage.removeItem('aiohaUsername')
       localStorage.removeItem('aiohaProvider')
     }
+    this.setPublicKey()
     this.eventEmitter.emit('disconnect')
   }
 
