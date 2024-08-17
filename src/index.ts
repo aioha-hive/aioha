@@ -50,6 +50,7 @@ const CoreRpcGetters: {
   get_registered_providers: (core: Aioha) => core.getProviders(),
   get_current_provider: (core: Aioha) => core.getCurrentProvider(),
   get_current_user: (core: Aioha) => core.getCurrentUser(),
+  get_public_key: (core: Aioha) => core.getPublicKey(),
   is_logged_in: (core: Aioha) => core.isLoggedIn(),
   is_provider_registered: (core: Aioha, params: IsProviderRegistered) =>
     params.enabled ? core.isProviderEnabled(params.provider) : core.isProviderRegistered(params.provider)
@@ -453,7 +454,9 @@ export class Aioha implements AiohaOperations {
   loadAuth(): boolean {
     const user = this.isBrowser() ? localStorage.getItem('aiohaUsername') : null
     const provider = (this.isBrowser() ? localStorage.getItem('aiohaProvider') : null) as Providers | null
+    const publicKey = localStorage.getItem('aiohaPubKey')
     if (!provider || !user || !this.providers[provider] || !this.providers[provider]!.loadAuth(user)) return false
+    if (publicKey) this.setPublicKey(publicKey)
     this.user = user
     this.currentProvider = provider
     this.eventEmitter.emit('connect')
