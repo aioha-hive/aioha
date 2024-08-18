@@ -250,7 +250,7 @@ const check = async (auth?: Auth | null, challenge?: ChallengeDataType) => {
   }
   if (challenge) {
     if (challenge.key_type && typeof challenge.key_type !== 'string') return 'missing or invalid challenge_data.key_type'
-    if (challenge.challenge && typeof challenge.challenge == 'string') return 'missing or invalid challenge_data.challenge'
+    if (challenge.challenge && typeof challenge.challenge !== 'string') return 'missing or invalid challenge_data.challenge'
   }
   if (!(await checkConnection())) return 'failed to connect to HiveAuth server'
   return null

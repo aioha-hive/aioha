@@ -45,7 +45,7 @@ export class HiveAuth extends AiohaProviderBase {
         username,
         {
           key_type: options.keyType,
-          challenge: options.msg ?? ''
+          challenge: options.msg ?? window.crypto.randomUUID()
         },
         options.hiveauth.cbWait
       )
