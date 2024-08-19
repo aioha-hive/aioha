@@ -151,6 +151,18 @@
             )
           )
         }
+        document.getElementById('comment-btn').onclick = async () => {
+          console.log(
+            await aioha.comment(
+              document.getElementById('comment-pa').value,
+              document.getElementById('comment-pp').value,
+              document.getElementById('comment-permlink').value,
+              document.getElementById('comment-title').value,
+              document.getElementById('comment-body').value,
+              document.getElementById('comment-json').value
+            )
+          )
+        }
         document.getElementById('vsc-call').onclick = async () => {
           let payload = document.getElementById('vsc-payload').value
           try {
@@ -245,6 +257,14 @@
     </select>
     <button id="rm-acc-auth-btn">Remove</button>
     <br />
+    <h2>Comment</h2>
+    <input type="text" id="comment-pa" placeholder="Parent Author" value="skatedev" />
+    <input type="text" id="comment-pp" placeholder="Parent Permlink" value="re-skatedev-sidr6t" />
+    <input type="text" id="comment-permlink" placeholder="Permlink" />
+    <input type="text" id="comment-title" placeholder="Title" /><br /><br />
+    <textarea type="text" id="comment-body" placeholder="Body"></textarea>
+    <textarea type="text" id="comment-json" placeholder="Json"></textarea><br />
+    <button id="comment-btn">Comment</button>
     <h2>VSC Contract Call</h2>
     <input type="text" id="vsc-contract-id" placeholder="Contract ID" style="width: 250px" />
     <input type="text" id="vsc-action" placeholder="Action" /><br /><br />
