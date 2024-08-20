@@ -232,6 +232,8 @@ export class Keychain extends AiohaProviderBase {
     json: string,
     options?: CommentOptionsOperation[1] | undefined
   ): Promise<SignOperationResult> {
+    // remove when and if keychain fixes this issue
+    if (pa && pp) return await super.comment(pa, pp, permlink, title, body, json, options)
     const tx = await this.provider.post({
       username: this.username,
       permlink,
