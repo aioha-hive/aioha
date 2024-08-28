@@ -30,6 +30,11 @@ import { AiohaRpcError, RequestArguments } from './jsonrpc/eip1193-types.js'
 import { IsProviderRegistered, LoginParam } from './jsonrpc/param-types.js'
 import { AiohaExtension, CoreRpc } from './jsonrpc/methods.js'
 
+interface SetupOptions {
+  hivesigner?: HiveSignerOptions
+  hiveauth?: AppMetaType
+}
+
 const notLoggedInResult: OperationError = {
   success: false,
   errorCode: 4900,
@@ -99,6 +104,21 @@ export class Aioha implements AiohaOperations {
 
   getPublicKey() {
     return this.publicKey
+  }
+
+  setup(options?: SetupOptions) {
+    if (!options) options = {}
+    if (!options.hiveauth)
+      options.hiveauth = {
+        name: 'Aioha Generic App'
+      }
+
+    this.registerKeychain()
+    this.registerLedger()
+    this.registerPeakVault()
+    this.registerHiveAuth(options.hiveauth)
+    if (options.hivesigner) this.registerHiveSigner(options.hivesigner)
+    this.loadAuth()
   }
 
   registerExtension(extension: AiohaExtension) {
@@ -934,20 +954,8 @@ export class Aioha implements AiohaOperations {
   }
 }
 
-export const initAioha = (options?: { hivesigner?: HiveSignerOptions; hiveauth?: AppMetaType }): Aioha => {
-  if (!options) options = {}
-  if (!options.hiveauth)
-    options.hiveauth = {
-      name: 'Aioha Generic App'
-    }
-
+export const initAioha = (options?: SetupOptions): Aioha => {
   const aioha = new Aioha()
-  aioha.registerKeychain()
-  aioha.registerLedger()
-  aioha.registerPeakVault()
-  aioha.registerHiveAuth(options.hiveauth)
-  if (options.hivesigner) aioha.registerHiveSigner(options.hivesigner)
-  aioha.loadAuth()
-
+  aioha.setup(options)
   return aioha
 }
