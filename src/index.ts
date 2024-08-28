@@ -107,18 +107,20 @@ export class Aioha implements AiohaOperations {
   }
 
   setup(options?: SetupOptions) {
-    if (!options) options = {}
-    if (!options.hiveauth)
-      options.hiveauth = {
-        name: 'Aioha Generic App'
-      }
+    if (!this.isLoggedIn()) {
+      if (!options) options = {}
+      if (!options.hiveauth)
+        options.hiveauth = {
+          name: 'Aioha Generic App'
+        }
 
-    this.registerKeychain()
-    this.registerLedger()
-    this.registerPeakVault()
-    this.registerHiveAuth(options.hiveauth)
-    if (options.hivesigner) this.registerHiveSigner(options.hivesigner)
-    this.loadAuth()
+      this.registerKeychain()
+      this.registerLedger()
+      this.registerPeakVault()
+      this.registerHiveAuth(options.hiveauth)
+      if (options.hivesigner) this.registerHiveSigner(options.hivesigner)
+      this.loadAuth()
+    }
   }
 
   registerExtension(extension: AiohaExtension) {
