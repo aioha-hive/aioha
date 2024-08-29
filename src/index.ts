@@ -61,6 +61,9 @@ const CoreRpcGetters: {
     params.enabled ? core.isProviderEnabled(params.provider) : core.isProviderRegistered(params.provider)
 }
 
+/**
+ * Main Aioha class.
+ */
 export class Aioha implements AiohaOperations {
   private providers: {
     keychain?: Keychain
@@ -102,7 +105,11 @@ export class Aioha implements AiohaOperations {
     }
   }
 
-  getPublicKey() {
+  /**
+   * Get last public key returned from `login()`.
+   * @returns {string | undefined} STM-prefixed Hive public key
+   */
+  getPublicKey(): string | undefined {
     return this.publicKey
   }
 
@@ -173,6 +180,10 @@ export class Aioha implements AiohaOperations {
     this.providers.peakvault = new PeakVault()
   }
 
+  /**
+   * Register a custom provider for use in Aioha.
+   * @param {AiohaProviderBase} providerImpl An instance of the provider class that implements [AiohaProviderBase](https://github.com/aioha-hive/aioha/blob/main/src/providers/provider.ts).
+   */
   registerCustomProvider(providerImpl: AiohaProviderBase) {
     this.providers.custom = providerImpl
   }
@@ -316,6 +327,15 @@ export class Aioha implements AiohaOperations {
     }
   }
 
+  /**
+   * EIP-1193 style JSON-RPC request.
+   *
+   * See [EIP-1193](https://eips.ethereum.org/EIPS/eip-1193) for spec details.
+   *
+   * See [Aioha RPC specs](https://aioha.dev/docs/core/jsonrpc) for Aioha RPC methods.
+   * @param {RequestArguments} args JSON-RPC call body
+   * @returns RPC call result
+   */
   async request(args: RequestArguments): Promise<unknown> {
     // 0. pre-validation
     if (typeof args !== 'object' || typeof args.method !== 'string' || (args.params && typeof args.params !== 'object'))
@@ -956,6 +976,11 @@ export class Aioha implements AiohaOperations {
   }
 }
 
+/**
+ * Helper function that initizes an instance of Aioha class and setup the providers. Refer to the [docs](https://aioha.dev/docs/core/usage#instantiation) for details.
+ * @param {SetupOptions} options Setup config for the providers
+ * @returns {Aioha} an Aioha instance
+ */
 export const initAioha = (options?: SetupOptions): Aioha => {
   const aioha = new Aioha()
   aioha.setup(options)
