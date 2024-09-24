@@ -217,6 +217,8 @@ export class Aioha implements AiohaOperations {
     switch (provider) {
       case Providers.Keychain:
         return !!this.providers.keychain && Keychain.isInstalled()
+      case Providers.PeakVault:
+        return !!this.providers.peakvault && this.providers.peakvault.isInstalled()
       default:
         return !!this.providers[provider]
     }
