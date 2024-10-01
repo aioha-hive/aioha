@@ -14,10 +14,6 @@ export interface ClientConfig {
   accessToken?: string
 }
 
-export interface LoginOptions {
-  state: string
-}
-
 export interface SendResponse {
   memoDecoded?: string
   result: {
