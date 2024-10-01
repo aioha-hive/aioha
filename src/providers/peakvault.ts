@@ -117,12 +117,6 @@ export class PeakVault extends AiohaProviderBase {
   }
 
   async signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResult> {
-    if (keyType === KeyTypes.Memo)
-      return {
-        success: false,
-        errorCode: 5003,
-        error: 'keyType must not be memo'
-      }
     try {
       const res: VaultResponse = await window.peakvault.requestSignTx(this.getUser()!, tx, keyType)
       return {
@@ -140,12 +134,6 @@ export class PeakVault extends AiohaProviderBase {
   }
 
   async signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult> {
-    if (keyType === KeyTypes.Memo)
-      return {
-        success: false,
-        errorCode: 5003,
-        error: 'keyType must not be memo'
-      }
     try {
       const res: VaultBroadcastResponse = await window.peakvault.requestBroadcast(this.getUser()!, tx, keyType)
       return {

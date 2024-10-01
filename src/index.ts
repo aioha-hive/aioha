@@ -538,6 +538,7 @@ export class Aioha implements AiohaOperations {
    */
   async signTx(tx: Transaction, keyType: KeyTypes): Promise<OperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
+    else if (keyType === KeyTypes.Memo) return noMemoAllowResult
     return await this.providers[this.getCurrentProvider()!]!.signTx(tx, keyType)
   }
 
@@ -549,7 +550,7 @@ export class Aioha implements AiohaOperations {
    */
   async signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<OperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    else if (keyType === 'memo') return noMemoAllowResult
+    else if (keyType === KeyTypes.Memo) return noMemoAllowResult
     return await this.providers[this.getCurrentProvider()!]!.signAndBroadcastTx(tx, keyType)
   }
 
