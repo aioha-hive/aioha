@@ -1,10 +1,9 @@
 import { Client } from '../lib/hivesigner.js'
 import { encodeOps } from '../lib/hive-uri.js'
-import { CommentOptionsOperation, Operation, Transaction } from '@hiveio/dhive'
+import { Operation, Transaction } from '@hiveio/dhive'
 import { HiveSignerError, ClientConfig } from '../lib/hivesigner-types.js'
 import { AiohaProviderBase } from './provider.js'
 import { KeyTypes, LoginOptions, LoginOptionsNI, LoginResult, OperationResult, Providers, SignOperationResult } from '../types.js'
-import { createComment, createCustomJSON, createVote, deleteComment } from '../opbuilder.js'
 
 // https://github.com/ecency/hivesigner-api/blob/9fa9f51f319b5d9f9d86a4a028fcdf71b10b7836/config.json
 const authorizedOps = [
