@@ -45,8 +45,8 @@
   "dependencies": {
     "@engrave/ledger-app-hive": "^3.5.6",
     "@hiveio/dhive": "^1.2.8",
-    "@ledgerhq/hw-transport-webusb": "^6.28.6",
-    "hive-tx": "^5.4.3",
+    "@ledgerhq/hw-transport-webusb": "^6.29.4",
+    "hive-tx": "^5.4.6",
     "js-md5": "^0.8.3",
     "keychain-sdk": "^0.6.1"
   }
