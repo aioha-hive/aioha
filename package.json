@@ -1,6 +1,6 @@
 {
   "name": "@aioha/aioha",
-  "version": "1.5.4",
+  "version": "1.5.5",
   "description": "All-In-One Hive Authentication API",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -35,7 +35,6 @@
     "README.md"
   ],
   "devDependencies": {
-    "@types/crypto-js": "^4.2.2",
     "@types/uuid": "^9.0.8",
     "buffer": "^6.0.3",
     "ts-loader": "^9.5.1",
@@ -47,8 +46,8 @@
     "@engrave/ledger-app-hive": "^3.5.6",
     "@hiveio/dhive": "^1.2.8",
     "@ledgerhq/hw-transport-webusb": "^6.28.6",
-    "crypto-js": "^4.2.0",
     "hive-tx": "^5.4.3",
+    "js-md5": "^0.8.3",
     "keychain-sdk": "^0.6.1"
   }
 }

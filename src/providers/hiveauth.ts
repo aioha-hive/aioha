@@ -39,7 +39,6 @@ export class HiveAuth extends AiohaProviderBase {
         error: 'hiveauth and keyType options must be present'
       }
     try {
-      await HaWrapper.initCrypto()
       const login = await HaWrapper.authenticate(
         this.provider,
         username,
@@ -114,7 +113,6 @@ export class HiveAuth extends AiohaProviderBase {
 
   async signMessage(message: string, keyType: KeyTypes): Promise<OperationResult> {
     try {
-      await HaWrapper.initCrypto()
       const signed = await HaWrapper.challenge(this.provider, {
         key_type: keyType,
         challenge: message
@@ -146,7 +144,6 @@ export class HiveAuth extends AiohaProviderBase {
 
   async signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult> {
     try {
-      await HaWrapper.initCrypto()
       const broadcasted = await HaWrapper.signTx(this.provider, keyType, tx, true, (msg) => {
         console.log('Please approve tx in HiveAuth PKSA, uuid: ' + msg.uuid)
       })

@@ -1,9 +1,9 @@
 // HiveAuth wrapper with types
 // https://github.com/hiveauth/hive-auth-wrapper/blob/master/has-wrapper.js
-import type CryptoJSType from 'crypto-js'
 import { KeyTypes } from '../types.js'
 
-let CryptoJS: typeof CryptoJSType
+let aesEncrypt: (text: string, password: string) => Promise<string>,
+  aesDecrypt: (text: string, password: string) => Promise<string>
 
 enum CMD {
   CONNECTED = 'connected',
@@ -185,6 +185,9 @@ async function attach(uuid: string) {
 }
 
 async function checkConnection(uuid?: string) {
+  const aes = await import(/* webpackChunkName: 'hiveauth-aes' */ './hiveauth-aes.js')
+  aesEncrypt = aes.aesEncrypt
+  aesDecrypt = aes.aesDecrypt
   if ('WebSocket' in window) {
     // The browser support Websocket
     if (HAS_connected) {
@@ -242,7 +245,6 @@ export class Auth {
 }
 
 const check = async (auth?: Auth | null, challenge?: ChallengeDataType) => {
-  if (!CryptoJS) return 'call initCrypto() first'
   if (auth) {
     if (!auth.username && typeof auth.username !== 'string') return 'invalid auth.username'
     else if (!auth.key || typeof auth.key !== 'string') return 'missing or invalid auth.key'
@@ -285,10 +287,6 @@ export default {
     return await checkConnection()
   },
 
-  initCrypto: async function () {
-    CryptoJS = (await import(/* webpackChunkName: 'cryptojs' */ 'crypto-js')).default
-  },
-
   /**
    * Sends an authentication request to the server
    * @param {Object} auth
@@ -314,10 +312,10 @@ export default {
 
         // initialize key to encrypt communication with PKSA
         const auth_key = auth.key || window.crypto.randomUUID()
-        const data = CryptoJS.AES.encrypt(
+        const data = await aesEncrypt(
           JSON.stringify({ app: auth.getAppMetadata(), challenge: challenge_data, token: auth.token }),
           auth_key
-        ).toString()
+        )
         const payload: {
           cmd: CMD
           account: string
@@ -329,7 +327,7 @@ export default {
         //          When the PKSA will process the "auth_req", it will bypass the offline reading of the encryption key
         if (HAS_options.auth_key_secret) {
           // Encrypt auth_key before sending it to the HAS
-          payload.auth_key = CryptoJS.AES.encrypt(auth_key, HAS_options.auth_key_secret).toString()
+          payload.auth_key = await aesEncrypt(auth_key, HAS_options.auth_key_secret)
         }
 
         send(JSON.stringify(payload))
@@ -374,9 +372,7 @@ export default {
               if (req_ack) {
                 try {
                   // Try to decrypt and parse payload data
-                  const ack_data: AuthAckDataType = JSON.parse(
-                    CryptoJS.AES.decrypt(req_ack.data, auth_key).toString(CryptoJS.enc.Utf8)
-                  )
+                  const ack_data: AuthAckDataType = JSON.parse(await aesDecrypt(req_ack.data, auth_key))
                   // authentication approved
                   clearInterval(wait)
                   if (trace) console.log(`auth_ack found: ${JSON.stringify(req_ack)}`)
@@ -392,7 +388,7 @@ export default {
                 }
               } else if (req_nack) {
                 // validate uuid
-                if (uuid == CryptoJS.AES.decrypt(req_nack.data, auth_key).toString(CryptoJS.enc.Utf8)) {
+                if (uuid == (await aesDecrypt(req_nack.data, auth_key))) {
                   // authentication rejected
                   clearInterval(wait)
                   reject(req_nack)
@@ -441,10 +437,7 @@ export default {
       if (!ops || !Array.isArray(ops) || ops.length === 0) return reject(new HiveAuthInternalError('missing or invalid ops'))
 
       // Encrypt the ops with the key we provided to the PKSA
-      const data = CryptoJS.AES.encrypt(
-        JSON.stringify({ key_type: key_type, ops: ops, broadcast, nonce: Date.now() }),
-        auth.key!
-      ).toString()
+      const data = await aesEncrypt(JSON.stringify({ key_type: key_type, ops: ops, broadcast, nonce: Date.now() }), auth.key!)
       // Send the sign request to the HAS
       const payload = { cmd: CMD.SIGN_REQ, account: auth.username, data: data, token: auth.token }
       send(JSON.stringify(payload))
@@ -495,7 +488,7 @@ export default {
               // request error
               clearInterval(wait)
               // Decrypt received error message
-              const error = CryptoJS.AES.decrypt(req_err.error!, auth.key!).toString(CryptoJS.enc.Utf8)
+              const error = await aesDecrypt(req_err.error!, auth.key!)
               reject(new Error(error))
             }
           }
@@ -527,7 +520,7 @@ export default {
       if (typeof initialChecks === 'string') return reject(new HiveAuthInternalError(initialChecks))
 
       // Encrypt the challenge data with the key we provided to the PKSA
-      const data = CryptoJS.AES.encrypt(JSON.stringify(challenge_data), auth.key!).toString()
+      const data = await aesEncrypt(JSON.stringify(challenge_data), auth.key!)
       // Send the challenge request to the HAS
       const payload = { cmd: CMD.CHALLENGE_REQ, account: auth.username, data: data, token: auth.token }
       send(JSON.stringify(payload))
@@ -569,9 +562,7 @@ export default {
               // request approved
               try {
                 // Try to decrypt and parse payload data
-                const result: ChallengeResult = JSON.parse(
-                  CryptoJS.AES.decrypt(req_ack.data, auth.key!).toString(CryptoJS.enc.Utf8)
-                )
+                const result: ChallengeResult = JSON.parse(await aesDecrypt(req_ack.data, auth.key!))
                 // challenge approved
                 clearInterval(wait)
                 if (trace) console.log(`challenge_ack found: ${JSON.stringify(req_ack)}`)
@@ -587,7 +578,7 @@ export default {
               // request error
               clearInterval(wait)
               // Decrypt received error message
-              const error = CryptoJS.AES.decrypt(req_err.error!, auth.key!).toString(CryptoJS.enc.Utf8)
+              const error = await aesDecrypt(req_err.error!, auth.key!)
               reject(new Error(error))
             }
           }
