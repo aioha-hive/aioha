@@ -150,24 +150,12 @@ export abstract class AiohaProviderBase implements AiohaOperations {
     return await this.signAndBroadcastTx([createSetProxy(this.getUser()!, proxy)], KeyTypes.Active)
   }
 
-  async addAccountAuthority(username: string, role: KeyTypes, weight: number): Promise<SignOperationResult> {
-    if (this.getUser()! === username)
-      return {
-        success: false,
-        errorCode: 5201,
-        error: 'cannot add itself as account auth'
-      }
-    return await this.modifyAuth('add', 'account', username, role, weight)
+  addAccountAuthority(username: string, role: KeyTypes, weight: number): Promise<SignOperationResult> {
+    return this.modifyAuth('add', 'account', username, role, weight)
   }
 
-  async removeAccountAuthority(username: string, role: KeyTypes): Promise<SignOperationResult> {
-    if (this.getUser()! === username)
-      return {
-        success: false,
-        errorCode: 5201,
-        error: 'cannot remove itself as account auth'
-      }
-    return await this.modifyAuth('remove', 'account', username, role, 0)
+  removeAccountAuthority(username: string, role: KeyTypes): Promise<SignOperationResult> {
+    return this.modifyAuth('remove', 'account', username, role, 0)
   }
 
   addKeyAuthority(publicKey: string, role: KeyTypes, weight: number): Promise<SignOperationResult> {
@@ -189,13 +177,19 @@ export abstract class AiohaProviderBase implements AiohaOperations {
       return {
         success: false,
         errorCode: 5005,
-        error: `cannot add ${type} memo auth`
+        error: `cannot ${action} ${type} memo auth`
       }
     else if (action === 'add' && weight <= 0)
       return {
         success: false,
         errorCode: -32003,
         error: 'weight must be greater than 0'
+      }
+    else if (type === 'account' && this.getUser()! === theAuth)
+      return {
+        success: false,
+        errorCode: 5201,
+        error: `cannot ${action} itself as account auth`
       }
     try {
       const acc = await getAccounts([this.getUser()!], this.api)
