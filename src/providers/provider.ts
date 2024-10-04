@@ -157,7 +157,7 @@ export abstract class AiohaProviderBase implements AiohaOperations {
         errorCode: 5201,
         error: 'cannot add itself as account auth'
       }
-    return await this.addAuth('account', username, role, weight)
+    return await this.modifyAuth('add', 'account', username, role, weight)
   }
 
   async removeAccountAuthority(username: string, role: KeyTypes): Promise<SignOperationResult> {
@@ -167,25 +167,31 @@ export abstract class AiohaProviderBase implements AiohaOperations {
         errorCode: 5201,
         error: 'cannot remove itself as account auth'
       }
-    return await this.removeAuth('account', username, role)
+    return await this.modifyAuth('remove', 'account', username, role, 0)
   }
 
   addKeyAuthority(publicKey: string, role: KeyTypes, weight: number): Promise<SignOperationResult> {
-    return this.addAuth('key', publicKey, role, weight)
+    return this.modifyAuth('add', 'key', publicKey, role, weight)
   }
 
   removeKeyAuthority(publicKey: string, role: KeyTypes): Promise<SignOperationResult> {
-    return this.removeAuth('key', publicKey, role)
+    return this.modifyAuth('remove', 'key', publicKey, role, 0)
   }
 
-  async addAuth(type: 'account' | 'key', theAuth: string, role: KeyTypes, weight: number): Promise<SignOperationResult> {
+  async modifyAuth(
+    action: 'add' | 'remove',
+    type: 'account' | 'key',
+    theAuth: string,
+    role: KeyTypes,
+    weight: number
+  ): Promise<SignOperationResult> {
     if (role === KeyTypes.Memo)
       return {
         success: false,
         errorCode: 5005,
         error: `cannot add ${type} memo auth`
       }
-    else if (weight <= 0)
+    else if (action === 'add' && weight <= 0)
       return {
         success: false,
         errorCode: -32003,
@@ -201,69 +207,31 @@ export abstract class AiohaProviderBase implements AiohaOperations {
         }
       const currentAuths = acc.result[0][role]
       const authExists = currentAuths[`${type}_auths`].findIndex((a: [string, number]) => a[0] === theAuth)
-      if (authExists > -1) {
-        // update weight if key auth already exists
-        if (currentAuths[`${type}_auths`][authExists][1] !== weight) {
-          currentAuths[`${type}_auths`][authExists][1] = weight
-        } else
+      if (action === 'add') {
+        if (authExists > -1) {
+          // update weight if key auth already exists
+          if (currentAuths[`${type}_auths`][authExists][1] !== weight) {
+            currentAuths[`${type}_auths`][authExists][1] = weight
+          } else
+            return {
+              success: false,
+              errorCode: 5200,
+              error: 'Nothing to update'
+            }
+        } else {
+          // push new auth if not exist
+          currentAuths[`${type}_auths`].push([theAuth, weight])
+          currentAuths[`${type}_auths`].sort((a: [string, number], b: [string, number]) => a[0].localeCompare(b[0]))
+        }
+      } else if (action === 'remove') {
+        if (authExists > -1) {
+          currentAuths[`${type}_auths`].splice(authExists, 1)
+        } else {
           return {
             success: false,
             errorCode: 5200,
-            error: 'Nothing to update'
+            error: 'Nothing to remove'
           }
-      } else {
-        // push new auth if not exist
-        currentAuths[`${type}_auths`].push([theAuth, weight])
-        currentAuths[`${type}_auths`].sort((a: [string, number], b: [string, number]) => a[0].localeCompare(b[0]))
-      }
-      return await this.signAndBroadcastTx(
-        [
-          [
-            'account_update',
-            {
-              account: this.getUser()!,
-              posting: acc.result[0].posting as AuthorityType,
-              active: acc.result[0].active as AuthorityType,
-              memo_key: acc.result[0].memo_key,
-              json_metadata: acc.result[0].json_metadata
-            }
-          ]
-        ],
-        KeyTypes.Active
-      )
-    } catch {
-      return {
-        success: false,
-        errorCode: 5000,
-        error: 'Failed to add key auth due to unknown error'
-      }
-    }
-  }
-
-  async removeAuth(type: 'account' | 'key', theAuth: string, role: KeyTypes): Promise<SignOperationResult> {
-    if (role === KeyTypes.Memo)
-      return {
-        success: false,
-        errorCode: 5005,
-        error: `cannot remove ${type} memo auth`
-      }
-    try {
-      const acc = await getAccounts([this.getUser()!], this.api)
-      if (getAccountsErrored(acc))
-        return {
-          success: false,
-          errorCode: -32603,
-          error: `Failed to fetch current ${type} auths`
-        }
-      const currentAuths = acc.result[0][role]
-      const authExists = currentAuths[`${type}_auths`].findIndex((a: [string, number]) => a[0] === theAuth)
-      if (authExists > -1) {
-        currentAuths[`${type}_auths`].splice(authExists, 1)
-      } else {
-        return {
-          success: false,
-          errorCode: 5200,
-          error: 'Nothing to remove'
         }
       }
       return await this.signAndBroadcastTx(
@@ -285,7 +253,7 @@ export abstract class AiohaProviderBase implements AiohaOperations {
       return {
         success: false,
         errorCode: 5000,
-        error: `Failed to remove ${type} auth due to unknown error`
+        error: `Failed to ${action} ${type} auth due to unknown error`
       }
     }
   }
