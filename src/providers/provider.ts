@@ -18,6 +18,8 @@ import {
 import { hivePerVests, getAccounts, getAccountsErrored } from '../rpc.js'
 import { RequestArguments, AiohaRpcError } from '../jsonrpc/eip1193-types.js'
 
+export const DEFAULT_VSC_NET_ID = 'testnet/0bf2e474-6b9e-4165-ad4e-a0d78968d20c'
+
 export abstract class AiohaProviderBase implements AiohaOperations {
   protected api: string
 
@@ -251,6 +253,79 @@ export abstract class AiohaProviderBase implements AiohaOperations {
       }
     }
   }
+
+  async vscCallContract(
+    contractId: string,
+    action: string,
+    payload: any,
+    keyType: KeyTypes,
+    net_id: string = DEFAULT_VSC_NET_ID
+  ): Promise<SignOperationResult> {
+    return await this.customJSON(
+      keyType,
+      'vsc.tx',
+      JSON.stringify({
+        __v: '0.1',
+        __t: 'vsc-tx',
+        net_id: net_id,
+        tx: {
+          op: 'call_contract',
+          action: action,
+          contract_id: contractId,
+          payload: payload
+        }
+      })
+    )
+  }
+
+  vscTransfer(
+    to: string,
+    amount: number,
+    currency: Asset,
+    memo?: string,
+    net_id: string = DEFAULT_VSC_NET_ID
+  ): Promise<SignOperationResult> {
+    return this.vscFer('transfer', net_id, to, amount, currency, memo)
+  }
+
+  vscWithdraw(
+    to: string,
+    amount: number,
+    currency: Asset,
+    memo?: string,
+    net_id: string = DEFAULT_VSC_NET_ID
+  ): Promise<SignOperationResult> {
+    return this.vscFer('withdraw', net_id, to, amount, currency, memo)
+  }
+
+  async vscFer(
+    type: 'transfer' | 'withdraw',
+    net_id: string,
+    to: string,
+    amount: number,
+    currency: Asset,
+    memo?: string
+  ): Promise<SignOperationResult> {
+    return await this.customJSON(
+      KeyTypes.Active,
+      'vsc.tx',
+      JSON.stringify({
+        __v: '0.1',
+        __t: 'vsc-tx',
+        net_id: net_id,
+        tx: {
+          op: type,
+          payload: {
+            tk: currency,
+            to: to.startsWith('did:') || to.startsWith('hive:') ? to : `hive:${to}`,
+            from: `hive:${this.getUser()}`,
+            amount: Math.round(amount * 1000),
+            memo
+          }
+        }
+      })
+    )
+  }
 }
 
 export interface AiohaOperations {
@@ -302,4 +377,15 @@ export interface AiohaOperations {
   removeAccountAuthority(username: string, role: KeyTypes): Promise<SignOperationResult>
   addKeyAuthority(publicKey: string, role: KeyTypes, weight: number): Promise<SignOperationResult>
   removeKeyAuthority(publicKey: string, role: KeyTypes): Promise<SignOperationResult>
+
+  // vsc operations
+  vscCallContract(
+    contractId: string,
+    action: string,
+    payload: any,
+    keyType: KeyTypes,
+    net_id?: string
+  ): Promise<SignOperationResult>
+  vscTransfer(to: string, amount: number, currency: Asset, memo?: string, net_id?: string): Promise<SignOperationResult>
+  vscWithdraw(to: string, amount: number, currency: Asset, memo?: string, net_id?: string): Promise<SignOperationResult>
 }

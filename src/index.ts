@@ -21,7 +21,7 @@ import { SimpleEventEmitter } from './lib/event-emitter.js'
 import { AppMetaType } from './lib/hiveauth-wrapper.js'
 import { createVote } from './opbuilder.js'
 import { DEFAULT_API, FALLBACK_APIS, getAccounts, call } from './rpc.js'
-import { AiohaOperations, AiohaProviderBase } from './providers/provider.js'
+import { AiohaOperations, AiohaProviderBase, DEFAULT_VSC_NET_ID } from './providers/provider.js'
 import { Events } from './types.js'
 export { constructTxHeader } from './opbuilder.js'
 export { broadcastTx, call, hivePerVests } from './rpc.js'
@@ -78,7 +78,7 @@ export class Aioha implements AiohaOperations {
   private eventEmitter: SimpleEventEmitter
   private extensions: AiohaExtension[]
   protected publicKey?: string
-  private vscNetId = 'testnet/0bf2e474-6b9e-4165-ad4e-a0d78968d20c'
+  private vscNetId = DEFAULT_VSC_NET_ID
   private api = DEFAULT_API
   private fallbackApis = FALLBACK_APIS
 
@@ -951,17 +951,18 @@ export class Aioha implements AiohaOperations {
     keyType: KeyTypes = KeyTypes.Posting
   ): Promise<SignOperationResult> {
     if (keyType === 'memo') return noMemoAllowResult
-    return await this.customJSON(keyType, 'vsc.tx', {
-      __v: '0.1',
-      __t: 'vsc-tx',
-      net_id: this.vscNetId,
-      tx: {
-        op: 'call_contract',
-        action: action,
-        contract_id: contractId,
-        payload: payload
-      }
-    })
+    if (!this.isLoggedIn()) return notLoggedInResult
+    return await this.providers[this.getCurrentProvider()!]!.vscCallContract(contractId, action, payload, keyType, this.vscNetId)
+  }
+
+  async vscTransfer(to: string, amount: number, currency: Asset, memo?: string): Promise<SignOperationResult> {
+    if (!this.isLoggedIn()) return notLoggedInResult
+    return await this.providers[this.getCurrentProvider()!]!.vscTransfer(to, amount, currency, memo, this.vscNetId)
+  }
+
+  async vscWithdraw(to: string, amount: number, currency: Asset, memo?: string): Promise<SignOperationResult> {
+    if (!this.isLoggedIn()) return notLoggedInResult
+    return await this.providers[this.getCurrentProvider()!]!.vscWithdraw(to, amount, currency, memo, this.vscNetId)
   }
 
   // Event emitters
