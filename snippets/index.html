@@ -134,6 +134,15 @@
         document.getElementById('claim-rewards-btn').onclick = async () => {
           console.log(await aioha.claimRewards())
         }
+        document.getElementById('reblog-btn').onclick = async () => {
+          console.log(
+            await aioha.reblog(
+              document.getElementById('reblog-author').value,
+              document.getElementById('reblog-permlink').value,
+              document.getElementById('reblog-remove').checked
+            )
+          )
+        }
         document.getElementById('add-acc-auth-btn').onclick = async () => {
           console.log(
             await aioha.addAccountAuthority(
@@ -244,6 +253,11 @@
     <h2>Claim Rewards</h2>
     <button id="claim-rewards-btn">Claim Rewards</button>
     <br />
+    <h2>Reblog</h2>
+    <input type="text" id="reblog-author" placeholder="Author" />
+    <input type="text" id="reblog-permlink" placeholder="Permlink" />
+    <label><input type="checkbox" id="reblog-remove" />Remove Reblog?</label>
+    <button id="reblog-btn">Reblog</button>
     <h2>Add Account Auth</h2>
     <input type="text" id="add-acc-auth-username" placeholder="Account" />
     <input type="number" id="add-acc-auth-weight" placeholder="Weight" />
