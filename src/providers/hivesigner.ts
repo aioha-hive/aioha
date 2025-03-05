@@ -13,6 +13,7 @@ import {
   Providers,
   SignOperationResult
 } from '../types.js'
+import { SimpleEventEmitter } from '../lib/event-emitter.js'
 
 // https://github.com/ecency/hivesigner-api/blob/9fa9f51f319b5d9f9d86a4a028fcdf71b10b7836/config.json
 const authorizedOps = [
@@ -38,8 +39,8 @@ export class HiveSigner extends AiohaProviderBase {
   private provider: Client
   private username?: string
 
-  constructor(api: string, options: ClientConfig) {
-    super(api)
+  constructor(api: string, emitter: SimpleEventEmitter, options: ClientConfig) {
+    super(api, emitter)
     if (!options.callbackURL?.startsWith(window.location.origin))
       throw new Error('callback URL must be in the same domain or subdomain as the current page')
     this.provider = new Client(options)
@@ -47,6 +48,7 @@ export class HiveSigner extends AiohaProviderBase {
 
   async login(username: string, options: LoginOptions): Promise<LoginResult> {
     return new Promise((rs) => {
+      this.eventEmitter.emit('login_request')
       let loggedInUser: string | null, token: string | null
       const loginURL = this.getLoginURL(options, username ?? undefined)
       const hsWindow = window.open(loginURL)
@@ -229,6 +231,7 @@ export class HiveSigner extends AiohaProviderBase {
 
   private async signTxInWindow(ops: Operation[]): Promise<SignOperationResult> {
     return new Promise<SignOperationResult>((rs) => {
+      this.eventEmitter.emit('sign_tx_request')
       const signUrl =
         encodeOps(ops).replace('hive://', 'https://hivesigner.com/') +
         `?redirect_uri=${encodeURIComponent(this.provider.callbackURL)}`

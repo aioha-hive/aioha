@@ -10,12 +10,13 @@ import {
   SignOperationResult
 } from '../types.js'
 import { VaultBroadcastResponse, VaultError, VaultResponse } from '../lib/peakvault-types.js'
+import { SimpleEventEmitter } from '../lib/event-emitter.js'
 
 export class PeakVault extends AiohaProviderBase {
   private username?: string
 
-  constructor() {
-    super('')
+  constructor(emitter: SimpleEventEmitter) {
+    super('', emitter)
   }
 
   async login(username: string, options: LoginOptions): Promise<LoginResult> {
@@ -34,6 +35,7 @@ export class PeakVault extends AiohaProviderBase {
         error: 'Peak Vault extension is not installed'
       }
     try {
+      this.eventEmitter.emit('login_request')
       const res: VaultResponse = await window.peakvault.requestSignBuffer(username, options.keyType, options.msg)
       this.username = username
       return {
@@ -55,7 +57,13 @@ export class PeakVault extends AiohaProviderBase {
   }
 
   async loginAndDecryptMemo(username: string, options: LoginOptions): Promise<LoginResult> {
-    const memo = await this.decryptMemo(options.msg || window.crypto.randomUUID(), options.keyType || KeyTypes.Posting, username)
+    this.eventEmitter.emit('login_request')
+    const memo = await this.decryptMemo(
+      options.msg || window.crypto.randomUUID(),
+      options.keyType || KeyTypes.Posting,
+      username,
+      false
+    )
     if (memo.success) this.username = username
     return {
       provider: Providers.PeakVault,
@@ -99,6 +107,7 @@ export class PeakVault extends AiohaProviderBase {
       }
     }
     try {
+      this.eventEmitter.emit('memo_request')
       const encoded: VaultResponse = await window.peakvault.requestEncode(this.getUser()!, recipient, message)
       return {
         success: true,
@@ -117,6 +126,7 @@ export class PeakVault extends AiohaProviderBase {
 
   async encryptMemoWithKeys(message: string, keyType: KeyTypes, recipientKeys: string[]): Promise<OperationResultObj> {
     try {
+      this.eventEmitter.emit('memo_request')
       const encoded: VaultResponse = await window.peakvault.requestEncodeWithKeys(
         this.getUser()!,
         keyType,
@@ -140,8 +150,9 @@ export class PeakVault extends AiohaProviderBase {
     }
   }
 
-  async decryptMemo(memo: string, keyType: KeyTypes, overrideUser?: string): Promise<OperationResult> {
+  async decryptMemo(memo: string, keyType: KeyTypes, overrideUser?: string, emit: boolean = true): Promise<OperationResult> {
     try {
+      if (emit) this.eventEmitter.emit('memo_request')
       const decoded: VaultResponse = await window.peakvault.requestDecode(this.getUser() || overrideUser, memo, keyType)
       return {
         success: true,
@@ -160,6 +171,7 @@ export class PeakVault extends AiohaProviderBase {
 
   async signMessage(message: string, keyType: KeyTypes): Promise<OperationResult> {
     try {
+      this.eventEmitter.emit('sign_msg_request')
       const res: VaultResponse = await window.peakvault.requestSignBuffer(this.getUser()!, keyType, message)
       return {
         success: true,
@@ -178,6 +190,7 @@ export class PeakVault extends AiohaProviderBase {
 
   async signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResult> {
     try {
+      this.eventEmitter.emit('sign_tx_request')
       const res: VaultResponse = await window.peakvault.requestSignTx(this.getUser()!, tx, keyType)
       return {
         success: true,
@@ -195,6 +208,7 @@ export class PeakVault extends AiohaProviderBase {
 
   async signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult> {
     try {
+      this.eventEmitter.emit('sign_tx_request')
       const res: VaultBroadcastResponse = await window.peakvault.requestBroadcast(this.getUser()!, tx, keyType)
       return {
         success: true,

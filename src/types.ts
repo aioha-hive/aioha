@@ -95,4 +95,12 @@ export enum Asset {
   HBD = 'HBD'
 }
 
-export type Events = 'connect' | 'disconnect' | 'account_changed' | 'hiveauth_login_request'
+export type Events =
+  | 'connect'
+  | 'disconnect'
+  | 'account_changed'
+  | 'hiveauth_login_request'
+  | 'login_request'
+  | 'memo_request'
+  | 'sign_msg_request'
+  | 'sign_tx_request'

@@ -6,6 +6,7 @@ import { broadcastTx, getKeyRefs } from '../rpc.js'
 import { constructTxHeader } from '../opbuilder.js'
 import { sha256 } from '../lib/sha256-browser.js'
 import { transactionDigest } from '@aioha/tx-digest'
+import { SimpleEventEmitter } from '../lib/event-emitter.js'
 
 const CONN_ERROR = 'Failed to establish connection to the device'
 
@@ -110,8 +111,8 @@ export class Ledger extends AiohaProviderBase {
   private provider?: LedgerApp
   sha256 = sha256
 
-  constructor(api: string) {
-    super(api)
+  constructor(api: string, emitter: SimpleEventEmitter) {
+    super(api, emitter)
   }
 
   /**
@@ -167,6 +168,7 @@ export class Ledger extends AiohaProviderBase {
           // obtain signature
           // message signing is supported as of v1.2.0 however it isn't on ledger live yet :\
           // const signature = await app.signMessage(options.msg ?? 'Aioha app login', userFound.path)
+          this.eventEmitter.emit('login_request')
           const signature = await this.provider!.signHash(await this.sha256(options.msg ?? 'Aioha app login'), userFound.path)
           this.username = username
           this.path = userFound.path
@@ -257,6 +259,7 @@ export class Ledger extends AiohaProviderBase {
     if (!(await this.checkConnection())) return connectionFailedError
     if (!this.path) throw new Error('no path?')
     try {
+      this.eventEmitter.emit('sign_msg_request')
       const signature = await this.provider!.signHash(await this.sha256(message), this.path)
       return {
         success: true,
@@ -276,6 +279,7 @@ export class Ledger extends AiohaProviderBase {
     if (!(await this.checkConnection())) return connectionFailedError
     if (!this.path) throw new Error('no path?')
     try {
+      this.eventEmitter.emit('sign_tx_request')
       const signedTx = await this.provider!.signTransaction(tx, this.path)
       return {
         success: true,

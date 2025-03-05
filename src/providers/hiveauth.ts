@@ -2,6 +2,7 @@ import { Operation } from '@hiveio/dhive'
 import HaWrapper, { Auth, AppMetaType } from '../lib/hiveauth-wrapper.js'
 import { AiohaProviderBase } from './provider.js'
 import { KeyTypes, LoginOptions, LoginResult, OperationError, OperationResult, Providers, SignOperationResult } from '../types.js'
+import { SimpleEventEmitter } from '../lib/event-emitter.js'
 
 const HiveAuthError = (e: any): string => {
   if (e.name === 'HiveAuthInternalError') return e.message
@@ -25,8 +26,8 @@ const NO_MEMO = 'Memo operations are unavailable in HiveAuth'
 export class HiveAuth extends AiohaProviderBase {
   private provider: Auth
 
-  constructor(api: string, options: AppMetaType) {
-    super(api)
+  constructor(api: string, emitter: SimpleEventEmitter, options: AppMetaType) {
+    super(api, emitter)
     this.provider = new Auth(options)
   }
 
@@ -121,6 +122,7 @@ export class HiveAuth extends AiohaProviderBase {
 
   async signMessage(message: string, keyType: KeyTypes): Promise<OperationResult> {
     try {
+      this.eventEmitter.emit('sign_msg_request')
       const signed = await HaWrapper.challenge(this.provider, {
         key_type: keyType,
         challenge: message
@@ -152,6 +154,7 @@ export class HiveAuth extends AiohaProviderBase {
 
   async signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult> {
     try {
+      this.eventEmitter.emit('sign_tx_request')
       const broadcasted = await HaWrapper.signTx(this.provider, keyType, tx, true, (msg) => {
         console.log('Please approve tx in HiveAuth PKSA, uuid: ' + msg.uuid)
       })

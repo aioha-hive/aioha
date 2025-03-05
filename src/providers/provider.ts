@@ -26,14 +26,17 @@ import {
 } from '../opbuilder.js'
 import { hivePerVests, getAccounts, getAccountsErrored } from '../rpc.js'
 import { RequestArguments, AiohaRpcError } from '../jsonrpc/eip1193-types.js'
+import { SimpleEventEmitter } from '../lib/event-emitter.js'
 
 export const DEFAULT_VSC_NET_ID = 'testnet/0bf2e474-6b9e-4165-ad4e-a0d78968d20c'
 
 export abstract class AiohaProviderBase implements AiohaOperations {
   protected api: string
+  protected eventEmitter: SimpleEventEmitter
 
-  constructor(api: string) {
+  constructor(api: string, emitter: SimpleEventEmitter) {
     this.api = api
+    this.eventEmitter = emitter
   }
 
   setApi(api: string) {

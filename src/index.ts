@@ -140,7 +140,7 @@ export class Aioha implements AiohaOperations {
    */
   registerKeychain() {
     if (!this.isBrowser()) throw new Error(NON_BROWSER_ERR)
-    this.providers.keychain = new Keychain()
+    this.providers.keychain = new Keychain(this.eventEmitter)
   }
 
   /**
@@ -149,7 +149,7 @@ export class Aioha implements AiohaOperations {
    */
   registerHiveSigner(options: HiveSignerOptions) {
     if (!this.isBrowser()) throw new Error(NON_BROWSER_ERR)
-    this.providers.hivesigner = new HiveSigner(this.api, options)
+    this.providers.hivesigner = new HiveSigner(this.api, this.eventEmitter, options)
   }
 
   /**
@@ -161,7 +161,7 @@ export class Aioha implements AiohaOperations {
    */
   registerHiveAuth(options: AppMetaType) {
     if (!this.isBrowser()) throw new Error(NON_BROWSER_ERR)
-    this.providers.hiveauth = new HiveAuth(this.api, options)
+    this.providers.hiveauth = new HiveAuth(this.api, this.eventEmitter, options)
   }
 
   /**
@@ -170,7 +170,7 @@ export class Aioha implements AiohaOperations {
   registerLedger() {
     // the provider defined assumes browser env although we could make it work on nodejs
     if (!this.isBrowser()) throw new Error(NON_BROWSER_ERR)
-    this.providers.ledger = new Ledger(this.api)
+    this.providers.ledger = new Ledger(this.api, this.eventEmitter)
   }
 
   /**
@@ -178,7 +178,7 @@ export class Aioha implements AiohaOperations {
    */
   registerPeakVault() {
     if (!this.isBrowser()) throw new Error(NON_BROWSER_ERR)
-    this.providers.peakvault = new PeakVault()
+    this.providers.peakvault = new PeakVault(this.eventEmitter)
   }
 
   /**

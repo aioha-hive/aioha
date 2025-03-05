@@ -43,6 +43,10 @@
         aioha.on('connect', () => console.info('wallet connected, username:', aioha.getCurrentUser()))
         aioha.on('disconnect', () => console.info('wallet disconnected'))
         aioha.on('hiveauth_login_request', (payload) => console.info('hiveauth login requested, qr payload:', payload))
+        aioha.on('login_request', () => console.log('please sign login request in wallet'))
+        aioha.on('memo_request', () => console.log('please sign memo request in wallet'))
+        aioha.on('sign_msg_request', () => console.log('please sign message in wallet'))
+        aioha.on('sign_tx_request', () => console.log('please sign transaction in wallet'))
         const xferOp = () => [
           'transfer',
           {

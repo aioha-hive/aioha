@@ -10,6 +10,7 @@ import {
   SignOperationResult,
   OperationResultObj
 } from '../../types.js'
+import { SimpleEventEmitter } from '../../lib/event-emitter.js'
 
 interface AccountAuth {
   key_auths: [string, string][]
@@ -30,8 +31,8 @@ export class PlaintextKeyProvider extends AiohaProviderBase {
   private user?: string
   private wif: PrivateKey
 
-  constructor(wif: string, api: string = DEFAULT_API) {
-    super(api)
+  constructor(wif: string, api: string = DEFAULT_API, emitter: SimpleEventEmitter) {
+    super(api, emitter)
     this.provider = new Client(api)
     this.wif = PrivateKey.from(wif)
   }
