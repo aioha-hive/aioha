@@ -27,6 +27,7 @@ export class PeakVault extends AiohaProviderBase {
       }
     try {
       const res: VaultResponse = await window.peakvault.requestSignBuffer(username, options.keyType, options.msg)
+      this.username = username
       return {
         provider: Providers.PeakVault,
         success: true,
@@ -47,6 +48,7 @@ export class PeakVault extends AiohaProviderBase {
 
   async loginAndDecryptMemo(username: string, options: LoginOptions): Promise<LoginResult> {
     const memo = await this.decryptMemo(options.msg || window.crypto.randomUUID(), options.keyType || KeyTypes.Posting, username)
+    if (memo.success) this.username = username
     return {
       provider: Providers.PeakVault,
       ...(memo.success
@@ -82,7 +84,7 @@ export class PeakVault extends AiohaProviderBase {
 
   async decryptMemo(memo: string, keyType: KeyTypes, overrideUser?: string): Promise<OperationResult> {
     try {
-      const decoded: VaultResponse = await window.peakvault.requestDecode(this.getUser()!, memo, keyType)
+      const decoded: VaultResponse = await window.peakvault.requestDecode(this.getUser() || overrideUser, memo, keyType)
       return {
         success: true,
         result: decoded.result!,
