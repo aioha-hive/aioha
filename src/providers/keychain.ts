@@ -1,7 +1,16 @@
 import { KeychainRequestResponse } from 'keychain-sdk'
 import { Operation, Transaction, CommentOptionsOperation } from '@hiveio/dhive'
 import { AiohaProviderBase } from './provider.js'
-import { Asset, KeyTypes, LoginOptions, LoginResult, OperationResult, Providers, SignOperationResult } from '../types.js'
+import {
+  Asset,
+  KeyTypes,
+  LoginOptions,
+  LoginResult,
+  OperationResult,
+  OperationResultObj,
+  Providers,
+  SignOperationResult
+} from '../types.js'
 import { KeychainMini } from '../lib/keychain-mini.js'
 
 enum KeychainKeyTypes {
@@ -121,6 +130,48 @@ export class Keychain extends AiohaProviderBase {
       case KeyTypes.Memo:
         return KeychainKeyTypes.memo
     }
+  }
+
+  async encryptMemo(message: string, keyType: KeyTypes, recipient: string): Promise<OperationResult> {
+    const kcKeyType = Keychain.mapAiohaKeyTypes(keyType)
+    const encoded = await this.provider.encode({
+      username: this.username,
+      message,
+      receiver: recipient,
+      method: kcKeyType
+    })
+    if (encoded.success)
+      return {
+        success: true,
+        result: encoded.result as unknown as string
+      }
+    else
+      return {
+        success: false,
+        errorCode: getErrorCode(encoded),
+        error: encoded.message
+      }
+  }
+
+  async encryptMemoWithKeys(message: string, keyType: KeyTypes, recipientKeys: string[]): Promise<OperationResultObj> {
+    const kcKeyType = Keychain.mapAiohaKeyTypes(keyType)
+    const encoded = await this.provider.encodeWithKeys({
+      username: this.username,
+      message,
+      publicKeys: recipientKeys,
+      method: kcKeyType
+    })
+    if (encoded.success)
+      return {
+        success: true,
+        result: encoded.result as unknown as object
+      }
+    else
+      return {
+        success: false,
+        errorCode: getErrorCode(encoded),
+        error: encoded.message
+      }
   }
 
   async decryptMemo(memo: string, keyType: KeyTypes): Promise<OperationResult> {

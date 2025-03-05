@@ -1,7 +1,29 @@
 import { Client, Operation, Transaction, Memo, PrivateKey, cryptoUtils } from '@hiveio/dhive'
 import { AiohaProviderBase } from '../provider.js'
-import { DEFAULT_API } from '../../rpc.js'
-import { LoginOptions, LoginResult, Providers, KeyTypes, OperationResult, SignOperationResult } from '../../types.js'
+import { DEFAULT_API, callRest } from '../../rpc.js'
+import {
+  LoginOptions,
+  LoginResult,
+  Providers,
+  KeyTypes,
+  OperationResult,
+  SignOperationResult,
+  OperationResultObj
+} from '../../types.js'
+
+interface AccountAuth {
+  key_auths: [string, string][]
+  account_auths: [string, string][]
+  weight_threshold: number
+}
+
+interface AccountAuths {
+  owner: AccountAuth
+  active: AccountAuth
+  posting: AccountAuth
+  memo: string
+  witness_signing: string
+}
 
 export class PlaintextKeyProvider extends AiohaProviderBase {
   private provider: Client
@@ -55,6 +77,42 @@ export class PlaintextKeyProvider extends AiohaProviderBase {
 
   getUser(): string | undefined {
     return this.user
+  }
+
+  async encryptMemo(message: string, keyType: KeyTypes, recipient: string): Promise<OperationResult> {
+    try {
+      const keys = await callRest<AccountAuths>(`/hafbe-api/accounts/${recipient}/authority`)
+      if (!keys[keyType]) throw ''
+      const key = keyType === KeyTypes.Memo ? keys.memo : keys[keyType].key_auths[0][0]
+      const encoded = Memo.encode(this.wif, key, message)
+      return {
+        success: true,
+        result: encoded
+      }
+    } catch {
+      return {
+        success: false,
+        errorCode: 5000,
+        error: 'failed to encrypt memo'
+      }
+    }
+  }
+
+  async encryptMemoWithKeys(message: string, keyType: KeyTypes, recipientKeys: string[]): Promise<OperationResultObj> {
+    try {
+      const results: { [pub: string]: string } = {}
+      for (let k in recipientKeys) results[recipientKeys[k]] = Memo.encode(this.wif, recipientKeys[k], message)
+      return {
+        success: true,
+        result: results
+      }
+    } catch {
+      return {
+        success: false,
+        errorCode: 5000,
+        error: 'failed to encrypt memo'
+      }
+    }
   }
 
   async decryptMemo(memo: string, keyType: KeyTypes): Promise<OperationResult> {

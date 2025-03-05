@@ -49,7 +49,7 @@
             from: aioha.getCurrentUser(),
             to: aioha.getCurrentUser(),
             amount: '0.001 HIVE',
-            memo: 'Aioha Test'
+            memo: ''
           }
         ]
         console.log(aioha.getProviders())
@@ -81,6 +81,24 @@
         document.getElementById('logout').onclick = async () => {
           aioha.logout()
           updateDisplayByIDs([], ['logout'])
+        }
+        document.getElementById('encrypt-memo').onclick = async () => {
+          console.log(
+            await aioha.encryptMemo(
+              document.getElementById('memo-to-enc').value,
+              document.getElementById('memo-enc-keytype').value,
+              document.getElementById('memo-enc-recipient').value
+            )
+          )
+        }
+        document.getElementById('encrypt-memo-keys').onclick = async () => {
+          console.log(
+            await aioha.encryptMemoWithKeys(
+              document.getElementById('memo-to-enc').value,
+              document.getElementById('memo-enc-keytype').value,
+              document.getElementById('memo-enc-keys').value.split(',')
+            )
+          )
         }
         document.getElementById('decrypt-memo').onclick = async () => {
           console.log(
@@ -215,6 +233,17 @@
     <br />
     <div id="hiveauth-qr" style="height: 300px; width: 300px; padding: 20px; display: none; background-color: #ffffff"></div>
     <br />
+    <h2>Encrypt Memo</h2>
+    <input type="text" id="memo-to-enc" placeholder="Enter memo to encrypt" style="width: 300px" />
+    <input type="text" id="memo-enc-recipient" placeholder="Recipient username" style="width: 130px" />
+    <input type="text" id="memo-enc-keys" placeholder="Recipient public keys" style="width: 300px" />
+    <select id="memo-enc-keytype">
+      <option value="posting">Posting</option>
+      <option value="active">Active</option>
+      <option value="memo">Memo</option>
+    </select>
+    <button id="encrypt-memo">Encrypt</button>
+    <button id="encrypt-memo-keys">Encrypt With Keys</button>
     <h2>Decrypt Memo</h2>
     <input type="text" id="memo" placeholder="Enter memo to decode" style="width: 300px" />
     <select id="memo-keytype">

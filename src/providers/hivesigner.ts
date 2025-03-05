@@ -3,7 +3,16 @@ import { encodeOps } from '../lib/hive-uri.js'
 import { Operation, Transaction } from '@hiveio/dhive'
 import { HiveSignerError, ClientConfig } from '../lib/hivesigner-types.js'
 import { AiohaProviderBase } from './provider.js'
-import { KeyTypes, LoginOptions, LoginOptionsNI, LoginResult, OperationResult, Providers, SignOperationResult } from '../types.js'
+import {
+  KeyTypes,
+  LoginOptions,
+  LoginOptionsNI,
+  LoginResult,
+  OperationError,
+  OperationResult,
+  Providers,
+  SignOperationResult
+} from '../types.js'
 
 // https://github.com/ecency/hivesigner-api/blob/9fa9f51f319b5d9f9d86a4a028fcdf71b10b7836/config.json
 const authorizedOps = [
@@ -148,6 +157,18 @@ export class HiveSigner extends AiohaProviderBase {
 
   getUser(): string | undefined {
     return this.username
+  }
+
+  async encryptMemo(): Promise<OperationError> {
+    return {
+      success: false,
+      errorCode: 4200,
+      error: 'Memo encryption is not supported in HiveSigner'
+    }
+  }
+
+  encryptMemoWithKeys(): Promise<OperationError> {
+    return this.encryptMemo()
   }
 
   async decryptMemo(memo: string, keyType: KeyTypes): Promise<OperationResult> {

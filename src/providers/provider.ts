@@ -1,5 +1,14 @@
 import { AuthorityType, CommentOptionsOperation, Operation, Transaction, WithdrawVestingOperation } from '@hiveio/dhive'
-import { Asset, KeyTypes, LoginOptions, LoginOptionsNI, LoginResult, OperationResult, SignOperationResult } from '../types.js'
+import {
+  Asset,
+  KeyTypes,
+  LoginOptions,
+  LoginOptionsNI,
+  LoginResult,
+  OperationResult,
+  OperationResultObj,
+  SignOperationResult
+} from '../types.js'
 import {
   createVote,
   createComment,
@@ -36,6 +45,8 @@ export abstract class AiohaProviderBase implements AiohaOperations {
   abstract logout(): Promise<void>
   abstract loadAuth(username: string): boolean
   abstract getUser(): string | undefined
+  abstract encryptMemo(message: string, keyType: KeyTypes, recipient: string): Promise<OperationResult>
+  abstract encryptMemoWithKeys(message: string, keyType: KeyTypes, recipientKeys: string[]): Promise<OperationResultObj>
   abstract decryptMemo(memo: string, keyType: KeyTypes): Promise<OperationResult>
   abstract signMessage(message: string, keyType: KeyTypes): Promise<OperationResult>
   abstract signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResult>
@@ -330,6 +341,8 @@ export abstract class AiohaProviderBase implements AiohaOperations {
 
 export interface AiohaOperations {
   // memo
+  encryptMemo(message: string, keyType: KeyTypes, recipient: string): Promise<OperationResult>
+  encryptMemoWithKeys(message: string, keyType: KeyTypes, recipientKeys: string[]): Promise<OperationResultObj>
   decryptMemo(memo: string, keyType: KeyTypes): Promise<OperationResult>
 
   // sign message

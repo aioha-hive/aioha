@@ -40,6 +40,20 @@ export const call = async (
   return resp
 }
 
+export const callRest = async <T>(
+  method: string,
+  api: string = DEFAULT_API,
+  fallbackApis: string[] = FALLBACK_APIS
+): Promise<T> => {
+  const req = await fetch(api + method)
+  if (req.status >= 400) {
+    if (fallbackApis.length === 0) throw new AiohaRpcError(-32603, 'Failed to fetch')
+    return await callRest(method, fallbackApis[0], fallbackApis.slice(1, fallbackApis.length))
+  }
+  const resp: T = await req.json()
+  return resp
+}
+
 export const getAccounts = (accounts: string[], api: string = DEFAULT_API) => {
   return call('condenser_api.get_accounts', [accounts], api)
 }

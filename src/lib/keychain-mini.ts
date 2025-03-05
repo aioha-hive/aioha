@@ -18,7 +18,9 @@ import {
   Transfer,
   UpdateProposalVote,
   Vote,
-  WitnessVote
+  WitnessVote,
+  Encode,
+  EncodeWithKeys
 } from 'keychain-sdk/dist/interfaces/keychain-sdk.interface'
 import { KeychainRequestResponse, KeychainSignTxRequestResponse } from 'keychain-sdk/dist/interfaces/keychain.interface'
 
@@ -50,6 +52,44 @@ export class KeychainMini {
       message: data.message ?? window.crypto.randomUUID(),
       method: data.method,
       title: data.title
+    })
+  }
+
+  async encode(data: Encode): Promise<KeychainRequestResponse> {
+    return new Promise(async (resolve) => {
+      try {
+        await this.isKeychainInstalled()
+        window.hive_keychain.requestEncodeMessage(
+          data.username,
+          data.receiver,
+          data.message,
+          data.method,
+          (response: KeychainRequestResponse) => {
+            resolve(response)
+          }
+        )
+      } catch (error) {
+        throw error
+      }
+    })
+  }
+
+  async encodeWithKeys(data: EncodeWithKeys): Promise<KeychainRequestResponse> {
+    return new Promise(async (resolve) => {
+      try {
+        await this.isKeychainInstalled()
+        window.hive_keychain.requestEncodeWithKeys(
+          data.username,
+          data.publicKeys,
+          data.message,
+          data.method,
+          (response: KeychainRequestResponse) => {
+            resolve(response)
+          }
+        )
+      } catch (error) {
+        throw error
+      }
     })
   }
 

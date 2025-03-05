@@ -15,7 +15,8 @@ import {
   Providers,
   VoteParams,
   LoginOptionsNI,
-  OperationError
+  OperationError,
+  OperationResultObj
 } from './types.js'
 import { SimpleEventEmitter } from './lib/event-emitter.js'
 import { AppMetaType } from './lib/hiveauth-wrapper.js'
@@ -506,6 +507,22 @@ export class Aioha implements AiohaOperations {
     this.currentProvider = provider
     this.eventEmitter.emit('connect')
     return true
+  }
+
+  async encryptMemo(message: string, keyType: KeyTypes, recipient: string): Promise<OperationResult> {
+    if (!this.isLoggedIn()) return notLoggedInResult
+    if (!message.startsWith('#')) message = '#' + message
+    return await this.providers[this.getCurrentProvider()!]!.encryptMemo(message, keyType, recipient)
+  }
+
+  async encryptMemoWithKeys(message: string, keyType: KeyTypes, recipientKeys: string[]): Promise<OperationResultObj> {
+    if (!this.isLoggedIn()) return notLoggedInResult
+    if (!message.startsWith('#')) message = '#' + message
+    return await this.providers[this.getCurrentProvider()!]!.encryptMemoWithKeys(
+      message,
+      keyType,
+      recipientKeys.map((v) => v.trim())
+    )
   }
 
   /**

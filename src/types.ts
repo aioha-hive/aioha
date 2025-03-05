@@ -68,7 +68,14 @@ export interface OperationSuccess extends BaseResult {
   publicKey?: string
 }
 
+export interface OperationSuccessObj extends BaseResult {
+  success: true
+  result: object
+  publicKey?: string
+}
+
 export type OperationResult = OperationSuccess | OperationError
+export type OperationResultObj = OperationSuccessObj | OperationError
 
 interface SignOperationSuccess extends BaseResult {
   success: true

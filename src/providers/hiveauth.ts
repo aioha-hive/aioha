@@ -1,7 +1,7 @@
 import { Operation } from '@hiveio/dhive'
 import HaWrapper, { Auth, AppMetaType } from '../lib/hiveauth-wrapper.js'
 import { AiohaProviderBase } from './provider.js'
-import { KeyTypes, LoginOptions, LoginResult, OperationResult, Providers, SignOperationResult } from '../types.js'
+import { KeyTypes, LoginOptions, LoginResult, OperationError, OperationResult, Providers, SignOperationResult } from '../types.js'
 
 const HiveAuthError = (e: any): string => {
   if (e.name === 'HiveAuthInternalError') return e.message
@@ -103,7 +103,15 @@ export class HiveAuth extends AiohaProviderBase {
     return this.provider.username
   }
 
-  async decryptMemo(): Promise<OperationResult> {
+  encryptMemo(): Promise<OperationError> {
+    return this.decryptMemo()
+  }
+
+  encryptMemoWithKeys(): Promise<OperationError> {
+    return this.encryptMemo()
+  }
+
+  async decryptMemo(): Promise<OperationError> {
     return {
       success: false,
       errorCode: 4200,

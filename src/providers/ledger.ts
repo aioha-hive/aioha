@@ -1,7 +1,7 @@
 import type LedgerApp from '@engrave/ledger-app-hive'
 import { AiohaProviderBase } from './provider.js'
 import { Transaction, Operation } from '@hiveio/dhive'
-import { LoginOptions, LoginResult, OperationResult, SignOperationResult, KeyTypes, Providers } from '../types.js'
+import { LoginOptions, LoginResult, OperationResult, SignOperationResult, KeyTypes, Providers, OperationError } from '../types.js'
 import { broadcastTx, getKeyRefs } from '../rpc.js'
 import { constructTxHeader } from '../opbuilder.js'
 import { sha256 } from '../lib/sha256-browser.js'
@@ -237,7 +237,15 @@ export class Ledger extends AiohaProviderBase {
     return this.username
   }
 
-  async decryptMemo(memo: string, keyType: KeyTypes): Promise<OperationResult> {
+  encryptMemo(): Promise<OperationError> {
+    return this.decryptMemo()
+  }
+
+  encryptMemoWithKeys(): Promise<OperationError> {
+    return this.encryptMemo()
+  }
+
+  async decryptMemo(): Promise<OperationError> {
     return {
       success: false,
       errorCode: 4200,

@@ -1,6 +1,14 @@
 import { Operation, Transaction } from '@hiveio/dhive'
 import { AiohaProviderBase } from './provider.js'
-import { KeyTypes, LoginOptions, LoginResult, OperationResult, Providers, SignOperationResult } from '../types.js'
+import {
+  KeyTypes,
+  LoginOptions,
+  LoginResult,
+  OperationResult,
+  OperationResultObj,
+  Providers,
+  SignOperationResult
+} from '../types.js'
 import { VaultBroadcastResponse, VaultError, VaultResponse } from '../lib/peakvault-types.js'
 
 export class PeakVault extends AiohaProviderBase {
@@ -80,6 +88,56 @@ export class PeakVault extends AiohaProviderBase {
 
   isInstalled(): boolean {
     return !!window.peakvault
+  }
+
+  async encryptMemo(message: string, keyType: KeyTypes, recipient: string): Promise<OperationResult> {
+    if (keyType !== KeyTypes.Memo) {
+      return {
+        success: false,
+        errorCode: 5005,
+        error: 'keyType must be memo for peakvault memo encryption'
+      }
+    }
+    try {
+      const encoded: VaultResponse = await window.peakvault.requestEncode(this.getUser()!, recipient, message)
+      return {
+        success: true,
+        result: encoded.result!,
+        publicKey: encoded.publicKey
+      }
+    } catch (e) {
+      const error = e as VaultError
+      return {
+        success: false,
+        errorCode: 5000,
+        error: error.message
+      }
+    }
+  }
+
+  async encryptMemoWithKeys(message: string, keyType: KeyTypes, recipientKeys: string[]): Promise<OperationResultObj> {
+    try {
+      const encoded: VaultResponse = await window.peakvault.requestEncodeWithKeys(
+        this.getUser()!,
+        keyType,
+        recipientKeys,
+        message
+      )
+      const results: { [pub: string]: string } = {}
+      for (let k in recipientKeys) results[recipientKeys[k]] = encoded.result![k]
+      return {
+        success: true,
+        result: results,
+        publicKey: encoded.publicKey
+      }
+    } catch (e) {
+      const error = e as VaultError
+      return {
+        success: false,
+        errorCode: 5000,
+        error: error.message
+      }
+    }
   }
 
   async decryptMemo(memo: string, keyType: KeyTypes, overrideUser?: string): Promise<OperationResult> {
