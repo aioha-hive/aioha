@@ -90,6 +90,9 @@
         document.getElementById('log-other-users').onclick = async () => {
           console.log(aioha.getOtherLogins())
         }
+        document.getElementById('discover-accs').onclick = async () => {
+          console.log(await aioha.discoverAccounts(document.getElementById('discover-accs-prov').value))
+        }
         document.getElementById('switch-user').onclick = async () => {
           let nextUser = document.getElementById('switch-user-username').value
           if (nextUser) {
@@ -257,6 +260,15 @@
     <h2>Switch User</h2>
     <input type="text" id="switch-user-username" placeholder="HIVE Username" style="width: 150px" />
     <button id="switch-user">Switch User</button>
+    <h2>Account Discovery</h2>
+    <select id="discover-accs-prov">
+      <option value="keychain">Keychain</option>
+      <option value="hivesigner">HiveSigner</option>
+      <option value="hiveauth">HiveAuth</option>
+      <option value="ledger">Ledger</option>
+      <option value="peakvault">Peak Vault</option>
+    </select>
+    <button id="discover-accs">Discover Accounts</button>
     <h2>Encrypt Memo</h2>
     <input type="text" id="memo-to-enc" placeholder="Enter memo to encrypt" style="width: 300px" />
     <input type="text" id="memo-enc-recipient" placeholder="Recipient username" style="width: 130px" />

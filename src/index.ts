@@ -427,6 +427,16 @@ export class Aioha implements AiohaOperations {
     else return apiRequest.result
   }
 
+  async discoverAccounts(provider: Providers): Promise<OperationResultObj> {
+    if (!this.providers[provider])
+      return {
+        success: false,
+        errorCode: 4201,
+        error: provider + 'provider is not registered'
+      }
+    return await this.providers[provider].discoverAccounts()
+  }
+
   switchUser(username: string): boolean {
     if (!this.otherLogins[username] || !this.providers[this.otherLogins[username].provider]) return false
     const prevUser = this.getCurrentUser()

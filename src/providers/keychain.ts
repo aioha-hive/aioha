@@ -10,8 +10,7 @@ import {
   OperationResultObj,
   Providers,
   SignOperationResult,
-  PersistentLoginBase,
-  LoginOptionsNI
+  PersistentLoginBase
 } from '../types.js'
 import { KeychainMini } from '../lib/keychain-mini.js'
 import { SimpleEventEmitter } from '../lib/event-emitter.js'

@@ -11,7 +11,7 @@ import {
   OperationError,
   PersistentLoginLedger,
   PersistentLogin,
-  LoginOptionsNI
+  OperationResultObj
 } from '../types.js'
 import { broadcastTx, getKeyRefs } from '../rpc.js'
 import { constructTxHeader } from '../opbuilder.js'
@@ -236,6 +236,32 @@ export class Ledger extends AiohaProviderBase {
       delete this.path
       localStorage.removeItem('ledgerPath')
     } catch {}
+  }
+
+  async discoverAccounts(): Promise<OperationResultObj> {
+    await this.checkConnection()
+    const roles: { [name: string]: SlipRole } = {
+      owner: SlipRole.owner,
+      active: SlipRole.active,
+      posting: SlipRole.posting
+    }
+    const result: { [name: string]: DiscoveredAccs[] } = { owner: [], active: [], posting: [] }
+    try {
+      for (let r in roles) {
+        const discoveredAccounts = await searchAccounts(roles[r], this.provider!, undefined, this.api)
+        for (let a in discoveredAccounts) result[r].push(discoveredAccounts[a])
+      }
+      return {
+        success: true,
+        result
+      }
+    } catch {
+      return {
+        success: false,
+        errorCode: 5902,
+        error: 'Failed to search accounts'
+      }
+    }
   }
 
   loadAuth(username: string): boolean {

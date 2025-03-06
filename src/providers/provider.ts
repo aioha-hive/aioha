@@ -70,6 +70,14 @@ export abstract class AiohaProviderBase implements AiohaOperations {
     }
   }
 
+  async discoverAccounts(): Promise<OperationResultObj> {
+    return {
+      success: false,
+      errorCode: 4200,
+      error: 'account discovery is not supported for this provider'
+    }
+  }
+
   request(args: RequestArguments): Promise<unknown> {
     return Promise.reject(new AiohaRpcError(4200, 'Method not found'))
   }
