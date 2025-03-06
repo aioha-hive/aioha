@@ -53,7 +53,7 @@ export class Keychain extends AiohaProviderBase {
         errorCode: 5001,
         error: 'Keychain extension is not installed'
       }
-    this.eventEmitter!.emit('login_request')
+    this.eventEmitter.emit('login_request')
     const login = await this.provider.login({
       username: username,
       message: options.msg,
@@ -86,7 +86,7 @@ export class Keychain extends AiohaProviderBase {
         errorCode: 5001,
         error: 'Keychain extension is not installed'
       }
-    this.eventEmitter!.emit('login_request')
+    this.eventEmitter.emit('login_request')
     const login = await this.provider.decode({
       username: username,
       message: options.msg!,
@@ -146,7 +146,7 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async encryptMemo(message: string, keyType: KeyTypes, recipient: string): Promise<OperationResult> {
-    this.eventEmitter!.emit('memo_request')
+    this.eventEmitter.emit('memo_request')
     const kcKeyType = Keychain.mapAiohaKeyTypes(keyType)
     const encoded = await this.provider.encode({
       username: this.username,
@@ -168,7 +168,7 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async encryptMemoWithKeys(message: string, keyType: KeyTypes, recipientKeys: string[]): Promise<OperationResultObj> {
-    this.eventEmitter!.emit('memo_request')
+    this.eventEmitter.emit('memo_request')
     const kcKeyType = Keychain.mapAiohaKeyTypes(keyType)
     const encoded = await this.provider.encodeWithKeys({
       username: this.username,
@@ -190,7 +190,7 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async decryptMemo(memo: string, keyType: KeyTypes): Promise<OperationResult> {
-    this.eventEmitter!.emit('memo_request')
+    this.eventEmitter.emit('memo_request')
     const kcKeyType = Keychain.mapAiohaKeyTypes(keyType)
     const decoded = await this.provider.decode({
       username: this.username,
@@ -211,7 +211,7 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async signMessage(message: string, keyType: KeyTypes): Promise<OperationResult> {
-    this.eventEmitter!.emit('sign_msg_request')
+    this.eventEmitter.emit('sign_msg_request')
     const kcKeyType = Keychain.mapAiohaKeyTypes(keyType)
     const signBuf = await this.provider.signBuffer({
       username: this.username,
@@ -232,7 +232,7 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResult> {
-    this.eventEmitter!.emit('sign_tx_request')
+    this.eventEmitter.emit('sign_tx_request')
     const kcKeyType = Keychain.mapAiohaKeyTypes(keyType)
     const signedTx = await this.provider.signTx({
       username: this.username,
@@ -254,7 +254,7 @@ export class Keychain extends AiohaProviderBase {
   async signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult> {
     const kcKeyType = Keychain.mapAiohaKeyTypes(keyType)
     try {
-      this.eventEmitter!.emit('sign_tx_request')
+      this.eventEmitter.emit('sign_tx_request')
       const broadcastedTx = await this.provider.broadcast({
         username: this.username,
         operations: tx,
@@ -284,7 +284,7 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async vote(author: string, permlink: string, weight: number): Promise<SignOperationResult> {
-    this.eventEmitter!.emit('sign_tx_request')
+    this.eventEmitter.emit('sign_tx_request')
     const tx = await this.provider.vote({
       username: this.username,
       author,
@@ -305,7 +305,7 @@ export class Keychain extends AiohaProviderBase {
   ): Promise<SignOperationResult> {
     // remove when and if keychain fixes this issue
     if (pa && pp) return await super.comment(pa, pp, permlink, title, body, json, options)
-    this.eventEmitter!.emit('sign_tx_request')
+    this.eventEmitter.emit('sign_tx_request')
     const tx = await this.provider.post({
       username: this.username,
       permlink,
@@ -320,7 +320,7 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async customJSON(keyType: KeyTypes, id: string, json: string, displayTitle?: string): Promise<SignOperationResult> {
-    this.eventEmitter!.emit('sign_tx_request')
+    this.eventEmitter.emit('sign_tx_request')
     return this.txResult(
       await this.provider.custom({
         username: this.username,
@@ -333,7 +333,7 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async transfer(to: string, amount: number, currency: Asset, memo?: string): Promise<SignOperationResult> {
-    this.eventEmitter!.emit('sign_tx_request')
+    this.eventEmitter.emit('sign_tx_request')
     return this.txResult(
       await this.provider.transfer({
         username: this.username,
@@ -354,7 +354,7 @@ export class Keychain extends AiohaProviderBase {
     executions: number,
     memo?: string
   ): Promise<SignOperationResult> {
-    this.eventEmitter!.emit('sign_tx_request')
+    this.eventEmitter.emit('sign_tx_request')
     return this.txResult(
       await this.provider.recurrentTransfer({
         username: this.username,
@@ -369,7 +369,7 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async stakeHive(amount: number, to?: string): Promise<SignOperationResult> {
-    this.eventEmitter!.emit('sign_tx_request')
+    this.eventEmitter.emit('sign_tx_request')
     return this.txResult(
       await this.provider.powerUp({
         username: this.username,
@@ -380,7 +380,7 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async unstakeHive(amount: number): Promise<SignOperationResult> {
-    this.eventEmitter!.emit('sign_tx_request')
+    this.eventEmitter.emit('sign_tx_request')
     return this.txResult(
       await this.provider.powerDown({
         username: this.username,
@@ -390,7 +390,7 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async delegateStakedHive(to: string, amount: number): Promise<SignOperationResult> {
-    this.eventEmitter!.emit('sign_tx_request')
+    this.eventEmitter.emit('sign_tx_request')
     return this.txResult(
       await this.provider.delegation({
         username: this.username,
@@ -402,7 +402,7 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async delegateVests(to: string, amount: number): Promise<SignOperationResult> {
-    this.eventEmitter!.emit('sign_tx_request')
+    this.eventEmitter.emit('sign_tx_request')
     return this.txResult(
       await this.provider.delegation({
         username: this.username,
@@ -414,7 +414,7 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async voteWitness(witness: string, approve: boolean): Promise<SignOperationResult> {
-    this.eventEmitter!.emit('sign_tx_request')
+    this.eventEmitter.emit('sign_tx_request')
     return this.txResult(
       await this.provider.witnessVote({
         username: this.username,
@@ -425,7 +425,7 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async voteProposals(proposals: number[], approve: boolean): Promise<SignOperationResult> {
-    this.eventEmitter!.emit('sign_tx_request')
+    this.eventEmitter.emit('sign_tx_request')
     return this.txResult(
       await this.provider.updateProposalVote({
         username: this.username,
@@ -437,7 +437,7 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async setProxy(proxy: string): Promise<SignOperationResult> {
-    this.eventEmitter!.emit('sign_tx_request')
+    this.eventEmitter.emit('sign_tx_request')
     return this.txResult(
       await this.provider.proxy({
         username: this.username,
@@ -447,7 +447,7 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async addAccountAuthority(username: string, role: KeyTypes, weight: number): Promise<SignOperationResult> {
-    this.eventEmitter!.emit('sign_tx_request')
+    this.eventEmitter.emit('sign_tx_request')
     return this.txResult(
       await this.provider.addAccountAuthority({
         username: this.username,
@@ -459,7 +459,7 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async removeAccountAuthority(username: string, role: KeyTypes): Promise<SignOperationResult> {
-    this.eventEmitter!.emit('sign_tx_request')
+    this.eventEmitter.emit('sign_tx_request')
     return this.txResult(
       await this.provider.removeAccountAuthority({
         username: this.username,
@@ -470,7 +470,7 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async addKeyAuthority(publicKey: string, role: KeyTypes, weight: number): Promise<SignOperationResult> {
-    this.eventEmitter!.emit('sign_tx_request')
+    this.eventEmitter.emit('sign_tx_request')
     return this.txResult(
       await this.provider.addKeyAuthority({
         username: this.username,
@@ -482,7 +482,7 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async removeKeyAuthority(publicKey: string, role: KeyTypes): Promise<SignOperationResult> {
-    this.eventEmitter!.emit('sign_tx_request')
+    this.eventEmitter.emit('sign_tx_request')
     return this.txResult(
       await this.provider.removeKeyAuthority({
         username: this.username,

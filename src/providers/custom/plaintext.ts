@@ -12,7 +12,6 @@ import {
   PersistentLoginBase,
   PersistentLogin
 } from '../../types.js'
-import { SimpleEventEmitter } from '../../lib/event-emitter.js'
 
 interface AccountAuth {
   key_auths: [string, string][]

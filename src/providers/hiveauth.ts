@@ -151,7 +151,7 @@ export class HiveAuth extends AiohaProviderBase {
 
   async signMessage(message: string, keyType: KeyTypes): Promise<OperationResult> {
     try {
-      this.eventEmitter!.emit('sign_msg_request')
+      this.eventEmitter.emit('sign_msg_request')
       const signed = await HaWrapper.challenge(this.provider, {
         key_type: keyType,
         challenge: message
@@ -183,7 +183,7 @@ export class HiveAuth extends AiohaProviderBase {
 
   async signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult> {
     try {
-      this.eventEmitter!.emit('sign_tx_request')
+      this.eventEmitter.emit('sign_tx_request')
       const broadcasted = await HaWrapper.signTx(this.provider, keyType, tx, true, (msg) => {
         console.log('Please approve tx in HiveAuth PKSA, uuid: ' + msg.uuid)
       })
