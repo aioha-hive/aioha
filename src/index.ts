@@ -18,7 +18,8 @@ import {
   OperationError,
   OperationResultObj,
   PersistentLogins,
-  PersistentLogin
+  PersistentLogin,
+  PersistentLoginProvs
 } from './types.js'
 import { SimpleEventEmitter } from './lib/event-emitter.js'
 import { AppMetaType } from './lib/hiveauth-wrapper.js'
@@ -262,8 +263,10 @@ export class Aioha implements AiohaOperations {
     return !!this.user && !!this.currentProvider
   }
 
-  getOtherLogins(): PersistentLogins {
-    return this.otherLogins
+  getOtherLogins(): PersistentLoginProvs {
+    const result: PersistentLoginProvs = {}
+    for (let u in this.otherLogins) result[u] = this.otherLogins[u].provider
+    return result
   }
 
   /**

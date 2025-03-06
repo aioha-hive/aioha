@@ -130,3 +130,4 @@ export interface PersistentLoginHiveSigner extends PersistentLoginBase {
 
 export type PersistentLogin = PersistentLoginBase | PersistentLoginLedger | PersistentLoginHiveAuth | PersistentLoginHiveSigner
 export type PersistentLogins = { [username: string]: PersistentLogin }
+export type PersistentLoginProvs = { [username: string]: Providers }
