@@ -440,7 +440,21 @@ export class Aioha implements AiohaOperations {
   }
 
   /**
-   * Authenticate a Hive account by requesting a message signature.
+   * Alias for `login()`.
+   */
+  connect(provider: Providers, username: string, options: LoginOptions): Promise<LoginResult> {
+    return this.login(provider, username, options)
+  }
+
+  /**
+   * Alias for `logout()`.
+   */
+  disconnect(): Promise<void> {
+    return this.logout()
+  }
+
+  /**
+   * Authenticate a Hive account by requesting a message signature. Also known as *Connect Wallet*.
    * @param {string} provider The provider to use for auth which must be registered already.
    * @param {string} username Hive username
    * @param {LoginOptions} options Login options including message to sign and provider specific options.
@@ -528,7 +542,7 @@ export class Aioha implements AiohaOperations {
   }
 
   /**
-   * Logout the current authenticated user.
+   * Logout the current authenticated user. Also known as *Disconnect Wallet*.
    */
   async logout(): Promise<void> {
     if (this.user && this.currentProvider) {
