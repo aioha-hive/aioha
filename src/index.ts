@@ -429,6 +429,7 @@ export class Aioha implements AiohaOperations {
 
   switchUser(username: string): boolean {
     if (!this.otherLogins[username] || !this.providers[this.otherLogins[username].provider]) return false
+    const prevUser = this.getCurrentUser()
     if (this.isLoggedIn()) {
       if (this.getCurrentUser() === username) return false
       const current = this.providers[this.getCurrentProvider()!]!.getLoginInfo()
@@ -437,7 +438,13 @@ export class Aioha implements AiohaOperations {
     }
     const nextUser = this.removeOtherLogin(username)
     const loaded = this.providers[nextUser.provider]!.loadLogin(username, nextUser)
-    if (!loaded) return false
+    if (!loaded) {
+      if (prevUser) {
+        const prev = this.removeOtherLogin(prevUser)
+        this.providers[prev.provider]!.loadLogin(prevUser, prev)
+      }
+      return false
+    }
     this.setUserAndProvider(username, nextUser.provider, nextUser.pubKey)
     return true
   }
