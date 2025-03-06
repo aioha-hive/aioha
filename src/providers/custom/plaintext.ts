@@ -33,8 +33,8 @@ export class PlaintextKeyProvider extends AiohaProviderBase {
   private user?: string
   private wif: PrivateKey
 
-  constructor(wif: string, api: string = DEFAULT_API, emitter: SimpleEventEmitter) {
-    super(api, emitter)
+  constructor(wif: string, api: string = DEFAULT_API) {
+    super(api)
     this.provider = new Client(api)
     this.wif = PrivateKey.from(wif)
   }

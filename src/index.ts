@@ -191,6 +191,7 @@ export class Aioha implements AiohaOperations {
    */
   registerCustomProvider(providerImpl: AiohaProviderBase) {
     this.providers.custom = providerImpl
+    this.providers.custom.setEventEmitter(this.eventEmitter)
   }
 
   /**

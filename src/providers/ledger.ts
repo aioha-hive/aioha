@@ -179,7 +179,7 @@ export class Ledger extends AiohaProviderBase {
           // obtain signature
           // message signing is supported as of v1.2.0 however it isn't on ledger live yet :\
           // const signature = await app.signMessage(options.msg ?? 'Aioha app login', userFound.path)
-          this.eventEmitter.emit('login_request')
+          this.eventEmitter!.emit('login_request')
           const signature = await this.provider!.signHash(await this.sha256(options.msg ?? 'Aioha app login'), userFound.path)
           this.username = username
           this.path = userFound.path
@@ -286,7 +286,7 @@ export class Ledger extends AiohaProviderBase {
     if (!(await this.checkConnection())) return connectionFailedError
     if (!this.path) throw new Error('no path?')
     try {
-      this.eventEmitter.emit('sign_msg_request')
+      this.eventEmitter!.emit('sign_msg_request')
       const signature = await this.provider!.signHash(await this.sha256(message), this.path)
       return {
         success: true,
@@ -306,7 +306,7 @@ export class Ledger extends AiohaProviderBase {
     if (!(await this.checkConnection())) return connectionFailedError
     if (!this.path) throw new Error('no path?')
     try {
-      this.eventEmitter.emit('sign_tx_request')
+      this.eventEmitter!.emit('sign_tx_request')
       const signedTx = await this.provider!.signTransaction(tx, this.path)
       return {
         success: true,

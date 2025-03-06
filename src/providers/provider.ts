@@ -33,15 +33,19 @@ export const DEFAULT_VSC_NET_ID = 'testnet/0bf2e474-6b9e-4165-ad4e-a0d78968d20c'
 
 export abstract class AiohaProviderBase implements AiohaOperations {
   protected api: string
-  protected eventEmitter: SimpleEventEmitter
+  protected eventEmitter?: SimpleEventEmitter
 
-  constructor(api: string, emitter: SimpleEventEmitter) {
+  constructor(api: string, emitter?: SimpleEventEmitter) {
     this.api = api
-    this.eventEmitter = emitter
+    if (emitter) this.setEventEmitter(emitter)
   }
 
   setApi(api: string) {
     this.api = api
+  }
+
+  setEventEmitter(emitter: SimpleEventEmitter) {
+    this.eventEmitter = emitter
   }
 
   abstract login(username: string, options: LoginOptions): Promise<LoginResult>
