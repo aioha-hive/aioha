@@ -1,7 +1,18 @@
 import type LedgerApp from '@engrave/ledger-app-hive'
 import { AiohaProviderBase } from './provider.js'
 import { Transaction, Operation } from '@hiveio/dhive'
-import { LoginOptions, LoginResult, OperationResult, SignOperationResult, KeyTypes, Providers, OperationError } from '../types.js'
+import {
+  LoginOptions,
+  LoginResult,
+  OperationResult,
+  SignOperationResult,
+  KeyTypes,
+  Providers,
+  OperationError,
+  PersistentLoginLedger,
+  PersistentLogin,
+  LoginOptionsNI
+} from '../types.js'
 import { broadcastTx, getKeyRefs } from '../rpc.js'
 import { constructTxHeader } from '../opbuilder.js'
 import { sha256 } from '../lib/sha256-browser.js'
@@ -237,6 +248,22 @@ export class Ledger extends AiohaProviderBase {
 
   getUser(): string | undefined {
     return this.username
+  }
+
+  getLoginInfo(): PersistentLoginLedger | undefined {
+    if (this.getUser())
+      return {
+        provider: Providers.Ledger,
+        path: this.path!
+      }
+  }
+
+  loadLogin(username: string, info: PersistentLogin): boolean {
+    const path = (info as PersistentLoginLedger).path
+    this.username = username
+    this.path = path
+    localStorage.setItem('ledgerPath', path)
+    return true
   }
 
   encryptMemo(): Promise<OperationError> {

@@ -16,7 +16,9 @@ import {
   VoteParams,
   LoginOptionsNI,
   OperationError,
-  OperationResultObj
+  OperationResultObj,
+  PersistentLogins,
+  PersistentLogin
 } from './types.js'
 import { SimpleEventEmitter } from './lib/event-emitter.js'
 import { AppMetaType } from './lib/hiveauth-wrapper.js'
@@ -76,6 +78,7 @@ export class Aioha implements AiohaOperations {
   }
   private user?: string
   private currentProvider?: Providers
+  private otherLogins: PersistentLogins
   private eventEmitter: SimpleEventEmitter
   private extensions: AiohaExtension[]
   protected publicKey?: string
@@ -88,6 +91,7 @@ export class Aioha implements AiohaOperations {
     if (api) {
       this.setApi(api, fallbackApis)
     }
+    this.otherLogins = {}
     this.eventEmitter = new SimpleEventEmitter()
     this.extensions = [CoreRpc]
   }
@@ -257,6 +261,10 @@ export class Aioha implements AiohaOperations {
     return !!this.user && !!this.currentProvider
   }
 
+  getOtherLogins(): PersistentLogins {
+    return this.otherLogins
+  }
+
   /**
    * Get instance of the current provider. Throws an error if not logged in.
    * @returns Instance of the provider that implements AiohaProviderBase
@@ -295,10 +303,24 @@ export class Aioha implements AiohaOperations {
     }
     this.setPublicKey(newPubKey)
     !previouslyConnected ? this.eventEmitter.emit('connect') : this.eventEmitter.emit('account_changed')
+    if (this.otherLogins[username]) delete this.otherLogins[username]
+  }
+
+  private addOtherLogin(username: string, loginItm: PersistentLogin) {
+    this.otherLogins[username] = loginItm
+    if (this.isBrowser()) localStorage.setItem('aiohaOtherLogins', JSON.stringify(this.otherLogins))
+  }
+
+  removeOtherLogin(username: string): PersistentLogin {
+    if (!this.otherLogins[username]) throw new Error('Cannot remove non-existent login')
+    const popped = this.otherLogins[username]
+    delete this.otherLogins[username]
+    if (this.isBrowser()) localStorage.setItem('aiohaOtherLogins', JSON.stringify(this.otherLogins))
+    return popped
   }
 
   private loginCheck(provider: Providers, username: string, options: LoginOptions | LoginOptionsNI): LoginResult {
-    if (this.isLoggedIn())
+    if (this.getCurrentUser() === username || this.otherLogins[username])
       return {
         success: false,
         errorCode: 4901,
@@ -369,7 +391,6 @@ export class Aioha implements AiohaOperations {
         if (this.extensions[ext].isAuthRequired(submethod) && !this.isLoggedIn())
           throw new AiohaRpcError(notLoggedInResult.errorCode, notLoggedInResult.error)
         else if (this.extensions[ext].isLoginMethod(submethod)) {
-          if (this.isLoggedIn()) throw new AiohaRpcError(4901, 'Already logged in')
           if (!args.params) throw new AiohaRpcError(5003, 'Login params are required')
           const loginParams = args.params as LoginParam
           const loginCheck = this.loginCheck(loginParams.provider, loginParams.username, {
@@ -377,8 +398,14 @@ export class Aioha implements AiohaOperations {
             keyType: loginParams.key_type
           })
           if (!loginCheck.success) throw new AiohaRpcError(loginCheck.errorCode, loginCheck.error)
+          let prevLogin: PersistentLogin | undefined, prevUser: string | undefined
+          if (this.isLoggedIn()) {
+            prevLogin = this.providers[this.getCurrentProvider()!]!.getLoginInfo()!
+            prevUser = this.getCurrentUser()!
+          }
           const result = await this.extensions[ext].request(this.providers[loginParams.provider]!, submethod, args.params)
           this.setUserAndProvider(result.username, result.provider, result.publicKey)
+          if (prevLogin && prevUser && prevUser !== loginParams.username) this.addOtherLogin(prevUser, prevLogin)
           return result
         } else {
           const result = await this.extensions[ext].request(this.providers[this.getCurrentProvider()!]!, submethod, args.params)
@@ -396,6 +423,21 @@ export class Aioha implements AiohaOperations {
     else return apiRequest.result
   }
 
+  switchUser(username: string): boolean {
+    if (!this.otherLogins[username] || !this.providers[this.otherLogins[username].provider]) return false
+    if (this.isLoggedIn()) {
+      if (this.getCurrentUser() === username) return false
+      const current = this.providers[this.getCurrentProvider()!]!.getLoginInfo()
+      if (!current) throw new Error('Failed to get current login info') // this should not happen
+      this.addOtherLogin(this.getCurrentUser()!, current)
+    }
+    const nextUser = this.removeOtherLogin(username)
+    const loaded = this.providers[nextUser.provider]!.loadLogin(username, nextUser)
+    if (!loaded) return false
+    this.setUserAndProvider(username, nextUser.provider, nextUser.pubKey)
+    return true
+  }
+
   /**
    * Authenticate a Hive account by requesting a message signature.
    * @param {string} provider The provider to use for auth which must be registered already.
@@ -406,6 +448,11 @@ export class Aioha implements AiohaOperations {
   async login(provider: Providers, username: string, options: LoginOptions): Promise<LoginResult> {
     const check = this.loginCheck(provider, username, options)
     if (!check.success) return check
+    let prevLogin: PersistentLogin | undefined, prevUser: string | undefined
+    if (this.isLoggedIn()) {
+      prevLogin = this.providers[this.getCurrentProvider()!]!.getLoginInfo()!
+      prevUser = this.getCurrentUser()!
+    }
     const result = await this.providers[provider]!.login(username, {
       ...options,
       hiveauth: {
@@ -417,6 +464,7 @@ export class Aioha implements AiohaOperations {
     })
     if (result.success) {
       this.setUserAndProvider(result.username ?? username, provider, result.publicKey)
+      if (prevLogin && prevUser && prevUser !== username) this.addOtherLogin(prevUser, prevLogin)
     }
     return result
   }
@@ -437,9 +485,15 @@ export class Aioha implements AiohaOperations {
         errorCode: 5004,
         error: 'memo to decode must start with #'
       }
+    let prevLogin: PersistentLogin | undefined, prevUser: string | undefined
+    if (this.isLoggedIn()) {
+      prevLogin = this.providers[this.getCurrentProvider()!]!.getLoginInfo()!
+      prevUser = this.getCurrentUser()!
+    }
     const result = await this.providers[provider]!.loginAndDecryptMemo(username, options)
     if (result.success) {
       this.setUserAndProvider(result.username ?? username, provider)
+      if (prevLogin && prevUser && prevUser !== username) this.addOtherLogin(prevUser, prevLogin)
     }
     return result
   }
@@ -494,19 +548,26 @@ export class Aioha implements AiohaOperations {
   }
 
   /**
-   * Load persistent login details from local storage.
+   * Load persistent login details from local storage. Only works in browsers.
    * @returns boolean of whether an authentication has been loaded or not.
    */
   loadAuth(): boolean {
-    const user = this.isBrowser() ? localStorage.getItem('aiohaUsername') : null
-    const provider = (this.isBrowser() ? localStorage.getItem('aiohaProvider') : null) as Providers | null
-    const publicKey = this.isBrowser() ? localStorage.getItem('aiohaPubKey') : null
-    if (!provider || !user || !this.providers[provider] || !this.providers[provider]!.loadAuth(user)) return false
-    if (publicKey) this.setPublicKey(publicKey)
-    this.user = user
-    this.currentProvider = provider
-    this.eventEmitter.emit('connect')
-    return true
+    if (this.isBrowser()) {
+      try {
+        const loadedOtherLogins = localStorage.getItem('aiohaOtherLogins')
+        if (loadedOtherLogins) this.otherLogins = JSON.parse(loadedOtherLogins) as PersistentLogins
+      } catch {}
+      const user = localStorage.getItem('aiohaUsername')
+      const provider = localStorage.getItem('aiohaProvider') as Providers | null
+      const publicKey = localStorage.getItem('aiohaPubKey')
+      if (!provider || !user || !this.providers[provider] || !this.providers[provider]!.loadAuth(user)) return false
+      if (publicKey) this.setPublicKey(publicKey)
+      this.user = user
+      this.currentProvider = provider
+      this.eventEmitter.emit('connect')
+      return true
+    }
+    return false
   }
 
   async encryptMemo(message: string, keyType: KeyTypes, recipient: string): Promise<OperationResult> {

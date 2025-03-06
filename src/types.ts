@@ -104,3 +104,29 @@ export type Events =
   | 'memo_request'
   | 'sign_msg_request'
   | 'sign_tx_request'
+
+export interface PersistentLoginBase {
+  provider: Providers
+  pubKey?: string
+}
+
+export interface PersistentLoginLedger extends PersistentLoginBase {
+  provider: Providers.Ledger
+  path: string
+}
+
+export interface PersistentLoginHiveAuth extends PersistentLoginBase {
+  provider: Providers.HiveAuth
+  token?: string
+  key: string
+  exp: number
+}
+
+export interface PersistentLoginHiveSigner extends PersistentLoginBase {
+  provider: Providers.HiveSigner
+  token: string
+  exp: number
+}
+
+export type PersistentLogin = PersistentLoginBase | PersistentLoginLedger | PersistentLoginHiveAuth | PersistentLoginHiveSigner
+export type PersistentLogins = { [username: string]: PersistentLogin }

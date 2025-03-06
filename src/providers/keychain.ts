@@ -9,7 +9,9 @@ import {
   OperationResult,
   OperationResultObj,
   Providers,
-  SignOperationResult
+  SignOperationResult,
+  PersistentLoginBase,
+  LoginOptionsNI
 } from '../types.js'
 import { KeychainMini } from '../lib/keychain-mini.js'
 import { SimpleEventEmitter } from '../lib/event-emitter.js'
@@ -118,6 +120,14 @@ export class Keychain extends AiohaProviderBase {
 
   getUser(): string | undefined {
     return this.username
+  }
+
+  getLoginInfo(): PersistentLoginBase | undefined {
+    if (this.getUser()) return { provider: Providers.Keychain }
+  }
+
+  loadLogin(username: string): boolean {
+    return this.loadAuth(username)
   }
 
   static isInstalled(): boolean {

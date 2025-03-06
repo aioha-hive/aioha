@@ -1,7 +1,17 @@
 import { Operation } from '@hiveio/dhive'
 import HaWrapper, { Auth, AppMetaType } from '../lib/hiveauth-wrapper.js'
 import { AiohaProviderBase } from './provider.js'
-import { KeyTypes, LoginOptions, LoginResult, OperationError, OperationResult, Providers, SignOperationResult } from '../types.js'
+import {
+  KeyTypes,
+  LoginOptions,
+  LoginResult,
+  OperationError,
+  OperationResult,
+  PersistentLogin,
+  PersistentLoginHiveAuth,
+  Providers,
+  SignOperationResult
+} from '../types.js'
 import { SimpleEventEmitter } from '../lib/event-emitter.js'
 
 const HiveAuthError = (e: any): string => {
@@ -102,6 +112,25 @@ export class HiveAuth extends AiohaProviderBase {
 
   getUser(): string | undefined {
     return this.provider.username
+  }
+
+  getLoginInfo(): PersistentLoginHiveAuth | undefined {
+    if (this.getUser())
+      return {
+        provider: Providers.HiveAuth,
+        token: this.provider.token,
+        key: this.provider.key!,
+        exp: this.provider.expire!
+      }
+  }
+
+  loadLogin(username: string, info: PersistentLogin): boolean {
+    if (info.provider !== Providers.HiveAuth) return false
+    const info2 = info as PersistentLoginHiveAuth
+    if (info2.token) localStorage.setItem('hiveauthToken', info2.token)
+    localStorage.setItem('hiveauthKey', info2.key)
+    localStorage.setItem('hiveauthExp', info2.exp.toString())
+    return this.loadAuth(username)
   }
 
   encryptMemo(): Promise<OperationError> {

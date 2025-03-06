@@ -42,11 +42,12 @@
         })
         aioha.on('connect', () => console.info('wallet connected, username:', aioha.getCurrentUser()))
         aioha.on('disconnect', () => console.info('wallet disconnected'))
+        aioha.on('account_changed', () => console.info('account changed, username:', aioha.getCurrentUser()))
         aioha.on('hiveauth_login_request', (payload) => console.info('hiveauth login requested, qr payload:', payload))
-        aioha.on('login_request', () => console.log('please sign login request in wallet'))
-        aioha.on('memo_request', () => console.log('please sign memo request in wallet'))
-        aioha.on('sign_msg_request', () => console.log('please sign message in wallet'))
-        aioha.on('sign_tx_request', () => console.log('please sign transaction in wallet'))
+        aioha.on('login_request', () => console.info('please sign login request in wallet'))
+        aioha.on('memo_request', () => console.info('please sign memo request in wallet'))
+        aioha.on('sign_msg_request', () => console.info('please sign message in wallet'))
+        aioha.on('sign_tx_request', () => console.info('please sign transaction in wallet'))
         const xferOp = () => [
           'transfer',
           {
@@ -85,6 +86,22 @@
         document.getElementById('logout').onclick = async () => {
           aioha.logout()
           updateDisplayByIDs([], ['logout'])
+        }
+        document.getElementById('log-other-users').onclick = async () => {
+          console.log(aioha.getOtherLogins())
+        }
+        document.getElementById('switch-user').onclick = async () => {
+          let nextUser = document.getElementById('switch-user-username').value
+          if (nextUser) {
+            const switched = aioha.switchUser(nextUser)
+            if (switched) {
+              document.getElementById('login-username').value = aioha.getCurrentUser()
+              console.log(aioha.getCurrentProvider())
+              updateDisplayByIDs(['logout'], [], 'inline-block')
+            } else {
+              console.error('Switch user failed')
+            }
+          }
         }
         document.getElementById('encrypt-memo').onclick = async () => {
           console.log(
@@ -234,9 +251,12 @@
     <button id="login-ledger">Ledger</button>
     <button id="login-peakvault">Peak Vault</button>
     <button id="logout" style="display: none">Logout</button>
+    <button id="log-other-users">Log Other Users To Console</button>
     <br />
     <div id="hiveauth-qr" style="height: 300px; width: 300px; padding: 20px; display: none; background-color: #ffffff"></div>
-    <br />
+    <h2>Switch User</h2>
+    <input type="text" id="switch-user-username" placeholder="HIVE Username" style="width: 150px" />
+    <button id="switch-user">Switch User</button>
     <h2>Encrypt Memo</h2>
     <input type="text" id="memo-to-enc" placeholder="Enter memo to encrypt" style="width: 300px" />
     <input type="text" id="memo-enc-recipient" placeholder="Recipient username" style="width: 130px" />

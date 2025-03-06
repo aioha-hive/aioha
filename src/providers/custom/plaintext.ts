@@ -8,7 +8,9 @@ import {
   KeyTypes,
   OperationResult,
   SignOperationResult,
-  OperationResultObj
+  OperationResultObj,
+  PersistentLoginBase,
+  PersistentLogin
 } from '../../types.js'
 import { SimpleEventEmitter } from '../../lib/event-emitter.js'
 
@@ -78,6 +80,19 @@ export class PlaintextKeyProvider extends AiohaProviderBase {
 
   getUser(): string | undefined {
     return this.user
+  }
+
+  getLoginInfo(): PersistentLoginPlaintext | undefined {
+    if (this.getUser())
+      return {
+        provider: Providers.Custom,
+        wif: this.wif.toString()
+      }
+  }
+
+  loadLogin(username: string, info: PersistentLogin): boolean {
+    this.wif = PrivateKey.from((info as PersistentLoginPlaintext).wif)
+    return this.loadAuth(username)
   }
 
   async encryptMemo(message: string, keyType: KeyTypes, recipient: string): Promise<OperationResult> {
@@ -180,4 +195,9 @@ export class PlaintextKeyProvider extends AiohaProviderBase {
       }
     }
   }
+}
+
+export interface PersistentLoginPlaintext extends PersistentLoginBase {
+  provider: Providers.Custom
+  wif: string
 }

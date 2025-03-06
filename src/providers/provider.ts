@@ -7,6 +7,7 @@ import {
   LoginResult,
   OperationResult,
   OperationResultObj,
+  PersistentLogin,
   SignOperationResult
 } from '../types.js'
 import {
@@ -48,6 +49,8 @@ export abstract class AiohaProviderBase implements AiohaOperations {
   abstract logout(): Promise<void>
   abstract loadAuth(username: string): boolean
   abstract getUser(): string | undefined
+  abstract getLoginInfo(): PersistentLogin | undefined
+  abstract loadLogin(username: string, info: PersistentLogin): boolean
   abstract encryptMemo(message: string, keyType: KeyTypes, recipient: string): Promise<OperationResult>
   abstract encryptMemoWithKeys(message: string, keyType: KeyTypes, recipientKeys: string[]): Promise<OperationResultObj>
   abstract decryptMemo(memo: string, keyType: KeyTypes): Promise<OperationResult>

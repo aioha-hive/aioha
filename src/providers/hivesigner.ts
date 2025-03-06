@@ -10,6 +10,8 @@ import {
   LoginResult,
   OperationError,
   OperationResult,
+  PersistentLogin,
+  PersistentLoginHiveSigner,
   Providers,
   SignOperationResult
 } from '../types.js'
@@ -145,11 +147,11 @@ export class HiveSigner extends AiohaProviderBase {
     return this.provider.getLoginURL((options && options.hivesigner && options.hivesigner.state) ?? '', username)
   }
 
-  loadAuth(): boolean {
+  loadAuth(username: string): boolean {
     const token = localStorage.getItem('hivesignerToken')
     const exp = localStorage.getItem('hivesignerExpiry')
     const loggedInUser = localStorage.getItem('hivesignerUsername')
-    if (!token || !exp || !loggedInUser) return false
+    if (!token || !exp || !loggedInUser || loggedInUser !== username) return false
     const expSeconds = parseInt(exp)
     if (isExpired(expSeconds)) return false
     this.provider.setAccessToken(token)
@@ -159,6 +161,26 @@ export class HiveSigner extends AiohaProviderBase {
 
   getUser(): string | undefined {
     return this.username
+  }
+
+  getLoginInfo(): PersistentLoginHiveSigner | undefined {
+    if (this.getUser())
+      return {
+        provider: Providers.HiveSigner,
+        token: this.provider.accessToken!,
+        exp: parseInt(localStorage.getItem('hivesignerExpiry')!)
+      }
+  }
+
+  loadLogin(username: string, info: PersistentLogin): boolean {
+    if (info.provider !== Providers.HiveSigner) return false
+    const info2 = info as PersistentLoginHiveSigner
+    return this.loginNonInteractive(username, {
+      hivesigner: {
+        accessToken: info2.token,
+        expiry: info2.exp
+      }
+    }).success
   }
 
   async encryptMemo(): Promise<OperationError> {

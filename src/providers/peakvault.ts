@@ -6,6 +6,7 @@ import {
   LoginResult,
   OperationResult,
   OperationResultObj,
+  PersistentLoginBase,
   Providers,
   SignOperationResult
 } from '../types.js'
@@ -92,6 +93,14 @@ export class PeakVault extends AiohaProviderBase {
 
   getUser(): string | undefined {
     return this.username
+  }
+
+  getLoginInfo(): PersistentLoginBase | undefined {
+    if (this.getUser()) return { provider: Providers.PeakVault }
+  }
+
+  loadLogin(username: string): boolean {
+    return this.loadAuth(username)
   }
 
   isInstalled(): boolean {
