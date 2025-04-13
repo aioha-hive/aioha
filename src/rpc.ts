@@ -20,24 +20,29 @@ export const call = async (
   api: string = DEFAULT_API,
   fallbackApis: string[] = FALLBACK_APIS
 ): Promise<any> => {
-  const req = await fetch(api, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      jsonrpc: '2.0',
-      id: 1,
-      method: method,
-      params: params
+  try {
+    const req = await fetch(api, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: method,
+        params: params
+      })
     })
-  })
-  if (req.status >= 400) {
+    if (req.status >= 400) {
+      if (fallbackApis.length === 0) throw new AiohaRpcError(-32603, 'Failed to fetch')
+      return await call(method, params, fallbackApis[0], fallbackApis.slice(1, fallbackApis.length))
+    }
+    const resp = await req.json()
+    return resp
+  } catch (e) {
     if (fallbackApis.length === 0) throw new AiohaRpcError(-32603, 'Failed to fetch')
-    return await call(method, params, fallbackApis[0], fallbackApis.slice(1, fallbackApis.length))
+      return await call(method, params, fallbackApis[0], fallbackApis.slice(1, fallbackApis.length))
   }
-  const resp = await req.json()
-  return resp
 }
 
 export const callRest = async <T>(
