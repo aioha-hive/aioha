@@ -41,8 +41,7 @@ export const call = async (
     return resp
   } catch (e) {
     if (fallbackApis.length === 0) throw new AiohaRpcError(-32603, 'Failed to fetch')
-    console.warn(`There was an error fetching ${method} via ${api}:`, error);
-      return await call(method, params, fallbackApis[0], fallbackApis.slice(1, fallbackApis.length))
+    return await call(method, params, fallbackApis[0], fallbackApis.slice(1, fallbackApis.length))
   }
 }
 
