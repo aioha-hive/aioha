@@ -30,7 +30,7 @@ import { AiohaOperations, AiohaProviderBase, DEFAULT_VSC_NET_ID } from './provid
 import { Events } from './types.js'
 export { constructTxHeader } from './opbuilder.js'
 export { broadcastTx, call, hivePerVests } from './rpc.js'
-export { Asset, KeyTypes, Providers } from './types.js'
+export { Asset, KeyTypes, Providers, VscStakeType } from './types.js'
 import { AiohaRpcError, RequestArguments } from './jsonrpc/eip1193-types.js'
 import { IsProviderRegistered, LoginParam } from './jsonrpc/param-types.js'
 import { AiohaExtension, CoreRpc } from './jsonrpc/methods.js'
