@@ -131,3 +131,9 @@ export interface PersistentLoginHiveSigner extends PersistentLoginBase {
 export type PersistentLogin = PersistentLoginBase | PersistentLoginLedger | PersistentLoginHiveAuth | PersistentLoginHiveSigner
 export type PersistentLogins = { [username: string]: PersistentLogin }
 export type PersistentLoginProvs = { [username: string]: Providers }
+
+export type VscFer = 'transfer' | 'withdraw' | 'consensus_stake' | 'consensus_unstake' | 'stake_hbd' | 'unstake_hbd'
+export enum VscStakeType {
+  Consensus,
+  HBD
+}

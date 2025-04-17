@@ -8,7 +8,9 @@ import {
   OperationResult,
   OperationResultObj,
   PersistentLogin,
-  SignOperationResult
+  SignOperationResult,
+  VscFer,
+  VscStakeType
 } from '../types.js'
 import {
   createVote,
@@ -29,7 +31,7 @@ import { hivePerVests, getAccounts, getAccountsErrored } from '../rpc.js'
 import { RequestArguments, AiohaRpcError } from '../jsonrpc/eip1193-types.js'
 import { SimpleEventEmitter } from '../lib/event-emitter.js'
 
-export const DEFAULT_VSC_NET_ID = 'testnet/0bf2e474-6b9e-4165-ad4e-a0d78968d20c'
+export const DEFAULT_VSC_NET_ID = 'vsc-mainnet'
 
 export abstract class AiohaProviderBase implements AiohaOperations {
   protected api: string
@@ -292,7 +294,7 @@ export abstract class AiohaProviderBase implements AiohaOperations {
   ): Promise<SignOperationResult> {
     return await this.customJSON(
       keyType,
-      'vsc.tx',
+      'vsc.call',
       JSON.stringify({
         __v: '0.1',
         __t: 'vsc-tx',
@@ -327,8 +329,38 @@ export abstract class AiohaProviderBase implements AiohaOperations {
     return this.vscFer('withdraw', net_id, to, amount, currency, memo)
   }
 
+  vscStake(
+    stakeType: VscStakeType,
+    amount: number,
+    to?: string,
+    memo?: string,
+    net_id: string = DEFAULT_VSC_NET_ID
+  ): Promise<SignOperationResult> {
+    switch (stakeType) {
+      case VscStakeType.Consensus:
+        return this.vscFer('consensus_stake', net_id, to ?? this.getUser()!, amount, Asset.HIVE, memo)
+      case VscStakeType.HBD:
+        return this.vscFer('stake_hbd', net_id, to ?? this.getUser()!, amount, Asset.HBD, memo)
+    }
+  }
+
+  vscUnstake(
+    stakeType: VscStakeType,
+    amount: number,
+    to?: string,
+    memo?: string,
+    net_id: string = DEFAULT_VSC_NET_ID
+  ): Promise<SignOperationResult> {
+    switch (stakeType) {
+      case VscStakeType.Consensus:
+        return this.vscFer('consensus_unstake', net_id, to ?? this.getUser()!, amount, Asset.HIVE, memo)
+      case VscStakeType.HBD:
+        return this.vscFer('unstake_hbd', net_id, to ?? this.getUser()!, amount, Asset.HBD, memo)
+    }
+  }
+
   async vscFer(
-    type: 'transfer' | 'withdraw',
+    type: VscFer,
     net_id: string,
     to: string,
     amount: number,
@@ -337,21 +369,14 @@ export abstract class AiohaProviderBase implements AiohaOperations {
   ): Promise<SignOperationResult> {
     return await this.customJSON(
       KeyTypes.Active,
-      'vsc.tx',
+      `vsc.${type}`,
       JSON.stringify({
-        __v: '0.1',
-        __t: 'vsc-tx',
-        net_id: net_id,
-        tx: {
-          op: type,
-          payload: {
-            tk: currency,
-            to: to.startsWith('did:') || to.startsWith('hive:') ? to : `hive:${to}`,
-            from: `hive:${this.getUser()}`,
-            amount: Math.round(amount * 1000),
-            memo
-          }
-        }
+        to: to.startsWith('did:') || to.startsWith('hive:') ? to : `hive:${to}`,
+        from: `hive:${this.getUser()}`,
+        amount: amount.toFixed(3),
+        asset: currency.toLowerCase(),
+        memo,
+        net_id: net_id
       })
     )
   }
@@ -419,4 +444,6 @@ export interface AiohaOperations {
   ): Promise<SignOperationResult>
   vscTransfer(to: string, amount: number, currency: Asset, memo?: string, net_id?: string): Promise<SignOperationResult>
   vscWithdraw(to: string, amount: number, currency: Asset, memo?: string, net_id?: string): Promise<SignOperationResult>
+  vscStake(stakeType: VscStakeType, amount: number, to?: string, memo?: string, net_id?: string): Promise<SignOperationResult>
+  vscUnstake(stakeType: VscStakeType, amount: number, to?: string, memo?: string, net_id?: string): Promise<SignOperationResult>
 }

@@ -19,7 +19,8 @@ import {
   OperationResultObj,
   PersistentLogins,
   PersistentLogin,
-  PersistentLoginProvs
+  PersistentLoginProvs,
+  VscStakeType
 } from './types.js'
 import { SimpleEventEmitter } from './lib/event-emitter.js'
 import { AppMetaType } from './lib/hiveauth-wrapper.js'
@@ -1076,6 +1077,16 @@ export class Aioha implements AiohaOperations {
   async vscWithdraw(to: string, amount: number, currency: Asset, memo?: string): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
     return await this.providers[this.getCurrentProvider()!]!.vscWithdraw(to, amount, currency, memo, this.vscNetId)
+  }
+
+  async vscStake(stakeType: VscStakeType, amount: number, to?: string, memo?: string): Promise<SignOperationResult> {
+    if (!this.isLoggedIn()) return notLoggedInResult
+    return await this.providers[this.getCurrentProvider()!]!.vscStake(stakeType, amount, to, memo, this.vscNetId)
+  }
+
+  async vscUnstake(stakeType: VscStakeType, amount: number, to?: string, memo?: string): Promise<SignOperationResult> {
+    if (!this.isLoggedIn()) return notLoggedInResult
+    return await this.providers[this.getCurrentProvider()!]!.vscUnstake(stakeType, amount, to, memo, this.vscNetId)
   }
 
   // Event emitters
