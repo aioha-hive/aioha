@@ -25,7 +25,7 @@ import {
 } from './types.js'
 import { SimpleEventEmitter } from './lib/event-emitter.js'
 import { AppMetaType } from './lib/hiveauth-wrapper.js'
-import { decode, DecodeResult } from './lib/hive-uri.js'
+import { decode, resolveTransaction, ResolveResult } from './lib/hive-uri.js'
 import { createVote } from './opbuilder.js'
 import { DEFAULT_API, FALLBACK_APIS, getAccounts, call } from './rpc.js'
 import { AiohaOperations, AiohaProviderBase, DEFAULT_VSC_NET_ID } from './providers/provider.js'
@@ -678,9 +678,16 @@ export class Aioha implements AiohaOperations {
   async signAndBroadcastUri(uri: string, keyType: KeyTypes): Promise<OperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
     else if (keyType === KeyTypes.Memo) return noMemoAllowResult
-    let decoded: DecodeResult
+    let resolved: ResolveResult
     try {
-      decoded = decode(uri)
+      const decoded = decode(uri)
+      resolved = resolveTransaction(decoded.tx, decoded.params, {
+        ref_block_num: 1234,
+        ref_block_prefix: 5678900,
+        expiration: '2020-01-01T00:00:00', // dummy header values not used by signAndBroadcastTx
+        signers: [this.getCurrentUser()!],
+        preferred_signer: this.getCurrentUser()!
+      })
     } catch (e) {
       return {
         success: false,
@@ -688,7 +695,7 @@ export class Aioha implements AiohaOperations {
         error: (e as any).toString()
       }
     }
-    return await this.signAndBroadcastTx(decoded.tx.operations, keyType)
+    return await this.signAndBroadcastTx(resolved.tx.operations, keyType)
   }
 
   /**
