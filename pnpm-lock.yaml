@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@aioha/tx-digest':
-        specifier: ^1.0.0
-        version: 1.0.0
+        specifier: ^1.0.2
+        version: 1.0.2
       '@engrave/ledger-app-hive':
         specifier: ^3.5.6
         version: 3.5.6
@@ -48,8 +48,8 @@ importers:
 
 packages:
 
-  '@aioha/tx-digest@1.0.0':
-    resolution: {integrity: sha512-pPT4s9CjAakmZ/Pqk/tWce8PuLBwcBDIBV0jlosy1+lvyMMDljf0YkJMi/Lu8VaK1bALVo/uxQqUaRmqpkQEZA==}
+  '@aioha/tx-digest@1.0.2':
+    resolution: {integrity: sha512-qgNv+/cbWHcKnXC8oXYQStnrpSEIuR1i6pPytjuYw7fpM9V77xRwPHObqRn93C4wqpF5cG6qRzM7SSAf1NNNEw==}
 
   '@colors/colors@1.6.0':
     resolution: {integrity: sha512-Ir+AOibqzrIsL6ajt3Rz3LskB7OiMVHqltZmspbW/TJuTVuyOMirVqAkjfY6JISiLHgyNqicAC8AyHHGzNd/dA==}
@@ -975,7 +975,7 @@ packages:
 
 snapshots:
 
-  '@aioha/tx-digest@1.0.0':
+  '@aioha/tx-digest@1.0.2':
     dependencies:
       bs58: 6.0.0
 

@@ -7,6 +7,7 @@ import { PeakVault } from './providers/peakvault.js'
 import { ClientConfig as HiveSignerOptions } from './lib/hivesigner-types.js'
 import {
   Asset,
+  Events,
   KeyTypes,
   LoginOptions,
   LoginResult,
@@ -27,7 +28,6 @@ import { AppMetaType } from './lib/hiveauth-wrapper.js'
 import { createVote } from './opbuilder.js'
 import { DEFAULT_API, FALLBACK_APIS, getAccounts, call } from './rpc.js'
 import { AiohaOperations, AiohaProviderBase, DEFAULT_VSC_NET_ID } from './providers/provider.js'
-import { Events } from './types.js'
 export { constructTxHeader } from './opbuilder.js'
 export { broadcastTx, call, hivePerVests } from './rpc.js'
 export { Asset, KeyTypes, Providers, VscStakeType } from './types.js'
