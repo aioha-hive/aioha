@@ -20,6 +20,7 @@ import { transactionDigest } from '@aioha/tx-digest'
 import { SimpleEventEmitter } from '../lib/event-emitter.js'
 
 const CONN_ERROR = 'Failed to establish connection to the device'
+const MEMO_ERROR = 'Memo cryptography is not supported in Ledger provider'
 
 enum SlipRole {
   owner = 0,
@@ -223,9 +224,7 @@ export class Ledger extends AiohaProviderBase {
   async loginAndDecryptMemo(username: string, options: LoginOptions): Promise<LoginResult> {
     return {
       provider: Providers.Ledger,
-      success: false,
-      errorCode: 4200,
-      error: 'Memo cryptography is not supported in Ledger provider'
+      ...(await this.decryptMemo())
     }
   }
 
@@ -304,7 +303,7 @@ export class Ledger extends AiohaProviderBase {
     return {
       success: false,
       errorCode: 4200,
-      error: 'Memo cryptography is not supported in Ledger provider'
+      error: MEMO_ERROR
     }
   }
 

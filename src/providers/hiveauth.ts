@@ -83,9 +83,7 @@ export class HiveAuth extends AiohaProviderBase {
     // return the error
     return {
       provider: Providers.HiveAuth,
-      success: false,
-      errorCode: 4200,
-      error: NO_MEMO
+      ...(await this.decryptMemo())
     }
   }
 
