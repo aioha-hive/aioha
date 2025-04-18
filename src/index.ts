@@ -25,6 +25,7 @@ import {
 } from './types.js'
 import { SimpleEventEmitter } from './lib/event-emitter.js'
 import { AppMetaType } from './lib/hiveauth-wrapper.js'
+import { decode, DecodeResult } from './lib/hive-uri.js'
 import { createVote } from './opbuilder.js'
 import { DEFAULT_API, FALLBACK_APIS, getAccounts, call } from './rpc.js'
 import { AiohaOperations, AiohaProviderBase, DEFAULT_VSC_NET_ID } from './providers/provider.js'
@@ -666,6 +667,28 @@ export class Aioha implements AiohaOperations {
     if (!this.isLoggedIn()) return notLoggedInResult
     else if (keyType === KeyTypes.Memo) return noMemoAllowResult
     return await this.providers[this.getCurrentProvider()!]!.signAndBroadcastTx(tx, keyType)
+  }
+
+  /**
+   * Sign and broadcast a hive-uri encoded transaction
+   * @param uri hive:// prefixed URI
+   * @param keyType Key type to be used to sign the transaction.
+   * @returns Transaction result
+   */
+  async signAndBroadcastUri(uri: string, keyType: KeyTypes): Promise<OperationResult> {
+    if (!this.isLoggedIn()) return notLoggedInResult
+    else if (keyType === KeyTypes.Memo) return noMemoAllowResult
+    let decoded: DecodeResult
+    try {
+      decoded = decode(uri)
+    } catch (e) {
+      return {
+        success: false,
+        errorCode: -32600,
+        error: (e as any).toString()
+      }
+    }
+    return await this.signAndBroadcastTx(decoded.tx.operations, keyType)
   }
 
   /**
