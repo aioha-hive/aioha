@@ -21,7 +21,7 @@ const HiveAuthError = (e: any): string => {
   else if (e.cmd === 'auth_nack') return 'HiveAuth authentication request rejected'
   else if (e.cmd === 'sign_nack') return 'HiveAuth broadcast request rejected'
   else if (e.cmd === 'auth_err' || e.cmd === 'sign_err') return e.error
-  else return 'Unknown error'
+  else return e.toString()
 }
 
 const HiveAuthErrorCode = (e: any): number => {
@@ -55,7 +55,8 @@ export class HiveAuth extends AiohaProviderBase {
         username,
         {
           key_type: options.keyType,
-          challenge: options.msg ?? window.crypto.randomUUID()
+          challenge: options.msg ?? window.crypto.randomUUID(),
+          nonce: Date.now()
         },
         options.hiveauth.cbWait
       )
@@ -152,7 +153,8 @@ export class HiveAuth extends AiohaProviderBase {
       this.eventEmitter.emit('sign_msg_request')
       const signed = await HaWrapper.challenge(this.provider, {
         key_type: keyType,
-        challenge: message
+        challenge: message,
+        nonce: Date.now()
       })
       return {
         success: true,

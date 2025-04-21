@@ -50,6 +50,8 @@ export type AppMetaType = {
 type ChallengeDataType = {
   key_type: KeyTypes
   challenge: string
+  decrypt?: boolean
+  nonce: number
 }
 
 let HAS_connected = false
