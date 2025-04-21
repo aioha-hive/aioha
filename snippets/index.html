@@ -44,6 +44,8 @@
         aioha.on('disconnect', () => console.info('wallet disconnected'))
         aioha.on('account_changed', () => console.info('account changed, username:', aioha.getCurrentUser()))
         aioha.on('hiveauth_login_request', (payload) => console.info('hiveauth login requested, qr payload:', payload))
+        aioha.on('hiveauth_challenge_request', (payload) => console.info('hiveauth challenge requested, payload:', payload))
+        aioha.on('hiveauth_sign_request', (payload) => console.info('hiveauth tx signature requested, payload:', payload))
         aioha.on('login_request', () => console.info('please sign login request in wallet'))
         aioha.on('memo_request', () => console.info('please sign memo request in wallet'))
         aioha.on('sign_msg_request', () => console.info('please sign message in wallet'))

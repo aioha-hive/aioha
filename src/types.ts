@@ -100,6 +100,8 @@ export type Events =
   | 'disconnect'
   | 'account_changed'
   | 'hiveauth_login_request'
+  | 'hiveauth_challenge_request'
+  | 'hiveauth_sign_request'
   | 'login_request'
   | 'memo_request'
   | 'sign_msg_request'

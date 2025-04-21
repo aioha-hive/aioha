@@ -431,7 +431,7 @@ export default {
     key_type: KeyTypes,
     ops: any,
     broadcast: boolean,
-    cbWait?: (evt: MessageType, cancel: () => void) => any
+    cbWait?: (payload: string, evt: MessageType, cancel: () => void) => any
   ) {
     return new Promise<MessageType>(async (resolve, reject) => {
       const initialChecks = await check(auth)
@@ -461,11 +461,18 @@ export default {
               uuid = req.uuid
               expire = req.expire
               // call back app to notify about pending request
-              if (cbWait)
-                cbWait(req, () => {
+              if (typeof cbWait === 'function') {
+                const payload = {
+                  account: auth.username!,
+                  uuid: uuid,
+                  key: auth.key!,
+                  host: HAS_SERVER
+                }
+                cbWait('has://sign_req/' + window.btoa(JSON.stringify(payload)), req, () => {
                   clearInterval(wait)
                   reject(new Error('cancelled'))
                 })
+              }
             } else if (err) {
               if (trace) console.log(`error found: ${JSON.stringify(err)}`)
               reject(err)
@@ -516,7 +523,11 @@ export default {
    * @param {string} challenge_data.challenge - a string to be signed
    * @param {Object} cbWait - (optional) callback method to notify the app about pending request
    */
-  challenge: function (auth: Auth, challenge_data: ChallengeDataType, cbWait?: (evt: MessageType, cancel: () => void) => any) {
+  challenge: function (
+    auth: Auth,
+    challenge_data: ChallengeDataType,
+    cbWait?: (payload: string, evt: MessageType, cancel: () => void) => any
+  ) {
     return new Promise<ChallengeResult>(async (resolve, reject) => {
       const initialChecks = await check(auth, challenge_data)
       if (typeof initialChecks === 'string') return reject(new HiveAuthInternalError(initialChecks))
@@ -544,11 +555,18 @@ export default {
               uuid = req.uuid
               expire = req.expire
               // call back app to notify about pending request
-              if (cbWait)
-                cbWait(req, () => {
+              if (cbWait) {
+                const payload = {
+                  account: auth.username!,
+                  uuid: uuid,
+                  key: auth.key!,
+                  host: HAS_SERVER
+                }
+                cbWait('has://challenge_req/' + window.btoa(JSON.stringify(payload)), req, () => {
                   clearInterval(wait)
                   reject(new Error('cancelled'))
                 })
+              }
             } else if (err) {
               if (trace) console.log(`error found: ${JSON.stringify(err)}`)
               reject(err)
