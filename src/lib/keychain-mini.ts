@@ -1,11 +1,6 @@
 import {
-  AddAccountAuthority,
-  AddKeyAuthority,
-  RemoveAccountAuthority,
-  RemoveKeyAuthority,
   Broadcast,
   Custom,
-  Decode,
   Delegation,
   Login,
   Post,
@@ -13,14 +8,12 @@ import {
   PowerUp,
   Proxy,
   RecurrentTransfer,
-  SignBuffer,
   SignTx,
   Transfer,
   UpdateProposalVote,
   Vote,
   WitnessVote,
-  Encode,
-  EncodeWithKeys
+  KeychainKeyTypes as KT
 } from 'keychain-sdk/dist/interfaces/keychain-sdk.interface'
 import { KeychainRequestResponse, KeychainSignTxRequestResponse } from 'keychain-sdk/dist/interfaces/keychain.interface'
 
@@ -33,54 +26,20 @@ export class KeychainMini {
   }
 
   async login(data: Login): Promise<any> {
-    return await this.signBuffer({
-      username: data.username,
-      message: data.message ?? window.crypto.randomUUID(),
-      method: data.method,
-      title: data.title
-    })
+    return await this.challenge(false, data.username ?? '', data.message ?? window.crypto.randomUUID(), data.method, data.title)
   }
 
-  async encode(data: Encode): Promise<KeychainRequestResponse> {
+  async encode(
+    wifKeys: boolean,
+    user: string,
+    receiver: string | string[],
+    msg: string,
+    keyType: KT
+  ): Promise<KeychainRequestResponse> {
     return new Promise(async (resolve) => {
+      const met = `requestEncode${wifKeys ? 'WithKeys' : 'Message'}`
       try {
-        window.hive_keychain.requestEncodeMessage(
-          data.username,
-          data.receiver,
-          data.message,
-          data.method,
-          (response: KeychainRequestResponse) => {
-            resolve(response)
-          }
-        )
-      } catch (error) {
-        throw error
-      }
-    })
-  }
-
-  async encodeWithKeys(data: EncodeWithKeys): Promise<KeychainRequestResponse> {
-    return new Promise(async (resolve) => {
-      try {
-        window.hive_keychain.requestEncodeWithKeys(
-          data.username,
-          data.publicKeys,
-          data.message,
-          data.method,
-          (response: KeychainRequestResponse) => {
-            resolve(response)
-          }
-        )
-      } catch (error) {
-        throw error
-      }
-    })
-  }
-
-  async decode(data: Decode): Promise<KeychainRequestResponse> {
-    return new Promise(async (resolve) => {
-      try {
-        window.hive_keychain.requestVerifyKey(data.username, data.message, data.method, (response: KeychainRequestResponse) => {
+        window.hive_keychain[met](user, receiver, msg, keyType, (response: KeychainRequestResponse) => {
           resolve(response)
         })
       } catch (error) {
@@ -89,18 +48,19 @@ export class KeychainMini {
     })
   }
 
-  async signBuffer(data: SignBuffer): Promise<KeychainRequestResponse> {
+  async challenge(decrypt: boolean, user: string, msg: string, keyType: KT, title?: string): Promise<KeychainRequestResponse> {
     return new Promise(async (resolve) => {
+      const met = `request${decrypt ? 'VerifyKey' : 'SignBuffer'}`
       try {
-        window.hive_keychain.requestSignBuffer(
-          data.username,
-          data.message,
-          data.method,
+        window.hive_keychain[met](
+          user,
+          msg,
+          keyType,
           (response: KeychainRequestResponse) => {
             resolve(response)
           },
           undefined,
-          data.title
+          title
         )
       } catch (error) {
         throw error
@@ -108,70 +68,30 @@ export class KeychainMini {
     })
   }
 
-  async addAccountAuthority(data: AddAccountAuthority): Promise<KeychainRequestResponse> {
+  async addAuth(
+    kind: 'Account' | 'Key',
+    user: string,
+    newAuth: string,
+    role: KT,
+    weight: number
+  ): Promise<KeychainRequestResponse> {
     return new Promise(async (resolve) => {
       try {
-        window.hive_keychain.requestAddAccountAuthority(
-          data.username,
-          data.authorizedUsername,
-          data.role,
-          data.weight,
-          (response: KeychainRequestResponse) => {
-            resolve(response)
-          }
-        )
+        window.hive_keychain[`requestAdd${kind}Authority`](user, newAuth, role, weight, (response: KeychainRequestResponse) => {
+          resolve(response)
+        })
       } catch (error) {
         throw error
       }
     })
   }
 
-  async removeAccountAuthority(data: RemoveAccountAuthority): Promise<KeychainRequestResponse> {
+  async rmAuth(kind: 'Account' | 'Key', user: string, auth: string, role: KT): Promise<KeychainRequestResponse> {
     return new Promise(async (resolve) => {
       try {
-        window.hive_keychain.requestRemoveAccountAuthority(
-          data.username,
-          data.authorizedUsername,
-          data.role,
-          (response: KeychainRequestResponse) => {
-            resolve(response)
-          }
-        )
-      } catch (error) {
-        throw error
-      }
-    })
-  }
-
-  async addKeyAuthority(data: AddKeyAuthority): Promise<KeychainRequestResponse> {
-    return new Promise(async (resolve) => {
-      try {
-        window.hive_keychain.requestAddKeyAuthority(
-          data.username,
-          data.authorizedKey,
-          data.role,
-          data.weight,
-          (response: KeychainRequestResponse) => {
-            resolve(response)
-          }
-        )
-      } catch (error) {
-        throw error
-      }
-    })
-  }
-
-  async removeKeyAuthority(data: RemoveKeyAuthority): Promise<KeychainRequestResponse> {
-    return new Promise(async (resolve) => {
-      try {
-        window.hive_keychain.requestRemoveKeyAuthority(
-          data.username,
-          data.authorizedKey,
-          data.role,
-          (response: KeychainRequestResponse) => {
-            resolve(response)
-          }
-        )
+        window.hive_keychain[`requestRemove${kind}Authority`](user, auth, role, (response: KeychainRequestResponse) => {
+          resolve(response)
+        })
       } catch (error) {
         throw error
       }
@@ -392,7 +312,7 @@ export class KeychainMini {
   }
 
   async vscFer(
-    method: string,
+    method: 'Transfer' | 'Withdrawal' | 'Staking',
     user: string,
     to: string,
     amount: number,
@@ -403,7 +323,7 @@ export class KeychainMini {
     return new Promise(async (rs) => {
       const toUser = to.startsWith('did:') || to.startsWith('hive:') ? to : `hive:${to}`
       try {
-        window.hive_keychain[method](
+        window.hive_keychain[`requestVsc${method}`](
           user,
           toUser,
           amount.toFixed(3),
