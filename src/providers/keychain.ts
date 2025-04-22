@@ -10,7 +10,8 @@ import {
   OperationResultObj,
   Providers,
   SignOperationResult,
-  PersistentLoginBase
+  PersistentLoginBase,
+  VscStakeType
 } from '../types.js'
 import { KeychainMini } from '../lib/keychain-mini.js'
 import { SimpleEventEmitter } from '../lib/event-emitter.js'
@@ -489,5 +490,51 @@ export class Keychain extends AiohaProviderBase {
         role: Keychain.mapAiohaKeyTypes(role)
       })
     )
+  }
+
+  async vscTransfer(to: string, amount: number, currency: Asset, memo?: string): Promise<SignOperationResult> {
+    this.eventEmitter.emit('sign_tx_request')
+    return this.txResult(await this.provider.vscFer('requestVscTransfer', this.getUser()!, to, amount, currency, memo))
+  }
+
+  async vscWithdraw(to: string, amount: number, currency: Asset, memo?: string): Promise<SignOperationResult> {
+    this.eventEmitter.emit('sign_tx_request')
+    return this.txResult(await this.provider.vscFer('requestVscWithdrawal', this.getUser()!, to, amount, currency, memo))
+  }
+
+  async vscStake(
+    stakeType: VscStakeType,
+    amount: number,
+    to?: string,
+    memo?: string,
+    net_id?: string
+  ): Promise<SignOperationResult> {
+    switch (stakeType) {
+      case VscStakeType.Consensus:
+        return super.vscStake(stakeType, amount, to, memo, net_id)
+      case VscStakeType.HBD:
+        this.eventEmitter.emit('sign_tx_request')
+        return this.txResult(
+          await this.provider.vscFer('requestVscStaking', this.getUser()!, to ?? this.getUser()!, amount, Asset.HBD, 'STAKING')
+        )
+    }
+  }
+
+  async vscUnstake(
+    stakeType: VscStakeType,
+    amount: number,
+    to?: string,
+    memo?: string,
+    net_id?: string
+  ): Promise<SignOperationResult> {
+    switch (stakeType) {
+      case VscStakeType.Consensus:
+        return super.vscUnstake(stakeType, amount, to, memo, net_id)
+      case VscStakeType.HBD:
+        this.eventEmitter.emit('sign_tx_request')
+        return this.txResult(
+          await this.provider.vscFer('requestVscStaking', this.getUser()!, to ?? this.getUser()!, amount, Asset.HBD, 'UNSTAKING')
+        )
+    }
   }
 }

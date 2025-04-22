@@ -425,4 +425,33 @@ export class KeychainMini {
       }
     })
   }
+
+  async vscFer(
+    method: string,
+    user: string,
+    to: string,
+    amount: number,
+    asset: string,
+    memo?: string,
+    net_id?: string
+  ): Promise<KeychainRequestResponse> {
+    return new Promise(async (rs) => {
+      const toUser = to.startsWith('did:') || to.startsWith('hive:') ? to : `hive:${to}`
+      try {
+        window.hive_keychain[method](
+          user,
+          toUser,
+          amount.toFixed(3),
+          asset,
+          memo,
+          (response: KeychainRequestResponse) => {
+            rs(response)
+          },
+          net_id
+        )
+      } catch (error) {
+        throw error
+      }
+    })
+  }
 }
