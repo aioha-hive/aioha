@@ -28,21 +28,7 @@ import { KeychainRequestResponse, KeychainSignTxRequestResponse } from 'keychain
  * Stripped version of keychain-sdk.
  */
 export class KeychainMini {
-  async isKeychainInstalled(): Promise<boolean> {
-    return new Promise((resolve) => {
-      if (window.hive_keychain) {
-        try {
-          window.hive_keychain.requestHandshake(() => resolve(true))
-        } catch {
-          resolve(false)
-        }
-      } else {
-        resolve(false)
-      }
-    })
-  }
-
-  static isKeychainInstalledSync(): boolean {
+  static isInstalledSync(): boolean {
     return !!window.hive_keychain
   }
 
@@ -58,7 +44,6 @@ export class KeychainMini {
   async encode(data: Encode): Promise<KeychainRequestResponse> {
     return new Promise(async (resolve) => {
       try {
-        await this.isKeychainInstalled()
         window.hive_keychain.requestEncodeMessage(
           data.username,
           data.receiver,
@@ -77,7 +62,6 @@ export class KeychainMini {
   async encodeWithKeys(data: EncodeWithKeys): Promise<KeychainRequestResponse> {
     return new Promise(async (resolve) => {
       try {
-        await this.isKeychainInstalled()
         window.hive_keychain.requestEncodeWithKeys(
           data.username,
           data.publicKeys,
@@ -96,7 +80,6 @@ export class KeychainMini {
   async decode(data: Decode): Promise<KeychainRequestResponse> {
     return new Promise(async (resolve) => {
       try {
-        await this.isKeychainInstalled()
         window.hive_keychain.requestVerifyKey(data.username, data.message, data.method, (response: KeychainRequestResponse) => {
           resolve(response)
         })
@@ -109,7 +92,6 @@ export class KeychainMini {
   async signBuffer(data: SignBuffer): Promise<KeychainRequestResponse> {
     return new Promise(async (resolve) => {
       try {
-        await this.isKeychainInstalled()
         window.hive_keychain.requestSignBuffer(
           data.username,
           data.message,
@@ -129,7 +111,6 @@ export class KeychainMini {
   async addAccountAuthority(data: AddAccountAuthority): Promise<KeychainRequestResponse> {
     return new Promise(async (resolve) => {
       try {
-        await this.isKeychainInstalled()
         window.hive_keychain.requestAddAccountAuthority(
           data.username,
           data.authorizedUsername,
@@ -148,7 +129,6 @@ export class KeychainMini {
   async removeAccountAuthority(data: RemoveAccountAuthority): Promise<KeychainRequestResponse> {
     return new Promise(async (resolve) => {
       try {
-        await this.isKeychainInstalled()
         window.hive_keychain.requestRemoveAccountAuthority(
           data.username,
           data.authorizedUsername,
@@ -166,7 +146,6 @@ export class KeychainMini {
   async addKeyAuthority(data: AddKeyAuthority): Promise<KeychainRequestResponse> {
     return new Promise(async (resolve) => {
       try {
-        await this.isKeychainInstalled()
         window.hive_keychain.requestAddKeyAuthority(
           data.username,
           data.authorizedKey,
@@ -185,7 +164,6 @@ export class KeychainMini {
   async removeKeyAuthority(data: RemoveKeyAuthority): Promise<KeychainRequestResponse> {
     return new Promise(async (resolve) => {
       try {
-        await this.isKeychainInstalled()
         window.hive_keychain.requestRemoveKeyAuthority(
           data.username,
           data.authorizedKey,
@@ -203,7 +181,6 @@ export class KeychainMini {
   async broadcast(data: Broadcast): Promise<KeychainRequestResponse> {
     return new Promise(async (resolve) => {
       try {
-        await this.isKeychainInstalled()
         window.hive_keychain.requestBroadcast(
           data.username,
           typeof data.operations === 'string' ? JSON.parse(data.operations) : data.operations,
@@ -221,7 +198,6 @@ export class KeychainMini {
   async signTx(data: SignTx): Promise<KeychainSignTxRequestResponse> {
     return new Promise(async (resolve) => {
       try {
-        await this.isKeychainInstalled()
         window.hive_keychain.requestSignTx(data.username, data.tx, data.method, (response: KeychainSignTxRequestResponse) => {
           resolve(response)
         })
@@ -234,7 +210,6 @@ export class KeychainMini {
   async post(data: Post): Promise<KeychainRequestResponse> {
     return new Promise(async (resolve) => {
       try {
-        await this.isKeychainInstalled()
         window.hive_keychain.requestPost(
           data.username,
           data.title,
@@ -257,7 +232,6 @@ export class KeychainMini {
   async vote(data: Vote): Promise<KeychainRequestResponse> {
     return new Promise(async (resolve) => {
       try {
-        await this.isKeychainInstalled()
         window.hive_keychain.requestVote(
           data.username,
           data.permlink,
@@ -276,7 +250,6 @@ export class KeychainMini {
   async custom(data: Custom): Promise<KeychainRequestResponse> {
     return new Promise(async (resolve) => {
       try {
-        await this.isKeychainInstalled()
         window.hive_keychain.requestCustomJson(
           data.username,
           data.id,
@@ -296,7 +269,6 @@ export class KeychainMini {
   async transfer(data: Transfer): Promise<KeychainRequestResponse> {
     return new Promise(async (resolve) => {
       try {
-        await this.isKeychainInstalled()
         window.hive_keychain.requestTransfer(
           data.username,
           data.to,
@@ -317,7 +289,6 @@ export class KeychainMini {
   async recurrentTransfer(data: RecurrentTransfer): Promise<KeychainRequestResponse> {
     return new Promise(async (resolve) => {
       try {
-        await this.isKeychainInstalled()
         window.hive_keychain.requestRecurrentTransfer(
           data.username,
           data.to,
@@ -339,7 +310,6 @@ export class KeychainMini {
   async delegation(data: Delegation): Promise<KeychainRequestResponse> {
     return new Promise(async (resolve) => {
       try {
-        await this.isKeychainInstalled()
         window.hive_keychain.requestDelegation(
           data.username,
           data.delegatee,
@@ -358,7 +328,6 @@ export class KeychainMini {
   async witnessVote(data: WitnessVote): Promise<KeychainRequestResponse> {
     return new Promise(async (resolve) => {
       try {
-        await this.isKeychainInstalled()
         window.hive_keychain.requestWitnessVote(data.username, data.witness, data.vote, (response: KeychainRequestResponse) => {
           resolve(response)
         })
@@ -371,7 +340,6 @@ export class KeychainMini {
   async proxy(data: Proxy): Promise<KeychainRequestResponse> {
     return new Promise(async (resolve) => {
       try {
-        await this.isKeychainInstalled()
         window.hive_keychain.requestProxy(data.username, data.proxy, (response: KeychainRequestResponse) => {
           resolve(response)
         })
@@ -384,7 +352,6 @@ export class KeychainMini {
   async powerUp(data: PowerUp): Promise<KeychainRequestResponse> {
     return new Promise(async (resolve) => {
       try {
-        await this.isKeychainInstalled()
         window.hive_keychain.requestPowerUp(data.username, data.recipient, data.hive, (response: KeychainRequestResponse) => {
           resolve(response)
         })
@@ -397,7 +364,6 @@ export class KeychainMini {
   async powerDown(data: PowerDown): Promise<KeychainRequestResponse> {
     return new Promise(async (resolve) => {
       try {
-        await this.isKeychainInstalled()
         window.hive_keychain.requestPowerDown(data.username, data.hive_power, (response: KeychainRequestResponse) => {
           resolve(response)
         })
@@ -410,7 +376,6 @@ export class KeychainMini {
   async updateProposalVote(data: UpdateProposalVote): Promise<KeychainRequestResponse> {
     return new Promise(async (resolve) => {
       try {
-        await this.isKeychainInstalled()
         window.hive_keychain.requestUpdateProposalVote(
           data.username,
           data.proposal_ids,

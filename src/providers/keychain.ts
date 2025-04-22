@@ -46,7 +46,7 @@ export class Keychain extends AiohaProviderBase {
         errorCode: 5003,
         error: 'keyType options are required'
       }
-    else if (!(await this.provider.isKeychainInstalled()))
+    else if (!KeychainMini.isInstalledSync())
       return {
         provider: Providers.Keychain,
         success: false,
@@ -79,7 +79,7 @@ export class Keychain extends AiohaProviderBase {
         errorCode: 5003,
         error: 'keyType options are required'
       }
-    else if (!(await this.provider.isKeychainInstalled()))
+    else if (!KeychainMini.isInstalledSync())
       return {
         provider: Providers.Keychain,
         success: false,
@@ -131,7 +131,7 @@ export class Keychain extends AiohaProviderBase {
   }
 
   static isInstalled(): boolean {
-    return KeychainMini.isKeychainInstalledSync()
+    return KeychainMini.isInstalledSync()
   }
 
   static mapAiohaKeyTypes(keyType: KeyTypes): KeychainKeyTypes {
