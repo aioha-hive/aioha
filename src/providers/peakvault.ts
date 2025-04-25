@@ -199,7 +199,7 @@ export class PeakVault extends AiohaProviderBase {
 
   async signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResult> {
     try {
-      this.eventEmitter.emit('sign_tx_request')
+      this.emitSignTx()
       const res: VaultResponse = await window.peakvault.requestSignTx(this.getUser()!, tx, keyType)
       return {
         success: true,
@@ -217,7 +217,7 @@ export class PeakVault extends AiohaProviderBase {
 
   async signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult> {
     try {
-      this.eventEmitter.emit('sign_tx_request')
+      this.emitSignTx()
       const res: VaultBroadcastResponse = await window.peakvault.requestBroadcast(this.getUser()!, tx, keyType)
       return {
         success: true,

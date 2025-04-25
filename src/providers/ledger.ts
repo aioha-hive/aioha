@@ -331,7 +331,7 @@ export class Ledger extends AiohaProviderBase {
     if (!(await this.checkConnection())) return connectionFailedError
     if (!this.path) throw new Error('no path?')
     try {
-      this.eventEmitter.emit('sign_tx_request')
+      this.emitSignTx()
       const signedTx = await this.provider!.signTransaction(tx, this.path)
       return {
         success: true,

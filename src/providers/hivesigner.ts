@@ -253,7 +253,7 @@ export class HiveSigner extends AiohaProviderBase {
 
   private async signTxInWindow(ops: Operation[]): Promise<SignOperationResult> {
     return new Promise<SignOperationResult>((rs) => {
-      this.eventEmitter.emit('sign_tx_request')
+      this.emitSignTx()
       const signUrl =
         encodeOps(ops).replace('hive://', 'https://hivesigner.com/') +
         `?redirect_uri=${encodeURIComponent(this.provider.callbackURL)}`

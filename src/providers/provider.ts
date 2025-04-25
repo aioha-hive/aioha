@@ -380,6 +380,10 @@ export abstract class AiohaProviderBase implements AiohaOperations {
       })
     )
   }
+
+  protected emitSignTx() {
+    this.eventEmitter.emit('sign_tx_request')
+  }
 }
 
 export interface AiohaOperations {

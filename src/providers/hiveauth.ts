@@ -189,7 +189,7 @@ export class HiveAuth extends AiohaProviderBase {
 
   async signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult> {
     try {
-      this.eventEmitter.emit('sign_tx_request')
+      this.emitSignTx()
       const broadcasted = await HaWrapper.signTx(this.provider, keyType, tx, true, (payload, evt, cancel) => {
         this.eventEmitter.emit('hiveauth_sign_request', payload, evt, cancel)
       })
