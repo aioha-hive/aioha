@@ -311,6 +311,7 @@ export class KeychainMini {
     })
   }
 
+  /*
   async vscFer(
     method: 'Transfer' | 'Withdrawal' | 'Staking',
     user: string,
@@ -339,4 +340,5 @@ export class KeychainMini {
       }
     })
   }
+  */
 }

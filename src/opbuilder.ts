@@ -121,7 +121,6 @@ export const constructTxHeader = async (ops: any[], api: string = DEFAULT_API, e
     }, 1000);
   }))
   const props = propsResp.result
-  // TODO: fix tx expiration errors, it only works inside Ledger provider but not anywhere else
   return {
     ref_block_num: props.head_block_number & 0xffff,
     ref_block_prefix: getPrefix(props.head_block_id),

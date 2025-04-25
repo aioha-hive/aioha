@@ -16,7 +16,7 @@ import {
 import { broadcastTx, getKeyRefs } from '../rpc.js'
 import { constructTxHeader } from '../opbuilder.js'
 import { sha256 } from '../lib/sha256-browser.js'
-import { transactionDigest } from '@aioha/tx-digest'
+// import { transactionDigest } from '@aioha/tx-digest'
 import { SimpleEventEmitter } from '../lib/event-emitter.js'
 
 const CONN_ERROR = 'Failed to establish connection to the device'
@@ -352,7 +352,7 @@ export class Ledger extends AiohaProviderBase {
       const unsignedTx = await constructTxHeader(tx)
       const signedTx = await this.signTx(unsignedTx, KeyTypes.Active)
       if (!signedTx.success || !signedTx.result) return signedTx
-      // const { transactionDigest } = await import(/* webpackChunkName: 'hive-tx' */ '@aioha/tx-digest')
+      const { transactionDigest } = await import(/* webpackChunkName: 'ledger' */ '@aioha/tx-digest')
       const txId = (await transactionDigest(signedTx.result)).txId
       const broadcasted = await broadcastTx(signedTx.result, this.api)
       if (broadcasted.error)

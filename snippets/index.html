@@ -140,7 +140,8 @@
           const tx = await constructTxHeader([xferOp()])
           let signed = await aioha.signTx(tx, KeyTypes.Active)
           if (signed.success && document.getElementById('nobc-sign-bc').checked) {
-            console.log(await broadcastTx(signed))
+            console.log(await broadcastTx(signed.result))
+            console.log(signed)
           } else {
             console.log(signed)
           }
