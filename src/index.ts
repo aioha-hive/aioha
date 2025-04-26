@@ -31,7 +31,7 @@ import { DEFAULT_API, FALLBACK_APIS, getAccounts, call } from './rpc.js'
 import { AiohaOperations, AiohaProviderBase, DEFAULT_VSC_NET_ID } from './providers/provider.js'
 export { constructTxHeader } from './opbuilder.js'
 export { broadcastTx, call, hivePerVests } from './rpc.js'
-export { Asset, KeyTypes, Providers, VscStakeType } from './types.js'
+export { Asset, KeyTypes, Providers, VscStakeType, PersistentLoginProvs } from './types.js'
 import { AiohaRpcError, RequestArguments } from './jsonrpc/eip1193-types.js'
 import { IsProviderRegistered, LoginParam } from './jsonrpc/param-types.js'
 import { AiohaExtension, CoreRpc } from './jsonrpc/methods.js'
@@ -265,6 +265,10 @@ export class Aioha implements AiohaOperations {
     return !!this.user && !!this.currentProvider
   }
 
+  /**
+   * List other connected accounts that are currently inactive.
+   * @returns Mapping of username -> provider.
+   */
   getOtherLogins(): PersistentLoginProvs {
     const result: PersistentLoginProvs = {}
     for (let u in this.otherLogins) result[u] = this.otherLogins[u].provider
@@ -317,6 +321,11 @@ export class Aioha implements AiohaOperations {
     if (this.isBrowser()) localStorage.setItem('aiohaOtherLogins', JSON.stringify(this.otherLogins))
   }
 
+  /**
+   * Remove an inactive but authenticated user.
+   * @param username Username to remove
+   * @returns The removed login details.
+   */
   removeOtherLogin(username: string): PersistentLogin {
     if (!this.otherLogins[username]) throw new Error('Cannot remove non-existent login')
     const popped = this.otherLogins[username]
@@ -429,6 +438,11 @@ export class Aioha implements AiohaOperations {
     else return apiRequest.result
   }
 
+  /**
+   * Discover accounts that are available to connect for the provider.
+   * @param provider The provider which must be registered already.
+   * @returns Object mapping available account username -> details. The details type may be dependent on the selected provider.
+   */
   async discoverAccounts(provider: Providers): Promise<OperationResultObj> {
     if (!this.providers[provider])
       return {
@@ -439,6 +453,11 @@ export class Aioha implements AiohaOperations {
     return await this.providers[provider].discoverAccounts()
   }
 
+  /**
+   * Switch to another authenticated user.
+   * @param username Logged in username to switch to.
+   * @returns boolean of whether operation is successful or not.
+   */
   switchUser(username: string): boolean {
     if (!this.otherLogins[username] || !this.providers[this.otherLogins[username].provider]) return false
     const prevUser = this.getCurrentUser()
@@ -607,12 +626,26 @@ export class Aioha implements AiohaOperations {
     return false
   }
 
+  /**
+   * Encrypt a memo for another user.
+   * @param message Memo to encrypt
+   * @param keyType Sender key type for the encryption
+   * @param recipient Recipient username
+   * @returns Encryption result with encrypted message if successful.
+   */
   async encryptMemo(message: string, keyType: KeyTypes, recipient: string): Promise<OperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
     if (!message.startsWith('#')) message = '#' + message
     return await this.providers[this.getCurrentProvider()!]!.encryptMemo(message, keyType, recipient)
   }
 
+  /**
+   * Encrypt a memo using receipient public keys.
+   * @param message Memo to encrypt
+   * @param keyType Sender key type for the encryption
+   * @param recipientKeys List of recipient public keys
+   * @returns Encryption result with encrypted messages if successful.
+   */
   async encryptMemoWithKeys(message: string, keyType: KeyTypes, recipientKeys: string[]): Promise<OperationResultObj> {
     if (!this.isLoggedIn()) return notLoggedInResult
     if (!message.startsWith('#')) message = '#' + message
@@ -1088,6 +1121,7 @@ export class Aioha implements AiohaOperations {
    * @param keyType Key type to authenticate with. Valid values are `posting` and `active`.
    * @returns Transaction result
    */
+  /*
   async vscCallContract(
     contractId: string,
     action: string,
@@ -1098,22 +1132,55 @@ export class Aioha implements AiohaOperations {
     if (!this.isLoggedIn()) return notLoggedInResult
     return await this.providers[this.getCurrentProvider()!]!.vscCallContract(contractId, action, payload, keyType, this.vscNetId)
   }
+  */
 
+  /**
+   * Transfer native assets on VSC.
+   * @param to Destination address
+   * @param amount Amount to transfer
+   * @param currency HIVE or HBD
+   * @param memo Transfer memo
+   * @returns Transaction result
+   */
   async vscTransfer(to: string, amount: number, currency: Asset, memo?: string): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
     return await this.providers[this.getCurrentProvider()!]!.vscTransfer(to, amount, currency, memo, this.vscNetId)
   }
 
+  /**
+   * Withdraw native assets from VSC.
+   * @param to Destination username
+   * @param amount Amount to withdraw
+   * @param currency HIVE or HBD
+   * @param memo Withdraw memo
+   * @returns Transaction result
+   */
   async vscWithdraw(to: string, amount: number, currency: Asset, memo?: string): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
     return await this.providers[this.getCurrentProvider()!]!.vscWithdraw(to, amount, currency, memo, this.vscNetId)
   }
 
+  /**
+   * Stake native assets on VSC.
+   * @param stakeType VscStakeType enum of consensus stake or HBD savings
+   * @param amount Amount to stake
+   * @param to Destination address (default: logged in user)
+   * @param memo Stake memo
+   * @returns Transaction result
+   */
   async vscStake(stakeType: VscStakeType, amount: number, to?: string, memo?: string): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
     return await this.providers[this.getCurrentProvider()!]!.vscStake(stakeType, amount, to, memo, this.vscNetId)
   }
 
+  /**
+   * Unstake native assets on VSC.
+   * @param stakeType VscStakeType enum of consensus stake or HBD savings
+   * @param amount Amount to unstake
+   * @param to Destination address (default: logged in user)
+   * @param memo Unstake memo
+   * @returns Transaction result
+   */
   async vscUnstake(stakeType: VscStakeType, amount: number, to?: string, memo?: string): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
     return await this.providers[this.getCurrentProvider()!]!.vscUnstake(stakeType, amount, to, memo, this.vscNetId)
