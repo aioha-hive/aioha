@@ -68,7 +68,7 @@ export const getAccountsErrored = (rpcResponse: any): boolean => {
 }
 
 export const getDgp = (api: string = DEFAULT_API) => {
-  return call('condenser_api.get_dynamic_global_properties', undefined, api)
+  return call('condenser_api.get_dynamic_global_properties', [], api)
 }
 
 export const getKeyRefs = (keys: string[], api: string = DEFAULT_API) => {
