@@ -21,7 +21,8 @@ import {
   PersistentLogins,
   PersistentLogin,
   PersistentLoginProvs,
-  VscStakeType
+  VscStakeType,
+  AccountDiscStream
 } from './types.js'
 import { SimpleEventEmitter } from './lib/event-emitter.js'
 import { AppMetaType } from './lib/hiveauth-wrapper.js'
@@ -441,16 +442,17 @@ export class Aioha implements AiohaOperations {
   /**
    * Discover accounts that are available to connect for the provider.
    * @param provider The provider which must be registered already.
+   * @param stream Stream of accounts discovered
    * @returns Object mapping available account username -> details. The details type may be dependent on the selected provider.
    */
-  async discoverAccounts(provider: Providers): Promise<OperationResultObj> {
+  async discoverAccounts(provider: Providers, stream?: AccountDiscStream): Promise<OperationResultObj> {
     if (!this.providers[provider])
       return {
         success: false,
         errorCode: 4201,
         error: provider + 'provider is not registered'
       }
-    return await this.providers[provider].discoverAccounts()
+    return await this.providers[provider].discoverAccounts(stream)
   }
 
   /**
@@ -509,15 +511,7 @@ export class Aioha implements AiohaOperations {
       prevLogin = this.providers[this.getCurrentProvider()!]!.getLoginInfo()!
       prevUser = this.getCurrentUser()!
     }
-    const result = await this.providers[provider]!.login(username, {
-      ...options,
-      hiveauth: {
-        cbWait: (payload, evt, cancel) => {
-          this.eventEmitter.emit('hiveauth_login_request', payload, evt, cancel)
-          options.hiveauth!.cbWait!(payload, evt, cancel)
-        }
-      }
-    })
+    const result = await this.providers[provider]!.login(username, options)
     if (result.success) {
       this.setUserAndProvider(result.username ?? username, provider, result.publicKey)
       if (prevLogin && prevUser && prevUser !== username) this.addOtherLogin(prevUser, prevLogin)

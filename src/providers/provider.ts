@@ -1,5 +1,6 @@
 import { AuthorityType, CommentOptionsOperation, Operation, Transaction, WithdrawVestingOperation } from '@hiveio/dhive'
 import {
+  AccountDiscStream,
   Asset,
   KeyTypes,
   LoginOptions,
@@ -72,7 +73,7 @@ export abstract class AiohaProviderBase implements AiohaOperations {
     }
   }
 
-  async discoverAccounts(): Promise<OperationResultObj> {
+  async discoverAccounts(_?: AccountDiscStream): Promise<OperationResultObj> {
     return {
       success: false,
       errorCode: 4200,

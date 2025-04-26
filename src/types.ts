@@ -56,6 +56,14 @@ interface LoginResultError extends BaseResult {
 
 export type LoginResult = LoginResultSuccess | LoginResultError
 
+export interface AccountDiscStreamObj {
+  username: string
+  path?: string
+  pubkey?: string
+  role?: string
+}
+export type AccountDiscStream = (discovered: AccountDiscStreamObj, stop: () => void) => any
+
 export interface OperationError extends BaseResult {
   success: false
   error: string

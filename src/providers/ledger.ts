@@ -11,7 +11,8 @@ import {
   OperationError,
   PersistentLoginLedger,
   PersistentLogin,
-  OperationResultObj
+  OperationResultObj,
+  AccountDiscStream
 } from '../types.js'
 import { broadcastTx, getKeyRefs } from '../rpc.js'
 import { constructTxHeader } from '../opbuilder.js'
@@ -29,10 +30,27 @@ enum SlipRole {
   posting = 4
 }
 
+const SlipRoleToStr = ['owner', 'active', '', 'memo', 'posting']
+
 interface DiscoveredAccs {
   username: string
   path: string
   pubkey: string
+}
+
+interface DiscSession {
+  stopped: boolean
+  stream?: AccountDiscStream
+}
+
+interface DiscUserAuth {
+  pubkey: string
+  path: string
+  role: string
+}
+
+interface DiscUsers {
+  [user: string]: DiscUserAuth[]
 }
 
 const traverseConfig = {
@@ -63,12 +81,14 @@ const errorCodes: {
 }
 
 // https://gitlab.com/engrave/ledger/hiveledger/-/blob/main/src/modules/hive/accountDiscovery/discoverAccounts/discoverAccounts.ts
-const searchAccounts = async (role: SlipRole, app: LedgerApp, targetUser?: string, api?: string) => {
+const searchAccounts = async (role: SlipRole, app: LedgerApp, targetUser?: string, api?: string, stream?: DiscSession) => {
   const foundAccounts: DiscoveredAccs[] = []
   outerLoop: for (let accountIndex = 0, accountGap = 0; accountGap < traverseConfig.maxAccountGap; accountIndex++) {
     for (let keyIndex = 0, keyGap = 0; keyGap < traverseConfig.maxKeyGap; keyIndex += 1) {
+      if (stream && stream.stopped) return foundAccounts
       const path = makePath(role, accountIndex, keyIndex)
       const pubkey = await app.getPublicKey(path, false)
+      if (stream && stream.stopped) return foundAccounts
       const accounts = await getKeyRefs([pubkey], api)
       let accountExists = false
       if (!accounts.error && accounts.result && Array.isArray(accounts.result.accounts))
@@ -76,11 +96,14 @@ const searchAccounts = async (role: SlipRole, app: LedgerApp, targetUser?: strin
           if (Array.isArray(accounts.result.accounts[i]))
             for (let j in accounts.result.accounts[i]) {
               accountExists = true
-              foundAccounts.push({
+              const found = {
                 username: accounts.result.accounts[i][j],
                 path,
                 pubkey
-              })
+              }
+              foundAccounts.push(found)
+              if (stream && typeof stream.stream === 'function')
+                stream.stream({ ...found, role: SlipRoleToStr[role] }, () => (stream.stopped = true))
               if (targetUser === accounts.result.accounts[i][j]) break outerLoop
             }
       if (accountExists) {
@@ -237,18 +260,27 @@ export class Ledger extends AiohaProviderBase {
     } catch {}
   }
 
-  async discoverAccounts(): Promise<OperationResultObj> {
-    await this.checkConnection()
+  async discoverAccounts(stream?: AccountDiscStream): Promise<OperationResultObj> {
+    if (!(await this.checkConnection())) return connectionFailedError
     const roles: { [name: string]: SlipRole } = {
       owner: SlipRole.owner,
       active: SlipRole.active,
       posting: SlipRole.posting
     }
-    const result: { [name: string]: DiscoveredAccs[] } = { owner: [], active: [], posting: [] }
+    const result: DiscUsers = {}
+    const session: DiscSession = { stopped: false, stream }
     try {
       for (let r in roles) {
-        const discoveredAccounts = await searchAccounts(roles[r], this.provider!, undefined, this.api)
-        for (let a in discoveredAccounts) result[r].push(discoveredAccounts[a])
+        const discoveredAccounts = await searchAccounts(roles[r], this.provider!, undefined, this.api, session)
+        for (let a in discoveredAccounts) {
+          const auth: DiscUserAuth = {
+            pubkey: discoveredAccounts[a].pubkey,
+            path: discoveredAccounts[a].path,
+            role: r
+          }
+          if (!result[discoveredAccounts[a].username]) result[discoveredAccounts[a].username] = [auth]
+          else result[discoveredAccounts[a].username].push(auth)
+        }
       }
       return {
         success: true,

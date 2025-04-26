@@ -42,7 +42,7 @@ export class HiveAuth extends AiohaProviderBase {
   }
 
   async login(username: string, options: LoginOptions): Promise<LoginResult> {
-    if (!options || !options.hiveauth || !options.keyType)
+    if (!options || !options.keyType)
       return {
         provider: Providers.HiveAuth,
         success: false,
@@ -58,7 +58,10 @@ export class HiveAuth extends AiohaProviderBase {
           challenge: options.msg ?? window.crypto.randomUUID(),
           nonce: Date.now()
         },
-        options.hiveauth.cbWait
+        (payload, evt, cancel) => {
+          this.eventEmitter.emit('hiveauth_challenge_request', payload, evt, cancel)
+          if (options.hiveauth && typeof options.hiveauth.cbWait === 'function') options.hiveauth.cbWait(payload, evt, cancel)
+        }
       )
       if (this.provider.token) localStorage.setItem('hiveauthToken', this.provider.token)
       localStorage.setItem('hiveauthKey', this.provider.key!)
