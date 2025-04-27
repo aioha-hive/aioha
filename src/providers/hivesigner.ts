@@ -135,9 +135,7 @@ export class HiveSigner extends AiohaProviderBase {
   async logout(): Promise<void> {
     try {
       await this.provider.revokeToken()
-      localStorage.removeItem('hivesignerToken')
-      localStorage.removeItem('hivesignerExpiry')
-      localStorage.removeItem('hivesignerUsername')
+      this.rmItems(['hivesignerToken', 'hivesignerExpiry', 'hivesignerUsername'])
       this.provider.removeAccessToken()
       delete this.username
     } catch {}

@@ -47,7 +47,7 @@ export class HiveAuth extends AiohaProviderBase {
         provider: Providers.HiveAuth,
         success: false,
         errorCode: 5003,
-        error: 'hiveauth and keyType options must be present'
+        error: 'keyType options are required'
       }
     try {
       const login = await HaWrapper.authenticate(
@@ -93,9 +93,7 @@ export class HiveAuth extends AiohaProviderBase {
 
   async logout(): Promise<void> {
     this.provider.logout()
-    localStorage.removeItem('hiveauthToken')
-    localStorage.removeItem('hiveauthKey')
-    localStorage.removeItem('hiveauthExp')
+    this.rmItems(['hiveauthToken', 'hiveauthKey', 'hiveauthExp'])
   }
 
   loadAuth(username: string): boolean {

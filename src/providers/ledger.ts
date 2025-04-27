@@ -284,7 +284,7 @@ export class Ledger extends AiohaProviderBase {
       await this.closeConnection()
       delete this.username
       delete this.path
-      localStorage.removeItem('ledgerPath')
+      this.rmItems(['ledgerPath'])
     } catch {}
   }
 

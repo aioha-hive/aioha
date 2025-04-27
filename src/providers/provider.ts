@@ -387,6 +387,10 @@ export abstract class AiohaProviderBase implements AiohaOperations {
   protected emitSignTx() {
     this.eventEmitter.emit('sign_tx_request')
   }
+
+  protected rmItems(itms: string[]) {
+    for (let i in itms) localStorage.removeItem(itms[i])
+  }
 }
 
 export interface AiohaOperations {

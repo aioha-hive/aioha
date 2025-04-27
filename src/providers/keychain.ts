@@ -284,16 +284,16 @@ export class Keychain extends AiohaProviderBase {
     // remove when and if keychain fixes this issue
     if (pa && pp) return await super.comment(pa, pp, permlink, title, body, json, options)
     this.emitSignTx()
-    const tx = await this.provider.post({
-      username: this.username,
-      permlink,
+    const tx = await this.provider.post(
+      this.username,
       title,
       body,
-      json_metadata: json,
-      parent_username: pa ?? '',
-      parent_perm: pp ?? '',
-      comment_options: options ? JSON.stringify(options) : ''
-    })
+      pp ?? '',
+      pa ?? '',
+      json,
+      permlink,
+      options ? JSON.stringify(options) : ''
+    )
     return this.txResult(tx)
   }
 

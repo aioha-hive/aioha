@@ -3,7 +3,6 @@ import {
   Custom,
   Delegation,
   Login,
-  Post,
   PowerDown,
   PowerUp,
   Proxy,
@@ -127,22 +126,21 @@ export class KeychainMini {
     })
   }
 
-  async post(data: Post): Promise<KeychainRequestResponse> {
+  async post(
+    user: string,
+    title: string,
+    body: string,
+    pp: string,
+    pa: string,
+    json: string,
+    link: string,
+    opts: string
+  ): Promise<KeychainRequestResponse> {
     return new Promise(async (resolve) => {
       try {
-        window.hive_keychain.requestPost(
-          data.username,
-          data.title,
-          data.body,
-          data.parent_perm,
-          data.parent_username,
-          data.json_metadata,
-          data.permlink,
-          data.comment_options,
-          (response: KeychainRequestResponse) => {
-            resolve(response)
-          }
-        )
+        window.hive_keychain.requestPost(user, title, body, pp, pa, json, link, opts, (response: KeychainRequestResponse) => {
+          resolve(response)
+        })
       } catch (error) {
         throw error
       }
