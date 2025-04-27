@@ -19,6 +19,7 @@ export interface LoginOptions {
   msg?: string
   keyType?: KeyTypes
   loginTitle?: string
+  paths?: string[]
   hivesigner?: {
     state?: string
   }

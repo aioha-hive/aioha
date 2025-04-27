@@ -134,6 +134,31 @@ const searchAccountsAllRolesForUser = async (
   return null
 }
 
+const searchAccountsByPathsForUser = async (
+  app: LedgerApp,
+  targetUser: string,
+  paths: string[],
+  api?: string
+): Promise<DiscoveredAccs | null> => {
+  // verify that the public key for path actually corresponds to the targetUser
+  if (paths.length === 0 || typeof paths[0] !== 'string') return null
+  // TODO: iterate over each path after HF28 to lookup and return for all roles provided
+  const pubkey = await app.getPublicKey(paths[0], false)
+  const accounts = await getKeyRefs([pubkey], api)
+  if (
+    accounts.result &&
+    accounts.result.accounts &&
+    Array.isArray(accounts.result.accounts[0]) &&
+    accounts.result.accounts[0].includes(targetUser)
+  )
+    return {
+      username: targetUser,
+      path: paths[0],
+      pubkey: pubkey
+    }
+  else return null
+}
+
 const connectionFailedError: SignOperationResult = {
   success: false,
   errorCode: 5900,
@@ -189,14 +214,17 @@ export class Ledger extends AiohaProviderBase {
     try {
       // username check
       try {
-        const userFound = await searchAccountsAllRolesForUser(this.provider!, username)
+        const pathSpecified = Array.isArray(options.paths) && options.paths.length > 0
+        const userFound = pathSpecified
+          ? await searchAccountsByPathsForUser(this.provider!, username, options.paths!, this.api)
+          : await searchAccountsAllRolesForUser(this.provider!, username, this.api)
         if (!userFound) {
           await this.closeConnection()
           return {
             provider: Providers.Ledger,
             success: false,
             errorCode: 5901,
-            error: 'Username is not associated with the device'
+            error: 'Username is not associated with the device' + (pathSpecified ? ' for the specified path' : '')
           }
         }
         try {
