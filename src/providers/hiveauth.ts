@@ -59,7 +59,7 @@ export class HiveAuth extends AiohaProviderBase {
           nonce: Date.now()
         },
         (payload, evt, cancel) => {
-          this.eventEmitter.emit('hiveauth_challenge_request', payload, evt, cancel)
+          this.eventEmitter.emit('hiveauth_login_request', payload, evt, cancel)
           if (options.hiveauth && typeof options.hiveauth.cbWait === 'function') options.hiveauth.cbWait(payload, evt, cancel)
         }
       )
