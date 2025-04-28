@@ -24,6 +24,9 @@ export interface LoginOptions {
     state?: string
   }
   hiveauth?: {
+    /**
+     * @deprecated Use [`hiveauth_login_request` event](https://aioha.dev/docs/core/jsonrpc#hiveauth-login-request) instead
+     */
     cbWait?: (payload: string, evt: HaMsgType, cancel: () => void) => any
   }
 }

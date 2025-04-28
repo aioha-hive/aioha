@@ -2,7 +2,7 @@
 
 Aioha is an API that provides a common interface for working with different Hive login providers. This allows easier integration of Hive login and transacting on the network with fewer code.
 
-This repository contains the core API designed for use in browser contexts. Ready to use packages with UI included are to follow soon.
+This repository contains the core API designed for use in browser contexts.
 
 ## Supported Providers
 
@@ -11,6 +11,10 @@ This repository contains the core API designed for use in browser contexts. Read
 * [HiveSigner](https://hivesigner.com)
 * [Ledger](https://hiveledger.io)
 * [Peak Vault](https://vault.peakd.com)
+
+## Frameworks Libraries
+
+* React ([Provider](https://github.com/aioha-hive/react-provider), [Ready Made UI](https://github.com/aioha-hive/react-ui))
 
 ## Installation
 
@@ -47,12 +51,7 @@ if (aioha.isLoggedIn()) {
 // Login with provider. Supported providers are listed above, as in Providers enum.
 const login = await aioha.login(Providers.Keychain, 'hiveusername', {
   msg: 'Hello World',
-  keyType: KeyTypes.Posting,
-  hiveauth: {
-    cbWait: (payload, evt) => {
-      // display HiveAuth QR code using `payload` as data
-    }
-  }
+  keyType: KeyTypes.Posting
 })
 
 // Transfer 1 HIVE using logged in provider
@@ -73,7 +72,7 @@ Aioha uses certain keys in browser `localStorage` to store persistent logins, an
 
 The following keys are reserved:
 
-* General: `aiohaUsername`, `aiohaProvider`
+* General: `aiohaUsername`, `aiohaProvider`, `aiohaPubKey`, `aiohaOtherLogins`
 * HiveAuth: `hiveauthToken`, `hiveauthKey`, `hiveauthExp`
 * HiveSigner: `hivesignerTxId`, `hivesignerToken`, `hivesignerExpiry`, `hivesignerUsername`
 * Ledger: `ledgerPath`
@@ -85,8 +84,7 @@ A callback page is required for HiveSigner provider. An example HTML with the co
 ## Build
 
 ```sh
-pnpm run build
-pnpm run webpack
+pnpm run prepublish
 ```
 
 `tsc` output can be found in `build` folder and the Webpack output can be found in `dist` folder with `bundle.js` being the entrypoint. All Webpack output files are to be served and will be loaded on-demand depending on the provider selected upon login.
