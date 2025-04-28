@@ -420,8 +420,8 @@ export class Aioha implements AiohaOperations {
             prevUser = this.getCurrentUser()!
           }
           const result = await this.extensions[ext].request(this.providers[loginParams.provider]!, submethod, args.params)
-          this.setUserAndProvider(result.username, result.provider, result.publicKey)
           if (prevLogin && prevUser && prevUser !== loginParams.username) this.addOtherLogin(prevUser, prevLogin)
+          this.setUserAndProvider(result.username, result.provider, result.publicKey)
           return result
         } else {
           const result = await this.extensions[ext].request(this.providers[this.getCurrentProvider()!]!, submethod, args.params)
@@ -513,8 +513,8 @@ export class Aioha implements AiohaOperations {
     }
     const result = await this.providers[provider]!.login(username, options)
     if (result.success) {
-      this.setUserAndProvider(result.username ?? username, provider, result.publicKey)
       if (prevLogin && prevUser && prevUser !== username) this.addOtherLogin(prevUser, prevLogin)
+      this.setUserAndProvider(result.username ?? username, provider, result.publicKey)
     }
     return result
   }
@@ -542,8 +542,8 @@ export class Aioha implements AiohaOperations {
     }
     const result = await this.providers[provider]!.loginAndDecryptMemo(username, options)
     if (result.success) {
-      this.setUserAndProvider(result.username ?? username, provider)
       if (prevLogin && prevUser && prevUser !== username) this.addOtherLogin(prevUser, prevLogin)
+      this.setUserAndProvider(result.username ?? username, provider)
     }
     return result
   }

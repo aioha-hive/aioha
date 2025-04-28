@@ -1,6 +1,6 @@
 {
   "name": "@aioha/aioha",
-  "version": "1.6.0-beta.10",
+  "version": "1.6.0-beta.11",
   "description": "All-In-One Hive Authentication API",
   "main": "build/index.js",
   "types": "build/index.d.ts",
