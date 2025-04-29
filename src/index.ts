@@ -313,8 +313,8 @@ export class Aioha implements AiohaOperations {
       localStorage.setItem('aiohaProvider', this.currentProvider)
     }
     this.setPublicKey(newPubKey)
-    !previouslyConnected ? this.eventEmitter.emit('connect') : this.eventEmitter.emit('account_changed')
     if (this.otherLogins[username]) delete this.otherLogins[username]
+    !previouslyConnected ? this.eventEmitter.emit('connect') : this.eventEmitter.emit('account_changed')
   }
 
   private addOtherLogin(username: string, loginItm: PersistentLogin) {
@@ -332,6 +332,7 @@ export class Aioha implements AiohaOperations {
     const popped = this.otherLogins[username]
     delete this.otherLogins[username]
     if (this.isBrowser()) localStorage.setItem('aiohaOtherLogins', JSON.stringify(this.otherLogins))
+    this.eventEmitter.emit('account_changed')
     return popped
   }
 
@@ -485,16 +486,12 @@ export class Aioha implements AiohaOperations {
   /**
    * Alias for `login()`.
    */
-  connect(provider: Providers, username: string, options: LoginOptions): Promise<LoginResult> {
-    return this.login(provider, username, options)
-  }
+  connect = this.login
 
   /**
    * Alias for `logout()`.
    */
-  disconnect(): Promise<void> {
-    return this.logout()
-  }
+  disconnect = this.logout
 
   /**
    * Authenticate a Hive account by requesting a message signature. Also known as *Connect Wallet*.
@@ -697,7 +694,7 @@ export class Aioha implements AiohaOperations {
   }
 
   /**
-   * Sign and broadcast a hive-uri encoded transaction
+   * Sign and broadcast a [hive-uri](https://gitlab.syncad.com/hive/hive-uri) encoded transaction
    * @param uri hive:// prefixed URI
    * @param keyType Key type to be used to sign the transaction.
    * @returns Transaction result
