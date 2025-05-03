@@ -446,7 +446,6 @@ export class Keychain extends AiohaProviderBase {
     return this.txResult(await this.provider.rmAuth('Key', this.getUser()!, publicKey, Keychain.mapAiohaKeyTypes(role)))
   }
 
-  /*
   async vscTransfer(to: string, amount: number, currency: Asset, memo?: string): Promise<SignOperationResult> {
     this.emitSignTx()
     return this.txResult(await this.provider.vscFer('Transfer', this.getUser()!, to, amount, currency, memo))
@@ -492,5 +491,4 @@ export class Keychain extends AiohaProviderBase {
         )
     }
   }
-  */
 }
