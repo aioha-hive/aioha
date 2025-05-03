@@ -326,7 +326,7 @@ export class KeychainMini {
           toUser,
           amount.toFixed(3),
           asset,
-          memo,
+          memo ?? '',
           (response: KeychainRequestResponse) => {
             rs(response)
           },
