@@ -27,6 +27,10 @@ interface AccountAuths {
   witness_signing: string
 }
 
+/**
+ * Plaintext private key provider for backend usage only.
+ * DO NOT USE IN BROWSER CONTEXTS.
+ */
 export class PlaintextKeyProvider extends AiohaProviderBase {
   private provider: Client
   private user?: string
