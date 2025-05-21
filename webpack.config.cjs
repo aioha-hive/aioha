@@ -1,5 +1,6 @@
 const path = require('path')
 const { DefinePlugin, ProvidePlugin } = require('webpack')
+const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
 
 module.exports = {
   entry: './src/index.ts',
@@ -39,6 +40,13 @@ module.exports = {
     }),
     new ProvidePlugin({
       Buffer: ['buffer', 'Buffer']
+    }),
+    new BundleAnalyzerPlugin({
+      generateStatsFile: true,
+      analyzerMode: 'static',
+      reportFilename: path.resolve(__dirname, 'bundle-analyzer/report.html'),
+      statsFilename: path.resolve(__dirname, 'bundle-analyzer/stats.json'),
+      openAnalyzer: false
     })
   ],
   optimization: {

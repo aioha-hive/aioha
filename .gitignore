@@ -1,4 +1,5 @@
 node_modules
 dist
 build
+bundle-analyzer
 .DS_Store
