@@ -11,7 +11,8 @@ import {
   PersistentLogin,
   SignOperationResult,
   VscFer,
-  VscStakeType
+  VscStakeType,
+  VscTxIntent
 } from '../types.js'
 import {
   createVote,
@@ -286,11 +287,12 @@ export abstract class AiohaProviderBase implements AiohaOperations {
     }
   }
 
-  /*
   async vscCallContract(
     contractId: string,
     action: string,
     payload: any,
+    rc_limit: number,
+    intents: VscTxIntent[],
     keyType: KeyTypes,
     net_id: string = DEFAULT_VSC_NET_ID
   ): Promise<SignOperationResult> {
@@ -298,19 +300,15 @@ export abstract class AiohaProviderBase implements AiohaOperations {
       keyType,
       'vsc.call',
       JSON.stringify({
-        __v: '0.1',
-        __t: 'vsc-tx',
         net_id: net_id,
-        tx: {
-          op: 'call_contract',
-          action: action,
-          contract_id: contractId,
-          payload: payload
-        }
+        contract_id: contractId,
+        action: action,
+        payload: payload,
+        rc_limit,
+        intents
       })
     )
   }
-  */
 
   vscTransfer(
     to: string,
@@ -446,15 +444,15 @@ export interface AiohaOperations {
   removeKeyAuthority(publicKey: string, role: KeyTypes): Promise<SignOperationResult>
 
   // vsc operations
-  /*
   vscCallContract(
     contractId: string,
     action: string,
     payload: any,
+    rc_limit: number,
+    intents: VscTxIntent[],
     keyType: KeyTypes,
     net_id?: string
   ): Promise<SignOperationResult>
-  */
   vscTransfer(to: string, amount: number, currency: Asset, memo?: string, net_id?: string): Promise<SignOperationResult>
   vscWithdraw(to: string, amount: number, currency: Asset, memo?: string, net_id?: string): Promise<SignOperationResult>
   vscStake(stakeType: VscStakeType, amount: number, to?: string, memo?: string, net_id?: string): Promise<SignOperationResult>

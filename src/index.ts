@@ -22,7 +22,8 @@ import {
   PersistentLogin,
   PersistentLoginProvs,
   VscStakeType,
-  AccountDiscStream
+  AccountDiscStream,
+  VscTxIntent
 } from './types.js'
 import { SimpleEventEmitter } from './lib/event-emitter.js'
 import { AppMetaType } from './lib/hiveauth-wrapper.js'
@@ -1112,18 +1113,26 @@ export class Aioha implements AiohaOperations {
    * @param keyType Key type to authenticate with. Valid values are `posting` and `active`.
    * @returns Transaction result
    */
-  /*
   async vscCallContract(
     contractId: string,
     action: string,
     payload: any,
+    rc_limit: number,
+    intents: VscTxIntent[],
     keyType: KeyTypes = KeyTypes.Posting
   ): Promise<SignOperationResult> {
     if (keyType === 'memo') return noMemoAllowResult
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.providers[this.getCurrentProvider()!]!.vscCallContract(contractId, action, payload, keyType, this.vscNetId)
+    return await this.providers[this.getCurrentProvider()!]!.vscCallContract(
+      contractId,
+      action,
+      payload,
+      rc_limit,
+      intents,
+      keyType,
+      this.vscNetId
+    )
   }
-  */
 
   /**
    * Transfer native assets on VSC.

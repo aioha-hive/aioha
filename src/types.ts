@@ -151,3 +151,7 @@ export enum VscStakeType {
   Consensus,
   HBD
 }
+export interface VscTxIntent {
+  args: any
+  type: string
+}
