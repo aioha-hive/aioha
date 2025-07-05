@@ -1110,6 +1110,8 @@ export class Aioha implements AiohaOperations {
    * @param contractId Contract ID
    * @param action Contract action
    * @param payload Contract call payload
+   * @param rc_limit Contract call RC limit
+   * @param intents List of intents to be made available to the contract (i.e. token allowances)
    * @param keyType Key type to authenticate with. Valid values are `posting` and `active`.
    * @returns Transaction result
    */

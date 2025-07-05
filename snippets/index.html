@@ -227,6 +227,8 @@
               document.getElementById('vsc-contract-id').value,
               document.getElementById('vsc-action').value,
               payload,
+              parseInt(document.getElementById('vsc-rc-limit').value),
+              JSON.parse(document.getElementById('vsc-intents').value),
               document.getElementById('vsc-radio-posting').checked ? KeyTypes.Posting : KeyTypes.Active
             )
           )
@@ -349,8 +351,10 @@
     <button id="comment-btn">Comment</button>
     <h2>VSC Contract Call</h2>
     <input type="text" id="vsc-contract-id" placeholder="Contract ID" style="width: 250px" />
-    <input type="text" id="vsc-action" placeholder="Action" /><br /><br />
+    <input type="text" id="vsc-action" placeholder="Action" />
+    <input type="number" id="vsc-rc-limit" placeholder="RC Limit" /><br /><br />
     <textarea id="vsc-payload" placeholder="Payload" style="width: 300px"></textarea>
+    <textarea id="vsc-intents" placeholder="Intents" style="width: 300px">[]</textarea>
     <br />
     <input type="radio" id="vsc-radio-posting" name="vsc-call-auth" value="vsc-call-posting" checked />
     <label for="vsc-radio-posting">Posting</label><br />
