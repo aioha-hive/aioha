@@ -50,6 +50,7 @@
         aioha.on('memo_request', () => console.info('please sign memo request in wallet'))
         aioha.on('sign_msg_request', () => console.info('please sign message in wallet'))
         aioha.on('sign_tx_request', () => console.info('please sign transaction in wallet'))
+        window.aioha = aioha
         const xferOp = () => [
           'transfer',
           {
