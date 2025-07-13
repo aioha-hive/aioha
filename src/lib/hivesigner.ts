@@ -21,6 +21,7 @@ export class Client {
     this.responseType = config.responseType
   }
 
+  /*
   public setApiURL(url: string): this {
     this.apiURL = url
     return this
@@ -35,6 +36,7 @@ export class Client {
     this.callbackURL = url
     return this
   }
+  */
 
   public setAccessToken(accessToken: string): this {
     this.accessToken = accessToken
@@ -46,10 +48,12 @@ export class Client {
     return this
   }
 
+  /*
   public setScope(scope: string[]): this {
     this.scope = scope
     return this
   }
+  */
 
   public getLoginURL(state: string, account?: string): string {
     const redirectUri = encodeURIComponent(this.callbackURL)
@@ -69,9 +73,11 @@ export class Client {
     return loginURL
   }
 
+  /*
   public me(cb?: CallbackFunction): Promise<SendResponse> {
     return this.send('me', 'POST', {}, cb)
   }
+  */
 
   public decode(memo: string, cb?: CallbackFunction): Promise<SendResponse> {
     return this.send('decode', 'POST', { memo: memo }, cb)
