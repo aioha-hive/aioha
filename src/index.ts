@@ -281,10 +281,15 @@ export class Aioha implements AiohaOperations {
    * Get instance of the current provider. Throws an error if not logged in.
    * @returns Instance of the provider that implements AiohaProviderBase
    */
-  getCurrentProviderInstance() {
+  getCurrentProviderInstance(): AiohaProviderBase {
     if (!this.currentProvider) throw new Error('Not logged in')
-    return this.providers[this.currentProvider]
+    return this.providers[this.currentProvider]!
   }
+
+  /**
+   * Shorthand for `getCurrentProviderInstance()`.
+   */
+  getPI = this.getCurrentProviderInstance
 
   /**
    * List all registered extension names.
@@ -387,7 +392,7 @@ export class Aioha implements AiohaOperations {
     // 1. Provider specific methods
     if (this.isLoggedIn()) {
       try {
-        const result = await this.providers[this.getCurrentProvider()!]!.request(args)
+        const result = await this.getPI().request(args)
         return result
       } catch (e: any) {
         if (e.name !== 'AiohaRpcError' || e.code !== 4200) throw e
@@ -418,7 +423,7 @@ export class Aioha implements AiohaOperations {
           if (!loginCheck.success) throw new AiohaRpcError(loginCheck.errorCode, loginCheck.error)
           let prevLogin: PersistentLogin | undefined, prevUser: string | undefined
           if (this.isLoggedIn()) {
-            prevLogin = this.providers[this.getCurrentProvider()!]!.getLoginInfo()!
+            prevLogin = this.getPI().getLoginInfo()!
             prevUser = this.getCurrentUser()!
           }
           const result = await this.extensions[ext].request(this.providers[loginParams.provider]!, submethod, args.params)
@@ -426,7 +431,7 @@ export class Aioha implements AiohaOperations {
           this.setUserAndProvider(result.username, result.provider, result.publicKey)
           return result
         } else {
-          const result = await this.extensions[ext].request(this.providers[this.getCurrentProvider()!]!, submethod, args.params)
+          const result = await this.extensions[ext].request(this.getPI(), submethod, args.params)
           if (this.extensions[ext].isLogoutMethod(submethod)) {
             this.handleLogout()
           }
@@ -467,7 +472,7 @@ export class Aioha implements AiohaOperations {
     const prevUser = this.getCurrentUser()
     if (this.isLoggedIn()) {
       if (this.getCurrentUser() === username) return false
-      const current = this.providers[this.getCurrentProvider()!]!.getLoginInfo()
+      const current = this.getPI().getLoginInfo()
       if (!current) throw new Error('Failed to get current login info') // this should not happen
       this.addOtherLogin(this.getCurrentUser()!, current)
     }
@@ -506,7 +511,7 @@ export class Aioha implements AiohaOperations {
     if (!check.success) return check
     let prevLogin: PersistentLogin | undefined, prevUser: string | undefined
     if (this.isLoggedIn()) {
-      prevLogin = this.providers[this.getCurrentProvider()!]!.getLoginInfo()!
+      prevLogin = this.getPI().getLoginInfo()!
       prevUser = this.getCurrentUser()!
     }
     const result = await this.providers[provider]!.login(username, options)
@@ -535,7 +540,7 @@ export class Aioha implements AiohaOperations {
       }
     let prevLogin: PersistentLogin | undefined, prevUser: string | undefined
     if (this.isLoggedIn()) {
-      prevLogin = this.providers[this.getCurrentProvider()!]!.getLoginInfo()!
+      prevLogin = this.getPI().getLoginInfo()!
       prevUser = this.getCurrentUser()!
     }
     const result = await this.providers[provider]!.loginAndDecryptMemo(username, options)
@@ -628,7 +633,7 @@ export class Aioha implements AiohaOperations {
   async encryptMemo(message: string, keyType: KeyTypes, recipient: string): Promise<OperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
     if (!message.startsWith('#')) message = '#' + message
-    return await this.providers[this.getCurrentProvider()!]!.encryptMemo(message, keyType, recipient)
+    return await this.getPI().encryptMemo(message, keyType, recipient)
   }
 
   /**
@@ -641,7 +646,7 @@ export class Aioha implements AiohaOperations {
   async encryptMemoWithKeys(message: string, keyType: KeyTypes, recipientKeys: string[]): Promise<OperationResultObj> {
     if (!this.isLoggedIn()) return notLoggedInResult
     if (!message.startsWith('#')) message = '#' + message
-    return await this.providers[this.getCurrentProvider()!]!.encryptMemoWithKeys(
+    return await this.getPI().encryptMemoWithKeys(
       message,
       keyType,
       recipientKeys.map((v) => v.trim())
@@ -656,7 +661,7 @@ export class Aioha implements AiohaOperations {
    */
   async decryptMemo(memo: string, keyType: KeyTypes): Promise<OperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.providers[this.getCurrentProvider()!]!.decryptMemo(memo, keyType)
+    return await this.getPI().decryptMemo(memo, keyType)
   }
 
   /**
@@ -667,7 +672,7 @@ export class Aioha implements AiohaOperations {
    */
   async signMessage(message: string, keyType: KeyTypes): Promise<OperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.providers[this.getCurrentProvider()!]!.signMessage(message, keyType)
+    return await this.getPI().signMessage(message, keyType)
   }
 
   /**
@@ -679,7 +684,7 @@ export class Aioha implements AiohaOperations {
   async signTx(tx: Transaction, keyType: KeyTypes): Promise<OperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
     else if (keyType === KeyTypes.Memo) return noMemoAllowResult
-    return await this.providers[this.getCurrentProvider()!]!.signTx(tx, keyType)
+    return await this.getPI().signTx(tx, keyType)
   }
 
   /**
@@ -691,7 +696,7 @@ export class Aioha implements AiohaOperations {
   async signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<OperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
     else if (keyType === KeyTypes.Memo) return noMemoAllowResult
-    return await this.providers[this.getCurrentProvider()!]!.signAndBroadcastTx(tx, keyType)
+    return await this.getPI().signAndBroadcastTx(tx, keyType)
   }
 
   /**
@@ -732,7 +737,7 @@ export class Aioha implements AiohaOperations {
    */
   async vote(author: string, permlink: string, weight: number): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.providers[this.getCurrentProvider()!]!.vote(author, permlink, weight)
+    return await this.getPI().vote(author, permlink, weight)
   }
 
   /**
@@ -771,7 +776,7 @@ export class Aioha implements AiohaOperations {
   ): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
     if (typeof json === 'object') json = JSON.stringify(json)
-    return await this.providers[this.getCurrentProvider()!]!.comment(pa, pp, permlink, title, body, json, options)
+    return await this.getPI().comment(pa, pp, permlink, title, body, json, options)
   }
 
   /**
@@ -781,7 +786,7 @@ export class Aioha implements AiohaOperations {
    */
   async deleteComment(permlink: string): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.providers[this.getCurrentProvider()!]!.deleteComment(permlink)
+    return await this.getPI().deleteComment(permlink)
   }
 
   /**
@@ -796,7 +801,7 @@ export class Aioha implements AiohaOperations {
     if (!this.isLoggedIn()) return notLoggedInResult
     if (typeof json === 'object') json = JSON.stringify(json)
     else if (keyType === 'memo') return noMemoAllowResult
-    return await this.providers[this.getCurrentProvider()!]!.customJSON(keyType, id, json, displayTitle)
+    return await this.getPI().customJSON(keyType, id, json, displayTitle)
   }
 
   /**
@@ -915,7 +920,7 @@ export class Aioha implements AiohaOperations {
    */
   async transfer(to: string, amount: number, currency: Asset, memo?: string): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.providers[this.getCurrentProvider()!]!.transfer(to, amount, currency, memo)
+    return await this.getPI().transfer(to, amount, currency, memo)
   }
 
   /**
@@ -943,7 +948,7 @@ export class Aioha implements AiohaOperations {
         errorCode: -32003, // should we let hived throw this error upon broadcast instead?
         error: 'recurrence must be at least 24 hours'
       }
-    return await this.providers[this.getCurrentProvider()!]!.recurrentTransfer(to, amount, currency, recurrence, executions, memo)
+    return await this.getPI().recurrentTransfer(to, amount, currency, recurrence, executions, memo)
   }
 
   /**
@@ -965,7 +970,7 @@ export class Aioha implements AiohaOperations {
    */
   async stakeHive(amount: number, to?: string): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.providers[this.getCurrentProvider()!]!.stakeHive(amount, to)
+    return await this.getPI().stakeHive(amount, to)
   }
 
   /**
@@ -975,7 +980,7 @@ export class Aioha implements AiohaOperations {
    */
   async unstakeHive(amount: number): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.providers[this.getCurrentProvider()!]!.unstakeHive(amount)
+    return await this.getPI().unstakeHive(amount)
   }
 
   /**
@@ -985,7 +990,7 @@ export class Aioha implements AiohaOperations {
    */
   async unstakeHiveByVests(vests: number): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.providers[this.getCurrentProvider()!]!.unstakeHiveByVests(vests)
+    return await this.getPI().unstakeHiveByVests(vests)
   }
 
   /**
@@ -996,7 +1001,7 @@ export class Aioha implements AiohaOperations {
    */
   async delegateStakedHive(to: string, amount: number): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.providers[this.getCurrentProvider()!]!.delegateStakedHive(to, amount)
+    return await this.getPI().delegateStakedHive(to, amount)
   }
 
   /**
@@ -1007,7 +1012,7 @@ export class Aioha implements AiohaOperations {
    */
   async delegateVests(to: string, amount: number): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.providers[this.getCurrentProvider()!]!.delegateVests(to, amount)
+    return await this.getPI().delegateVests(to, amount)
   }
 
   /**
@@ -1018,7 +1023,7 @@ export class Aioha implements AiohaOperations {
    */
   async voteWitness(witness: string, approve: boolean): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.providers[this.getCurrentProvider()!]!.voteWitness(witness, approve)
+    return await this.getPI().voteWitness(witness, approve)
   }
 
   /**
@@ -1029,7 +1034,7 @@ export class Aioha implements AiohaOperations {
    */
   async voteProposals(proposals: number[], approve: boolean): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.providers[this.getCurrentProvider()!]!.voteProposals(proposals, approve)
+    return await this.getPI().voteProposals(proposals, approve)
   }
 
   /**
@@ -1039,7 +1044,7 @@ export class Aioha implements AiohaOperations {
    */
   async setProxy(proxy: string): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.providers[this.getCurrentProvider()!]!.setProxy(proxy)
+    return await this.getPI().setProxy(proxy)
   }
 
   /**
@@ -1059,7 +1064,7 @@ export class Aioha implements AiohaOperations {
    */
   async addAccountAuthority(username: string, role: KeyTypes, weight: number): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.providers[this.getCurrentProvider()!]!.addAccountAuthority(username, role, weight)
+    return await this.getPI().addAccountAuthority(username, role, weight)
   }
 
   /**
@@ -1070,7 +1075,7 @@ export class Aioha implements AiohaOperations {
    */
   async removeAccountAuthority(username: string, role: KeyTypes): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.providers[this.getCurrentProvider()!]!.removeAccountAuthority(username, role)
+    return await this.getPI().removeAccountAuthority(username, role)
   }
 
   /**
@@ -1082,7 +1087,7 @@ export class Aioha implements AiohaOperations {
    */
   async addKeyAuthority(publicKey: string, role: KeyTypes, weight: number): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.providers[this.getCurrentProvider()!]!.addKeyAuthority(publicKey, role, weight)
+    return await this.getPI().addKeyAuthority(publicKey, role, weight)
   }
 
   /**
@@ -1094,7 +1099,7 @@ export class Aioha implements AiohaOperations {
    */
   async removeKeyAuthority(publicKey: string, role: KeyTypes): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.providers[this.getCurrentProvider()!]!.removeKeyAuthority(publicKey, role)
+    return await this.getPI().removeKeyAuthority(publicKey, role)
   }
 
   /**
@@ -1125,15 +1130,7 @@ export class Aioha implements AiohaOperations {
   ): Promise<SignOperationResult> {
     if (keyType === 'memo') return noMemoAllowResult
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.providers[this.getCurrentProvider()!]!.vscCallContract(
-      contractId,
-      action,
-      payload,
-      rc_limit,
-      intents,
-      keyType,
-      this.vscNetId
-    )
+    return await this.getPI().vscCallContract(contractId, action, payload, rc_limit, intents, keyType, this.vscNetId)
   }
 
   /**
@@ -1146,7 +1143,7 @@ export class Aioha implements AiohaOperations {
    */
   async vscTransfer(to: string, amount: number, currency: Asset, memo?: string): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.providers[this.getCurrentProvider()!]!.vscTransfer(to, amount, currency, memo, this.vscNetId)
+    return await this.getPI().vscTransfer(to, amount, currency, memo, this.vscNetId)
   }
 
   /**
@@ -1159,7 +1156,7 @@ export class Aioha implements AiohaOperations {
    */
   async vscWithdraw(to: string, amount: number, currency: Asset, memo?: string): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.providers[this.getCurrentProvider()!]!.vscWithdraw(to, amount, currency, memo, this.vscNetId)
+    return await this.getPI().vscWithdraw(to, amount, currency, memo, this.vscNetId)
   }
 
   /**
@@ -1172,7 +1169,7 @@ export class Aioha implements AiohaOperations {
    */
   async vscStake(stakeType: VscStakeType, amount: number, to?: string, memo?: string): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.providers[this.getCurrentProvider()!]!.vscStake(stakeType, amount, to, memo, this.vscNetId)
+    return await this.getPI().vscStake(stakeType, amount, to, memo, this.vscNetId)
   }
 
   /**
@@ -1185,7 +1182,7 @@ export class Aioha implements AiohaOperations {
    */
   async vscUnstake(stakeType: VscStakeType, amount: number, to?: string, memo?: string): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.providers[this.getCurrentProvider()!]!.vscUnstake(stakeType, amount, to, memo, this.vscNetId)
+    return await this.getPI().vscUnstake(stakeType, amount, to, memo, this.vscNetId)
   }
 
   // Event emitters
