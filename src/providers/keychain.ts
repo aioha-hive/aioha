@@ -54,12 +54,13 @@ export class Keychain extends AiohaProviderBase {
         error: 'Keychain extension is not installed'
       }
     this.eventEmitter.emit('login_request')
-    const login = await this.provider.login({
-      username: username,
-      message: options.msg,
-      method: Keychain.mapAiohaKeyTypes(options.keyType),
-      title: options.loginTitle
-    })
+    const login: any = await this.provider.challenge(
+      false,
+      username,
+      options.msg ?? '',
+      Keychain.mapAiohaKeyTypes(options.keyType),
+      options.loginTitle
+    )
     if (login.success) this.username = username
     return {
       provider: Providers.Keychain,
@@ -212,11 +213,7 @@ export class Keychain extends AiohaProviderBase {
   async signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResult> {
     this.emitSignTx()
     const kcKeyType = Keychain.mapAiohaKeyTypes(keyType)
-    const signedTx = await this.provider.signTx({
-      username: this.username,
-      tx,
-      method: kcKeyType
-    })
+    const signedTx = await this.provider.signTx(this.username, tx, kcKeyType)
     if (!signedTx.success)
       return {
         success: false,
@@ -233,11 +230,7 @@ export class Keychain extends AiohaProviderBase {
     const kcKeyType = Keychain.mapAiohaKeyTypes(keyType)
     try {
       this.emitSignTx()
-      const broadcastedTx = await this.provider.broadcast({
-        username: this.username,
-        operations: tx,
-        method: kcKeyType
-      })
+      const broadcastedTx = await this.provider.broadcast(this.username, tx, kcKeyType)
       return this.txResult(broadcastedTx)
     } catch (e) {
       return {
@@ -263,12 +256,7 @@ export class Keychain extends AiohaProviderBase {
 
   async vote(author: string, permlink: string, weight: number): Promise<SignOperationResult> {
     this.emitSignTx()
-    const tx = await this.provider.vote({
-      username: this.username,
-      author,
-      permlink,
-      weight
-    })
+    const tx = await this.provider.vote(this.username, author, permlink, weight)
     return this.txResult(tx)
   }
 
@@ -300,28 +288,13 @@ export class Keychain extends AiohaProviderBase {
   async customJSON(keyType: KeyTypes, id: string, json: string, displayTitle?: string): Promise<SignOperationResult> {
     this.emitSignTx()
     return this.txResult(
-      await this.provider.custom({
-        username: this.username,
-        method: Keychain.mapAiohaKeyTypes(keyType),
-        display_msg: displayTitle ?? 'Custom JSON',
-        id,
-        json
-      })
+      await this.provider.custom(this.username, Keychain.mapAiohaKeyTypes(keyType), id, json, displayTitle ?? 'Custom JSON')
     )
   }
 
   async transfer(to: string, amount: number, currency: Asset, memo?: string): Promise<SignOperationResult> {
     this.emitSignTx()
-    return this.txResult(
-      await this.provider.transfer({
-        username: this.username,
-        to,
-        amount: amount.toFixed(3),
-        memo: memo ?? '',
-        enforce: true,
-        currency
-      })
-    )
+    return this.txResult(await this.provider.transfer(this.username, to, amount.toFixed(3), currency, memo ?? ''))
   }
 
   async recurrentTransfer(
@@ -334,94 +307,43 @@ export class Keychain extends AiohaProviderBase {
   ): Promise<SignOperationResult> {
     this.emitSignTx()
     return this.txResult(
-      await this.provider.recurrentTransfer({
-        username: this.username,
-        to,
-        amount: amount.toFixed(3),
-        currency,
-        memo: memo ?? '',
-        recurrence,
-        executions
-      })
+      await this.provider.recurrentTransfer(this.username, to, amount.toFixed(3), currency, memo ?? '', recurrence, executions)
     )
   }
 
   async stakeHive(amount: number, to?: string): Promise<SignOperationResult> {
     this.emitSignTx()
-    return this.txResult(
-      await this.provider.powerUp({
-        username: this.username,
-        recipient: to ?? this.username,
-        hive: amount.toFixed(3)
-      })
-    )
+    return this.txResult(await this.provider.powerUp(this.username, to ?? this.username, amount.toFixed(3)))
   }
 
   async unstakeHive(amount: number): Promise<SignOperationResult> {
     this.emitSignTx()
-    return this.txResult(
-      await this.provider.powerDown({
-        username: this.username,
-        hive_power: amount.toFixed(3)
-      })
-    )
+    return this.txResult(await this.provider.powerDown(this.username, amount.toFixed(3)))
   }
 
   async delegateStakedHive(to: string, amount: number): Promise<SignOperationResult> {
     this.emitSignTx()
-    return this.txResult(
-      await this.provider.delegation({
-        username: this.username,
-        delegatee: to,
-        amount: amount.toFixed(3),
-        unit: 'HP'
-      })
-    )
+    return this.txResult(await this.provider.delegation(this.username, to, amount.toFixed(3), 'HP'))
   }
 
   async delegateVests(to: string, amount: number): Promise<SignOperationResult> {
     this.emitSignTx()
-    return this.txResult(
-      await this.provider.delegation({
-        username: this.username,
-        delegatee: to,
-        amount: amount.toFixed(6),
-        unit: 'VESTS'
-      })
-    )
+    return this.txResult(await this.provider.delegation(this.username, to, amount.toFixed(6), 'VESTS'))
   }
 
   async voteWitness(witness: string, approve: boolean): Promise<SignOperationResult> {
     this.emitSignTx()
-    return this.txResult(
-      await this.provider.witnessVote({
-        username: this.username,
-        witness,
-        vote: approve
-      })
-    )
+    return this.txResult(await this.provider.witnessVote(this.username, witness, approve))
   }
 
   async voteProposals(proposals: number[], approve: boolean): Promise<SignOperationResult> {
     this.emitSignTx()
-    return this.txResult(
-      await this.provider.updateProposalVote({
-        username: this.username,
-        proposal_ids: proposals,
-        approve,
-        extensions: []
-      })
-    )
+    return this.txResult(await this.provider.updateProposalVote(this.username, proposals, approve))
   }
 
   async setProxy(proxy: string): Promise<SignOperationResult> {
     this.emitSignTx()
-    return this.txResult(
-      await this.provider.proxy({
-        username: this.username,
-        proxy
-      })
-    )
+    return this.txResult(await this.provider.proxy(this.username, proxy))
   }
 
   async addAccountAuthority(username: string, role: KeyTypes, weight: number): Promise<SignOperationResult> {
