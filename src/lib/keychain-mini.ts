@@ -1,7 +1,40 @@
-import { KeychainKeyTypes as KT } from 'keychain-sdk/dist/interfaces/keychain-sdk.interface'
-import { KeychainRequestResponse, KeychainSignTxRequestResponse } from 'keychain-sdk/dist/interfaces/keychain.interface'
 import { Asset } from '../types.js'
-import { Operation, Transaction } from '@hiveio/dhive'
+import { Operation, SignedTransaction, Transaction } from '@hiveio/dhive'
+
+// https://github.com/hive-keychain/keychain-sdk/blob/master/src/interfaces/keychain.interface.ts
+interface KeychainTransactionResult {
+  tx_id: string
+  id: string
+  confirmed?: boolean
+}
+
+export interface KeychainRequestResponse {
+  success: boolean
+  error: string
+  result?: KeychainTransactionResult
+  data: {
+    key: string
+    message: string
+    method: string
+    receiver: string
+    request_id: number
+    type: string
+    username: string
+  }
+  message: string
+  request_id: number
+  publicKey?: string
+}
+
+export interface KeychainSignTxRequestResponse extends Omit<KeychainRequestResponse, 'result'> {
+  result: SignedTransaction
+}
+
+export enum KT {
+  posting = 'Posting',
+  active = 'Active',
+  memo = 'Memo'
+}
 
 /**
  * Stripped version of keychain-sdk.

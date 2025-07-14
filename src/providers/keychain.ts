@@ -1,4 +1,3 @@
-import { KeychainRequestResponse } from 'keychain-sdk'
 import { Operation, Transaction, CommentOptionsOperation } from '@hiveio/dhive'
 import { AiohaProviderBase } from './provider.js'
 import {
@@ -13,14 +12,8 @@ import {
   PersistentLoginBase,
   VscStakeType
 } from '../types.js'
-import { KeychainMini } from '../lib/keychain-mini.js'
+import { KeychainMini, KeychainRequestResponse, KT } from '../lib/keychain-mini.js'
 import { SimpleEventEmitter } from '../lib/event-emitter.js'
-
-enum KeychainKeyTypes {
-  posting = 'Posting',
-  active = 'Active',
-  memo = 'Memo'
-}
 
 const getErrorCode = (resp: any): number => {
   if (typeof resp.error === 'string' && resp.error === 'user_cancel') return 4001
@@ -131,14 +124,14 @@ export class Keychain extends AiohaProviderBase {
     return KeychainMini.isInstalledSync()
   }
 
-  static mapAiohaKeyTypes(keyType: KeyTypes): KeychainKeyTypes {
+  static mapAiohaKeyTypes(keyType: KeyTypes): KT {
     switch (keyType) {
       case KeyTypes.Posting:
-        return KeychainKeyTypes.posting
+        return KT.posting
       case KeyTypes.Active:
-        return KeychainKeyTypes.active
+        return KT.active
       case KeyTypes.Memo:
-        return KeychainKeyTypes.memo
+        return KT.memo
     }
   }
 
