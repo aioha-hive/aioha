@@ -1,4 +1,4 @@
-import type LedgerApp from '@engrave/ledger-app-hive'
+import type LedgerApp from '@aioha/ledger-app-hive'
 import { AiohaProviderBase } from './provider.js'
 import { Transaction, Operation } from '@hiveio/dhive'
 import {
@@ -183,7 +183,7 @@ export class Ledger extends AiohaProviderBase {
     try {
       if (!this.provider) {
         const TransportWebUSB = (await import(/* webpackChunkName: 'ledger' */ '@ledgerhq/hw-transport-webusb')).default
-        let LedgerApp = (await import(/* webpackChunkName: 'ledger' */ '@engrave/ledger-app-hive')).default
+        let LedgerApp = (await import(/* webpackChunkName: 'ledger' */ '@aioha/ledger-app-hive')).default
         //@ts-ignore
         if (typeof LedgerApp.default !== 'undefined' && LedgerApp.__esModule) LedgerApp = LedgerApp.default
         const t = await TransportWebUSB.create()

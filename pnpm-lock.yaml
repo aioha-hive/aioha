@@ -8,18 +8,18 @@ importers:
 
   .:
     dependencies:
+      '@aioha/ledger-app-hive':
+        specifier: ^0.0.1
+        version: 0.0.1
       '@aioha/tx-digest':
         specifier: ^1.0.2
         version: 1.0.2
-      '@engrave/ledger-app-hive':
-        specifier: ^3.5.6
-        version: 3.5.6
       '@hiveio/dhive':
         specifier: ^1.3.2
         version: 1.3.2
       '@ledgerhq/hw-transport-webusb':
-        specifier: ^6.29.4
-        version: 6.29.4
+        specifier: ^6.29.7
+        version: 6.29.7
       js-md5:
         specifier: ^0.8.3
         version: 0.8.3
@@ -51,6 +51,10 @@ importers:
 
 packages:
 
+  '@aioha/ledger-app-hive@0.0.1':
+    resolution: {integrity: sha512-PuE8ocfUiqhjHlYpeA+hem4btvIyT2B+Git5EdKWbrPUVlENs/wNr+4fJOVW/USinLHGHsP+gr6Nj0zXjOPH0A==}
+    engines: {node: '>=18.0.0'}
+
   '@aioha/tx-digest@1.0.2':
     resolution: {integrity: sha512-qgNv+/cbWHcKnXC8oXYQStnrpSEIuR1i6pPytjuYw7fpM9V77xRwPHObqRn93C4wqpF5cG6qRzM7SSAf1NNNEw==}
 
@@ -68,10 +72,6 @@ packages:
   '@ecency/bytebuffer@6.0.0':
     resolution: {integrity: sha512-rGPjzD7a7cPtMHjpJEtLMt/RmqX8XK25tN5qjuu9iaDMK/Ril86CecU5DN/TXEMUQMY1p6b2cVvKBLTdFMr2DA==}
     engines: {node: '>=6'}
-
-  '@engrave/ledger-app-hive@3.5.6':
-    resolution: {integrity: sha512-Y/732vB5WpbxdfId3I+t83yx0ywnpYJdLoJFMXWc1zl5rsvMcfGDkkEZI0mq4r5fn/iRDIs3I7Do6/ONZi+ytw==}
-    engines: {node: '>=18.0.0'}
 
   '@hiveio/dhive@1.3.2':
     resolution: {integrity: sha512-kJjp3TbpIlODxjJX4BWwvOf+cMxT8CFH/mNQ40RRjR2LP0a4baSWae1G+U/q/NtgjsIQz6Ja40tvnw6KF12I+g==}
@@ -97,30 +97,24 @@ packages:
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
 
-  '@ledgerhq/devices@8.4.4':
-    resolution: {integrity: sha512-sz/ryhe/R687RHtevIE9RlKaV8kkKykUV4k29e7GAVwzHX1gqG+O75cu1NCJUHLbp3eABV5FdvZejqRUlLis9A==}
+  '@ledgerhq/devices@8.4.7':
+    resolution: {integrity: sha512-CljHIaPmtv93H2If1Zs1xW0pgg+M37bAoJkm6+V6Yw5S0MgFWFpLnTTNgCvHXyD8pG0+uq8TuOXUiG1oAV5AyA==}
 
-  '@ledgerhq/errors@6.14.0':
-    resolution: {integrity: sha512-ZWJw2Ti6Dq1Ott/+qYqJdDWeZm16qI3VNG5rFlb0TQ3UcAyLIQZbnnzzdcVVwVeZiEp66WIpINd/pBdqsHVyOA==}
+  '@ledgerhq/errors@6.22.0':
+    resolution: {integrity: sha512-rXtpIOfHL62jWB7o77PNFD4EDYdcqyMeVgt7TZcmTkWT78cK+YYSUTMrNuGLhnZZZTMLWH023Wgt65OfKIdGBQ==}
 
-  '@ledgerhq/errors@6.19.1':
-    resolution: {integrity: sha512-75yK7Nnit/Gp7gdrJAz0ipp31CCgncRp+evWt6QawQEtQKYEDfGo10QywgrrBBixeRxwnMy1DP6g2oCWRf1bjw==}
+  '@ledgerhq/hw-transport-webusb@6.29.7':
+    resolution: {integrity: sha512-6BJkgvC+8yXssD6JN5QgSKxTSLucb2Cf+dg0EJAoqNXqz84Yse3W9Z+AJVSLH6XwxH69tWtHP5VtQgltWZJA6g==}
 
-  '@ledgerhq/hw-transport-webusb@6.29.4':
-    resolution: {integrity: sha512-HoGF1LlBT9HEGBQy2XeCHrFdv/FEOZU0+J+yfKcgAQIAiASr2MLvdzwoJbUS8h6Gn+vc+/BjzBSO3JNn7Loqbg==}
+  '@ledgerhq/hw-transport@6.31.7':
+    resolution: {integrity: sha512-R+QMlqoLJDPeCiqwWv85PbZ3m0hel5PwQzWwSIbyEwialqjXnG7LFQgytkgXlgMcayT0chvvLeYjuY5ZfMPY7w==}
 
-  '@ledgerhq/hw-transport@6.28.8':
-    resolution: {integrity: sha512-XxQVl4htd018u/M66r0iu5nlHi+J6QfdPsORzDF6N39jaz+tMqItb7tUlXM/isggcuS5lc7GJo7NOuJ8rvHZaQ==}
+  '@ledgerhq/logs@6.13.0':
+    resolution: {integrity: sha512-4+qRW2Pc8V+btL0QEmdB2X+uyx0kOWMWE1/LWsq5sZy3Q5tpi4eItJS6mB0XL3wGW59RQ+8bchNQQ1OW/va8Og==}
 
-  '@ledgerhq/hw-transport@6.31.4':
-    resolution: {integrity: sha512-6c1ir/cXWJm5dCWdq55NPgCJ3UuKuuxRvf//Xs36Bq9BwkV2YaRQhZITAkads83l07NAdR16hkTWqqpwFMaI6A==}
-
-  '@ledgerhq/logs@6.12.0':
-    resolution: {integrity: sha512-ExDoj1QV5eC6TEbMdLUMMk9cfvNKhhv5gXol4SmULRVCx/3iyCPhJ74nsb3S0Vb+/f+XujBEj3vQn5+cwS0fNA==}
-
-  '@noble/hashes@1.3.2':
-    resolution: {integrity: sha512-MVC8EAQp7MvEcm30KWENFjgR+Mkmf+D189XJTkFIlwohU5hcBbn1ZkKq7KVTi2Hme3PMGF390DaL52beVrIihQ==}
-    engines: {node: '>= 16'}
+  '@noble/hashes@1.8.0':
+    resolution: {integrity: sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A==}
+    engines: {node: ^14.21.3 || >=16}
 
   '@polka/url@1.0.0-next.29':
     resolution: {integrity: sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww==}
@@ -737,9 +731,6 @@ packages:
   minimalistic-crypto-utils@1.0.1:
     resolution: {integrity: sha512-JIYlbt6g8i5jKfJ3xz7rF0LXmv2TkDxBLUkiBeZ7bAx4GnnNMr8xFpGnOxn6GhTEHx3SjRrZEoU+j04prX1ktg==}
 
-  moment@2.29.4:
-    resolution: {integrity: sha512-5LC9SOxjSc2HF6vO2CyuTDNivEdoz2IvyJJGj6X8DJ0eFyfszE0QiEd+iXmBvUP3WHxSjFH/vIsA0EN00cgr8w==}
-
   moment@2.30.1:
     resolution: {integrity: sha512-uEmtNhbDOrWPFS+hdjFCBfy9f2YoyzRpwcl+DqpC6taX21FzsTLQVbMV/W7PzNSX6x/bhC1zA3c2UQ5NzH6how==}
 
@@ -1112,6 +1103,16 @@ packages:
 
 snapshots:
 
+  '@aioha/ledger-app-hive@0.0.1':
+    dependencies:
+      '@ledgerhq/errors': 6.22.0
+      '@ledgerhq/hw-transport': 6.31.7
+      '@noble/hashes': 1.8.0
+      asn1.js: 5.4.1
+      bip32-path: 0.4.2
+      bs58: 5.0.0
+      varint: 6.0.0
+
   '@aioha/tx-digest@1.0.2':
     dependencies:
       bs58: 6.0.0
@@ -1129,17 +1130,6 @@ snapshots:
   '@ecency/bytebuffer@6.0.0':
     dependencies:
       long: 3.2.0
-
-  '@engrave/ledger-app-hive@3.5.6':
-    dependencies:
-      '@ledgerhq/errors': 6.14.0
-      '@ledgerhq/hw-transport': 6.28.8
-      '@noble/hashes': 1.3.2
-      asn1.js: 5.4.1
-      bip32-path: 0.4.2
-      bs58: 5.0.0
-      moment: 2.29.4
-      varint: 6.0.0
 
   '@hiveio/dhive@1.3.2':
     dependencies:
@@ -1181,40 +1171,32 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
 
-  '@ledgerhq/devices@8.4.4':
+  '@ledgerhq/devices@8.4.7':
     dependencies:
-      '@ledgerhq/errors': 6.19.1
-      '@ledgerhq/logs': 6.12.0
+      '@ledgerhq/errors': 6.22.0
+      '@ledgerhq/logs': 6.13.0
       rxjs: 7.8.2
       semver: 7.7.1
 
-  '@ledgerhq/errors@6.14.0': {}
+  '@ledgerhq/errors@6.22.0': {}
 
-  '@ledgerhq/errors@6.19.1': {}
-
-  '@ledgerhq/hw-transport-webusb@6.29.4':
+  '@ledgerhq/hw-transport-webusb@6.29.7':
     dependencies:
-      '@ledgerhq/devices': 8.4.4
-      '@ledgerhq/errors': 6.19.1
-      '@ledgerhq/hw-transport': 6.31.4
-      '@ledgerhq/logs': 6.12.0
+      '@ledgerhq/devices': 8.4.7
+      '@ledgerhq/errors': 6.22.0
+      '@ledgerhq/hw-transport': 6.31.7
+      '@ledgerhq/logs': 6.13.0
 
-  '@ledgerhq/hw-transport@6.28.8':
+  '@ledgerhq/hw-transport@6.31.7':
     dependencies:
-      '@ledgerhq/devices': 8.4.4
-      '@ledgerhq/errors': 6.14.0
+      '@ledgerhq/devices': 8.4.7
+      '@ledgerhq/errors': 6.22.0
+      '@ledgerhq/logs': 6.13.0
       events: 3.3.0
 
-  '@ledgerhq/hw-transport@6.31.4':
-    dependencies:
-      '@ledgerhq/devices': 8.4.4
-      '@ledgerhq/errors': 6.19.1
-      '@ledgerhq/logs': 6.12.0
-      events: 3.3.0
+  '@ledgerhq/logs@6.13.0': {}
 
-  '@ledgerhq/logs@6.12.0': {}
-
-  '@noble/hashes@1.3.2': {}
+  '@noble/hashes@1.8.0': {}
 
   '@polka/url@1.0.0-next.29': {}
 
@@ -1863,8 +1845,6 @@ snapshots:
   minimalistic-assert@1.0.1: {}
 
   minimalistic-crypto-utils@1.0.1: {}
-
-  moment@2.29.4: {}
 
   moment@2.30.1: {}
 
