@@ -44,13 +44,14 @@ export class PlaintextKeyProvider extends AiohaProviderBase {
 
   async login(username: string, options: LoginOptions): Promise<LoginResult> {
     const signed = await this.signMessage(options!.msg ?? 'Login', options.keyType ?? KeyTypes.Posting)
-    if (signed.success)
+    if (signed.success) {
+      this.user = username
       return {
         ...signed,
         provider: Providers.Custom,
         username
       }
-    else
+    } else
       return {
         ...signed,
         provider: Providers.Custom
@@ -59,13 +60,14 @@ export class PlaintextKeyProvider extends AiohaProviderBase {
 
   async loginAndDecryptMemo(username: string, options: LoginOptions): Promise<LoginResult> {
     const r = await this.decryptMemo(options!.msg!, options!.keyType ?? KeyTypes.Posting)
-    if (r.success)
+    if (r.success) {
+      this.user = username
       return {
         ...r,
         username: username,
         provider: Providers.Custom
       }
-    else
+    } else
       return {
         ...r,
         provider: Providers.Custom
