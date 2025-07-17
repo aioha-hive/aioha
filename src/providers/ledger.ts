@@ -413,7 +413,7 @@ export class Ledger extends AiohaProviderBase {
 
   async signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult> {
     try {
-      const unsignedTx = await constructTxHeader(tx)
+      const unsignedTx = await constructTxHeader(tx, this.api)
       const signedTx = await this.signTx(unsignedTx, KeyTypes.Active)
       if (!signedTx.success || !signedTx.result) return signedTx
       const app = await this.getLib()
