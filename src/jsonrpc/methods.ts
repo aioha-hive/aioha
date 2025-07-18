@@ -1,5 +1,12 @@
 import type { AiohaProviderBase } from '../providers/provider.js'
-import type { LoginResult, OperationResult, SignOperationResult, LoginResultSuccess, OperationSuccess } from '../types.js'
+import type {
+  LoginResult,
+  OperationResult,
+  SignOperationResult,
+  LoginResultSuccess,
+  OperationSuccess,
+  SignOperationResultObj
+} from '../types.js'
 import type { Login, MessageKeyType, SignBroadcastTx, SignTx } from './param-types.js'
 import { AiohaRpcError } from './eip1193-types.js'
 
@@ -14,7 +21,10 @@ export interface AiohaExtension {
 }
 
 const CoreRpcMethods: {
-  [method: string]: (core: AiohaProviderBase, params: any) => Promise<LoginResult | OperationResult | SignOperationResult>
+  [method: string]: (
+    core: AiohaProviderBase,
+    params: any
+  ) => Promise<LoginResult | OperationResult | SignOperationResult | SignOperationResultObj>
 } = {
   login: (core: AiohaProviderBase, params: Login): Promise<LoginResult> => {
     return core.login(params.username, {
@@ -41,7 +51,7 @@ const CoreRpcMethods: {
   sign_message: (core: AiohaProviderBase, params: MessageKeyType): Promise<OperationResult> => {
     return core.signMessage(params.message, params.key_type)
   },
-  sign_tx: (core: AiohaProviderBase, params: SignTx): Promise<OperationResult> => {
+  sign_tx: (core: AiohaProviderBase, params: SignTx): Promise<SignOperationResultObj> => {
     return core.signTx(params.tx, params.key_type)
   },
   sign_and_broadcast_tx: (core: AiohaProviderBase, params: SignBroadcastTx): Promise<SignOperationResult> => {

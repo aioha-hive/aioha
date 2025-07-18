@@ -10,7 +10,8 @@ import {
   Providers,
   SignOperationResult,
   PersistentLoginBase,
-  VscStakeType
+  VscStakeType,
+  SignOperationResultObj
 } from '../types.js'
 import { KeychainMini, KeychainRequestResponse, KT } from '../lib/keychain-mini.js'
 import { SimpleEventEmitter } from '../lib/event-emitter.js'
@@ -203,7 +204,7 @@ export class Keychain extends AiohaProviderBase {
     }
   }
 
-  async signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResult> {
+  async signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResultObj> {
     this.emitSignTx()
     const kcKeyType = Keychain.mapKT(keyType)
     const signedTx = await this.provider.signTx(this.username, tx, kcKeyType)

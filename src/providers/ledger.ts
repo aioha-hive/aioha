@@ -12,7 +12,8 @@ import {
   PersistentLoginLedger,
   PersistentLogin,
   OperationResultObj,
-  AccountDiscStream
+  AccountDiscStream,
+  SignOperationResultObj
 } from '../types.js'
 import { broadcastTx, getKeyRefs } from '../rpc.js'
 import { constructTxHeader } from '../opbuilder.js'
@@ -158,7 +159,7 @@ const searchAccountsByPathsForUser = async (
   else return null
 }
 
-const connectionFailedError: SignOperationResult = {
+const connectionFailedError: OperationError = {
   success: false,
   errorCode: 5900,
   error: CONN_ERROR
@@ -391,7 +392,7 @@ export class Ledger extends AiohaProviderBase {
     }
   }
 
-  async signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResult> {
+  async signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResultObj> {
     if (!(await this.checkConnection())) return connectionFailedError
     if (!this.path) throw new Error('no path?')
     try {
@@ -415,7 +416,7 @@ export class Ledger extends AiohaProviderBase {
     try {
       const unsignedTx = await constructTxHeader(tx, this.api)
       const signedTx = await this.signTx(unsignedTx, KeyTypes.Active)
-      if (!signedTx.success || !signedTx.result) return signedTx
+      if (!signedTx.success) return signedTx
       const app = await this.getLib()
       const txId = app.getTxId(unsignedTx)
       const broadcasted = await broadcastTx(signedTx.result, this.api)

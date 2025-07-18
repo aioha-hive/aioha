@@ -10,7 +10,8 @@ import {
   PersistentLogin,
   PersistentLoginHiveAuth,
   Providers,
-  SignOperationResult
+  SignOperationResult,
+  SignOperationResultObj
 } from '../types.js'
 import { SimpleEventEmitter } from '../lib/event-emitter.js'
 
@@ -177,7 +178,7 @@ export class HiveAuth extends AiohaProviderBase {
     }
   }
 
-  async signTx(tx: any, keyType: KeyTypes): Promise<OperationResult> {
+  async signTx(tx: any, keyType: KeyTypes): Promise<SignOperationResultObj> {
     // the HiveAuth sign tx without broadcast implementation at protocol level is not the same as keychain
     // as it only accepts array of tx operations as inputs without tx headers which is not very useful when
     // trying to sign a multisig transaction.

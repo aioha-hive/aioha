@@ -1,8 +1,8 @@
-export interface VaultResponse {
+export interface VaultResponse<T = string> {
   success: boolean
   account: string
   error?: string
-  result?: string
+  result?: T
   publicKey?: string
 }
 

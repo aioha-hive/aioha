@@ -1,6 +1,6 @@
 import type { Transaction } from '@hiveio/dhive'
 import type { AiohaProviderBase } from '../providers/provider.js'
-import type { KeyTypes, OperationResult, OperationResultObj, SignOperationResult } from '../types.js'
+import type { KeyTypes, OperationResult, OperationResultObj, SignOperationResult, SignOperationResultObj } from '../types.js'
 import { AiohaRpcError } from './eip1193-types.js'
 import { AiohaExtension } from './methods.js'
 
@@ -23,7 +23,10 @@ interface EncryptParams extends DecryptParams {
 }
 
 const methods: {
-  [method: string]: (core: AiohaProviderBase, params: any) => Promise<OperationResult | OperationResultObj | SignOperationResult>
+  [method: string]: (
+    core: AiohaProviderBase,
+    params: any
+  ) => Promise<OperationResult | OperationResultObj | SignOperationResult | SignOperationResultObj>
 } = {
   encrypt: (core: AiohaProviderBase, params: EncryptParams): Promise<OperationResultObj> => {
     return core.encryptMemoWithKeys(params.buffer, params.firstKey.role, [params.secondKey])
@@ -31,7 +34,7 @@ const methods: {
   decrypt: (core: AiohaProviderBase, params: DecryptParams): Promise<OperationResult> => {
     return core.decryptMemo(params.buffer, params.firstKey.role)
   },
-  signTransaction: async (core: AiohaProviderBase, params: SignTxParams): Promise<OperationResult> => {
+  signTransaction: async (core: AiohaProviderBase, params: SignTxParams): Promise<SignOperationResultObj> => {
     if (!Array.isArray(params.keys) || params.keys.length === 0) {
       throw new AiohaRpcError(5003, 'keys must be a non-empty array')
     }

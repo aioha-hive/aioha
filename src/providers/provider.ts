@@ -10,6 +10,7 @@ import {
   OperationResultObj,
   PersistentLogin,
   SignOperationResult,
+  SignOperationResultObj,
   VscFer,
   VscStakeType,
   VscTxIntent
@@ -63,7 +64,7 @@ export abstract class AiohaProviderBase implements AiohaOperations {
   abstract encryptMemoWithKeys(message: string, keyType: KeyTypes, recipientKeys: string[]): Promise<OperationResultObj>
   abstract decryptMemo(memo: string, keyType: KeyTypes): Promise<OperationResult>
   abstract signMessage(message: string, keyType: KeyTypes): Promise<OperationResult>
-  abstract signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResult>
+  abstract signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResultObj>
   abstract signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult>
 
   loginNonInteractive(username: string, options: LoginOptionsNI): LoginResult {
@@ -401,7 +402,7 @@ export interface AiohaOperations {
   signMessage(message: string, keyType: KeyTypes): Promise<OperationResult>
 
   // sign and optionally broadcast generic transaction
-  signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResult>
+  signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResultObj>
   signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult>
 
   // posting auth operation helpers

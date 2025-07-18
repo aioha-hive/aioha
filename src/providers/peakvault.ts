@@ -1,4 +1,4 @@
-import { Operation, Transaction } from '@hiveio/dhive'
+import { Operation, SignedTransaction, Transaction } from '@hiveio/dhive'
 import { AiohaProviderBase } from './provider.js'
 import {
   KeyTypes,
@@ -8,7 +8,8 @@ import {
   OperationResultObj,
   PersistentLoginBase,
   Providers,
-  SignOperationResult
+  SignOperationResult,
+  SignOperationResultObj
 } from '../types.js'
 import { VaultBroadcastResponse, VaultError, VaultResponse } from '../lib/peakvault-types.js'
 import { SimpleEventEmitter } from '../lib/event-emitter.js'
@@ -197,13 +198,13 @@ export class PeakVault extends AiohaProviderBase {
     }
   }
 
-  async signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResult> {
+  async signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResultObj> {
     try {
       this.emitSignTx()
-      const res: VaultResponse = await window.peakvault.requestSignTx(this.getUser()!, tx, keyType)
+      const res: VaultResponse<SignedTransaction> = await window.peakvault.requestSignTx(this.getUser()!, tx, keyType)
       return {
         success: true,
-        result: res.result
+        result: res.result!
       }
     } catch (e) {
       const error = e as VaultError

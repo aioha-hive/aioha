@@ -10,7 +10,8 @@ import {
   SignOperationResult,
   OperationResultObj,
   PersistentLoginBase,
-  PersistentLogin
+  PersistentLogin,
+  SignOperationResultObj
 } from '../../types.js'
 
 interface AccountAuth {
@@ -169,7 +170,7 @@ export class PlaintextKeyProvider extends AiohaProviderBase {
     }
   }
 
-  async signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResult> {
+  async signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResultObj> {
     try {
       const signedTx = cryptoUtils.signTransaction(tx, this.wif)
       return {

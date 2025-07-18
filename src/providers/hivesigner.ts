@@ -13,7 +13,8 @@ import {
   PersistentLogin,
   PersistentLoginHiveSigner,
   Providers,
-  SignOperationResult
+  SignOperationResult,
+  SignOperationResultObj
 } from '../types.js'
 import { SimpleEventEmitter } from '../lib/event-emitter.js'
 
@@ -222,7 +223,7 @@ export class HiveSigner extends AiohaProviderBase {
     }
   }
 
-  async signTx(tx: Transaction, keyType: KeyTypes): Promise<OperationResult> {
+  async signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResultObj> {
     return {
       success: false,
       errorCode: 4200,

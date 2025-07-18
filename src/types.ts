@@ -1,3 +1,4 @@
+import type { SignedTransaction } from '@hiveio/dhive'
 import type { MessageType as HaMsgType } from './lib/hiveauth-wrapper.js'
 
 export enum Providers {
@@ -89,12 +90,13 @@ export interface OperationSuccessObj extends BaseResult {
 export type OperationResult = OperationSuccess | OperationError
 export type OperationResultObj = OperationSuccessObj | OperationError
 
-interface SignOperationSuccess extends BaseResult {
+interface SignOperationSuccess<T = string> extends BaseResult {
   success: true
-  result: any
+  result: T
 }
 
 export type SignOperationResult = SignOperationSuccess | OperationError
+export type SignOperationResultObj = SignOperationSuccess<SignedTransaction> | OperationError
 
 export interface VoteParams {
   author: string

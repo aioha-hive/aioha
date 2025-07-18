@@ -13,6 +13,7 @@ import {
   LoginResult,
   OperationResult,
   SignOperationResult,
+  SignOperationResultObj,
   Providers,
   VoteParams,
   LoginOptionsNI,
@@ -681,7 +682,7 @@ export class Aioha implements AiohaOperations {
    * @param keyType Key type to be used to sign the transaction.
    * @returns Transaction signing result
    */
-  async signTx(tx: Transaction, keyType: KeyTypes): Promise<OperationResult> {
+  async signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResultObj> {
     if (!this.isLoggedIn()) return notLoggedInResult
     else if (keyType === KeyTypes.Memo) return noMemoAllowResult
     return await this.getPI().signTx(tx, keyType)
