@@ -1,21 +1,12 @@
 import type { AiohaProviderBase } from '../providers/provider.js'
-import type {
-  LoginResult,
-  OperationResult,
-  SignOperationResult,
-  LoginResultSuccess,
-  OperationSuccess,
-  SignOperationResultObj
-} from '../types.js'
-import type { Login, MessageKeyType, SignBroadcastTx, SignTx } from './param-types.js'
+import type { OperationResult, SignOperationResult, OperationSuccess, SignOperationResultObj } from '../types.js'
+import type { MessageKeyType, SignBroadcastTx, SignTx } from './param-types.js'
 import { AiohaRpcError } from './eip1193-types.js'
 
 export interface AiohaExtension {
   name: string
   isValidMethod: (method: string) => boolean
   isAuthRequired: (method: string) => boolean
-  isLoginMethod: (method: string) => boolean
-  isLogoutMethod: (method: string) => boolean
   getMethodPrefix: () => string
   request: (core: AiohaProviderBase, method: string, params: any) => Promise<any>
 }
@@ -24,27 +15,8 @@ const CoreRpcMethods: {
   [method: string]: (
     core: AiohaProviderBase,
     params: any
-  ) => Promise<LoginResult | OperationResult | SignOperationResult | SignOperationResultObj>
+  ) => Promise<OperationResult | SignOperationResult | SignOperationResultObj>
 } = {
-  login: (core: AiohaProviderBase, params: Login): Promise<LoginResult> => {
-    return core.login(params.username, {
-      msg: params.message,
-      keyType: params.key_type
-    })
-  },
-  login_memo: (core: AiohaProviderBase, params: Login): Promise<LoginResult> => {
-    return core.loginAndDecryptMemo(params.username, {
-      msg: params.message,
-      keyType: params.key_type
-    })
-  },
-  logout: async (core: AiohaProviderBase): Promise<OperationResult> => {
-    await core.logout()
-    return {
-      success: true,
-      result: ''
-    }
-  },
   decrypt_memo: (core: AiohaProviderBase, params: MessageKeyType): Promise<OperationResult> => {
     return core.decryptMemo(params.message, params.key_type)
   },
@@ -67,12 +39,6 @@ export const CoreRpc: AiohaExtension = {
   isAuthRequired: (method: string) => {
     return method !== 'login' && method !== 'login_memo'
   },
-  isLoginMethod: (method: string) => {
-    return method === 'login' || method === 'login_memo'
-  },
-  isLogoutMethod: (method: string) => {
-    return method === 'logout'
-  },
   getMethodPrefix: () => {
     return 'aioha_api.'
   },
@@ -82,15 +48,7 @@ export const CoreRpc: AiohaExtension = {
       if (!result.success) {
         throw new AiohaRpcError(result.errorCode, result.error)
       } else {
-        if (CoreRpc.isLoginMethod(method)) {
-          const loginResult = result as LoginResultSuccess
-          return {
-            provider: loginResult.provider,
-            result: loginResult.result,
-            username: loginResult.username,
-            public_key: loginResult.publicKey
-          }
-        } else if (method === 'sign_message') {
+        if (method === 'sign_message') {
           const signResult = result as OperationSuccess
           return {
             signature: signResult.result,

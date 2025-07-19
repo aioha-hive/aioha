@@ -54,12 +54,6 @@ export const Core2: AiohaExtension = {
   isAuthRequired: () => {
     return true
   },
-  isLoginMethod: () => {
-    return false
-  },
-  isLogoutMethod: () => {
-    return false
-  },
   getMethodPrefix: () => {
     return 'hive_'
   },

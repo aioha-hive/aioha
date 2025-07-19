@@ -36,8 +36,6 @@ export { constructTxHeader } from './opbuilder.js'
 export { broadcastTx, call, hivePerVests } from './rpc.js'
 export { Asset, KeyTypes, Providers, VscStakeType, PersistentLoginProvs } from './types.js'
 import { AiohaRpcError, RequestArguments } from './jsonrpc/eip1193-types.js'
-import { IsProviderRegistered, LoginParam } from './jsonrpc/param-types.js'
-import { AiohaExtension, CoreRpc } from './jsonrpc/methods.js'
 
 interface SetupOptions {
   hivesigner?: HiveSignerOptions
@@ -58,18 +56,6 @@ const noMemoAllowResult: OperationError = {
 
 const NON_BROWSER_ERR = 'Provider only available in browser env'
 
-const CoreRpcGetters: {
-  [method: string]: (core: Aioha, params?: any) => any
-} = {
-  get_registered_providers: (core: Aioha) => core.getProviders(),
-  get_current_provider: (core: Aioha) => core.getCurrentProvider(),
-  get_current_user: (core: Aioha) => core.getCurrentUser(),
-  get_public_key: (core: Aioha) => core.getPublicKey(),
-  is_logged_in: (core: Aioha) => core.isLoggedIn(),
-  is_provider_registered: (core: Aioha, params: IsProviderRegistered) =>
-    params.enabled ? core.isProviderEnabled(params.provider) : core.isProviderRegistered(params.provider)
-}
-
 /**
  * Main Aioha class.
  */
@@ -86,7 +72,6 @@ export class Aioha implements AiohaOperations {
   private currentProvider?: Providers
   private otherLogins: PersistentLogins
   private eventEmitter: SimpleEventEmitter
-  private extensions: AiohaExtension[]
   protected publicKey?: string
   private vscNetId = DEFAULT_VSC_NET_ID
   private api = DEFAULT_API
@@ -99,7 +84,6 @@ export class Aioha implements AiohaOperations {
     }
     this.otherLogins = {}
     this.eventEmitter = new SimpleEventEmitter()
-    this.extensions = [CoreRpc]
   }
 
   private isBrowser(): boolean {
@@ -139,10 +123,6 @@ export class Aioha implements AiohaOperations {
       if (options.hivesigner) this.registerHiveSigner(options.hivesigner)
       this.loadAuth()
     }
-  }
-
-  registerExtension(extension: AiohaExtension) {
-    this.extensions.push(extension)
   }
 
   /**
@@ -293,14 +273,6 @@ export class Aioha implements AiohaOperations {
   getPI = this.getCurrentProviderInstance
 
   /**
-   * List all registered extension names.
-   * @returns List of extension names
-   */
-  listExtensions() {
-    return this.extensions.map((e) => e.name)
-  }
-
-  /**
    * Set Hive API URL used by some providers for API calls.
    * @param api Hive API URL
    */
@@ -309,6 +281,14 @@ export class Aioha implements AiohaOperations {
     this.api = api
     if (fallbackApis) this.fallbackApis = fallbackApis
     for (const p in this.providers) this.providers[p as Providers]?.setApi(api)
+  }
+
+  /**
+   * Get current API endpoints(s).
+   * @returns Array of API endpoints(s), where the first item is the main endpoint and the remaining are fallbacks.
+   */
+  getApi(): string[] {
+    return [this.api, ...this.fallbackApis]
   }
 
   private setUserAndProvider(username: string, provider: Providers, newPubKey?: string) {
@@ -384,6 +364,7 @@ export class Aioha implements AiohaOperations {
    * See [Aioha RPC specs](https://aioha.dev/docs/core/jsonrpc) for Aioha RPC methods.
    * @param {RequestArguments} args JSON-RPC call body
    * @returns RPC call result
+   * @deprecated Use AiohaJsonRpc class in extras instead. Will be removed in v2.
    */
   async request(args: RequestArguments): Promise<unknown> {
     // 0. pre-validation
@@ -402,43 +383,7 @@ export class Aioha implements AiohaOperations {
 
     // 2. aioha_api.* getter methods
     if (args.method.startsWith('aioha_api.')) {
-      const submethod = args.method.replace('aioha_api.', '')
-      if (typeof CoreRpcGetters[submethod] === 'function') {
-        return CoreRpcGetters[submethod](this, args.params)
-      }
-    }
-
-    // 3. Extensions
-    for (const ext in this.extensions) {
-      const submethod = args.method.replace(this.extensions[ext].getMethodPrefix(), '')
-      if (this.extensions[ext].isValidMethod(submethod)) {
-        if (this.extensions[ext].isAuthRequired(submethod) && !this.isLoggedIn())
-          throw new AiohaRpcError(notLoggedInResult.errorCode, notLoggedInResult.error)
-        else if (this.extensions[ext].isLoginMethod(submethod)) {
-          if (!args.params) throw new AiohaRpcError(5003, 'Login params are required')
-          const loginParams = args.params as LoginParam
-          const loginCheck = this.loginCheck(loginParams.provider, loginParams.username, {
-            msg: loginParams.message,
-            keyType: loginParams.key_type
-          })
-          if (!loginCheck.success) throw new AiohaRpcError(loginCheck.errorCode, loginCheck.error)
-          let prevLogin: PersistentLogin | undefined, prevUser: string | undefined
-          if (this.isLoggedIn()) {
-            prevLogin = this.getPI().getLoginInfo()!
-            prevUser = this.getCurrentUser()!
-          }
-          const result = await this.extensions[ext].request(this.providers[loginParams.provider]!, submethod, args.params)
-          if (prevLogin && prevUser && prevUser !== loginParams.username) this.addOtherLogin(prevUser, prevLogin)
-          this.setUserAndProvider(result.username, result.provider, result.publicKey)
-          return result
-        } else {
-          const result = await this.extensions[ext].request(this.getPI(), submethod, args.params)
-          if (this.extensions[ext].isLogoutMethod(submethod)) {
-            this.handleLogout()
-          }
-          return result
-        }
-      }
+      throw new AiohaRpcError(4200, 'Use AiohaJsonRpc class in extras instead')
     }
 
     // 4. Hive API call
