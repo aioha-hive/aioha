@@ -24,9 +24,6 @@ importers:
         specifier: ^0.8.3
         version: 0.8.3
     devDependencies:
-      '@types/uuid':
-        specifier: ^9.0.8
-        version: 9.0.8
       buffer:
         specifier: ^6.0.3
         version: 6.0.3
@@ -124,9 +121,6 @@ packages:
 
   '@types/node@22.14.1':
     resolution: {integrity: sha512-u0HuPQwe/dHrItgHHpmw3N2fYCR6x4ivMNbPHRkBVP4CvN+kiRrKHWk3i8tXiO/joPwXLMYvF9TTF0eqgHIuOw==}
-
-  '@types/uuid@9.0.8':
-    resolution: {integrity: sha512-jg+97EGIcY9AGHJJRaaPVgetKDsrTgbRjQ5Msgjh/DQKEFl0DtyRr/VCOyD1T2R1MNeWPK/u7JoGhlDZnKBAfA==}
 
   '@webassemblyjs/ast@1.14.1':
     resolution: {integrity: sha512-nuBEDgQfm1ccRp/8bCQrx1frohyufl4JlbMMZ4P1wpeOfDhF6FQkxZJ1b/e+PLwr6X1Nhw6OLme5usuBWYBvuQ==}
@@ -982,8 +976,6 @@ snapshots:
   '@types/node@22.14.1':
     dependencies:
       undici-types: 6.21.0
-
-  '@types/uuid@9.0.8': {}
 
   '@webassemblyjs/ast@1.14.1':
     dependencies:
