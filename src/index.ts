@@ -36,6 +36,7 @@ export { constructTxHeader } from './opbuilder.js'
 export { broadcastTx, call, hivePerVests } from './rpc.js'
 export { Asset, KeyTypes, Providers, VscStakeType, PersistentLoginProvs } from './types.js'
 import { AiohaRpcError, RequestArguments } from './jsonrpc/eip1193-types.js'
+export { WaxAiohaSigner } from './lib/wax-signer.js'
 
 interface SetupOptions {
   hivesigner?: HiveSignerOptions

@@ -15,10 +15,10 @@ const mapRoles: Record<TRole, KeyTypes | undefined> = {
  *
  * @example
  * ```
- * import { initAioha } from '@aioha/aioha'
+ * import { initAioha, WaxAiohaSigner } from '@aioha/aioha'
  *
  * const aioha = initAioha()
- * const provider = WaxAiohaProvider.for(aioha, "active");
+ * const provider = WaxAiohaSigner.for(aioha, "active");
  *
  * // Create a transaction using the Wax Hive chain instance
  * const tx = await chain.createTransaction();
@@ -35,20 +35,19 @@ const mapRoles: Record<TRole, KeyTypes | undefined> = {
  * console.log(tx.id)
  * ```
  */
-export class WaxAiohaProvider implements IOnlineSignatureProvider {
+export class WaxAiohaSigner implements IOnlineSignatureProvider {
   private readonly role: KeyTypes
   private readonly aioha: Aioha
 
   private constructor(aioha: Aioha, role: TRole) {
-    if (!mapRoles[role]) throw new Error(`Role ${role} is not supported by the Wax signature provider: ${WaxAiohaProvider.name}`)
+    if (!mapRoles[role]) throw new Error(`Role ${role} is unsupported`)
 
     this.aioha = aioha
-
     this.role = mapRoles[role]
   }
 
-  public static for(aioha: Aioha, role: TRole): WaxAiohaProvider {
-    return new WaxAiohaProvider(aioha, role)
+  public static for(aioha: Aioha, role: TRole): WaxAiohaSigner {
+    return new WaxAiohaSigner(aioha, role)
   }
 
   public async signTransaction(transaction: ITransaction): Promise<void> {
