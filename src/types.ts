@@ -7,6 +7,7 @@ export enum Providers {
   HiveAuth = 'hiveauth',
   Ledger = 'ledger',
   PeakVault = 'peakvault',
+  ViewOnly = 'viewonly',
   Custom = 'custom'
 }
 

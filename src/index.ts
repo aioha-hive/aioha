@@ -36,6 +36,7 @@ export { constructTxHeader } from './opbuilder.js'
 export { broadcastTx, call, hivePerVests } from './rpc.js'
 export { Asset, KeyTypes, Providers, VscStakeType, PersistentLoginProvs } from './types.js'
 import { AiohaRpcError, RequestArguments } from './jsonrpc/eip1193-types.js'
+import { ViewOnly } from './providers/view-only.js'
 export { WaxAiohaSigner } from './lib/wax-signer.js'
 
 interface SetupOptions {
@@ -67,6 +68,7 @@ export class Aioha implements AiohaOperations {
     hiveauth?: HiveAuth
     ledger?: Ledger
     peakvault?: PeakVault
+    viewonly?: ViewOnly
     custom?: AiohaProviderBase
   }
   private user?: string
@@ -170,6 +172,13 @@ export class Aioha implements AiohaOperations {
   registerPeakVault() {
     if (!this.isBrowser()) throw new Error(NON_BROWSER_ERR)
     this.providers.peakvault = new PeakVault(this.eventEmitter)
+  }
+
+  /**
+   * Register a view only provider.
+   */
+  registerViewOnly() {
+    this.providers.viewonly = new ViewOnly()
   }
 
   /**
