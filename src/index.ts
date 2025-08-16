@@ -71,7 +71,6 @@ export class Aioha implements AiohaOperations {
     viewonly?: ViewOnly
     custom?: AiohaProviderBase
   }
-  private user?: string
   private currentProvider?: Providers
   private otherLogins: PersistentLogins
   private eventEmitter: SimpleEventEmitter
@@ -247,7 +246,7 @@ export class Aioha implements AiohaOperations {
    * @returns The current username
    */
   getCurrentUser() {
-    return this.user
+    return !!this.currentProvider ? this.providers[this.currentProvider]!.getUser() : undefined
   }
 
   /**
@@ -255,7 +254,7 @@ export class Aioha implements AiohaOperations {
    * @returns {boolean}
    */
   isLoggedIn(): boolean {
-    return !!this.user && !!this.currentProvider
+    return !!this.currentProvider
   }
 
   /**
@@ -303,10 +302,9 @@ export class Aioha implements AiohaOperations {
 
   private setUserAndProvider(username: string, provider: Providers, newPubKey?: string) {
     const previouslyConnected = this.isLoggedIn()
-    this.user = username
     this.currentProvider = provider
     if (this.isBrowser()) {
-      localStorage.setItem('aiohaUsername', this.user)
+      localStorage.setItem('aiohaUsername', this.getCurrentUser()!)
       localStorage.setItem('aiohaProvider', this.currentProvider)
     }
     this.setPublicKey(newPubKey)
@@ -539,14 +537,13 @@ export class Aioha implements AiohaOperations {
    * Logout the current authenticated user. Also known as *Disconnect Wallet*.
    */
   async logout(): Promise<void> {
-    if (this.user && this.currentProvider) {
+    if (!!this.currentProvider) {
       await this.providers[this.currentProvider]!.logout()
     }
     this.handleLogout()
   }
 
   private handleLogout() {
-    delete this.user
     delete this.currentProvider
     if (this.isBrowser()) {
       localStorage.removeItem('aiohaUsername')
@@ -571,7 +568,6 @@ export class Aioha implements AiohaOperations {
       const publicKey = localStorage.getItem('aiohaPubKey')
       if (!provider || !user || !this.providers[provider] || !this.providers[provider]!.loadAuth(user)) return false
       if (publicKey) this.setPublicKey(publicKey)
-      this.user = user
       this.currentProvider = provider
       this.eventEmitter.emit('connect')
       return true
