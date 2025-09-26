@@ -125,6 +125,7 @@ export type Events =
 export interface PersistentLoginBase {
   provider: Providers
   pubKey?: string
+  exp?: number
 }
 
 export interface PersistentLoginLedger extends PersistentLoginBase {

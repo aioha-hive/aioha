@@ -268,6 +268,19 @@ export class Aioha implements AiohaOperations {
   }
 
   /**
+   * Get expiration for a login.
+   * @param username Login username
+   * @returns the expiration timestamp in milliseconds if any
+   */
+  getLoginExpiration(username: string): number | undefined {
+    if (this.getCurrentUser() === username) {
+      return this.getPI().getLoginInfo()?.exp
+    } else if (!!this.otherLogins[username]) {
+      return this.otherLogins[username].exp
+    }
+  }
+
+  /**
    * Get instance of the current provider. Throws an error if not logged in.
    * @returns Instance of the provider that implements AiohaProviderBase
    */
@@ -543,6 +556,17 @@ export class Aioha implements AiohaOperations {
     this.handleLogout()
   }
 
+  /**
+   * Logout all users.
+   */
+  async logoutAll(): Promise<void> {
+    this.otherLogins = {}
+    if (this.isBrowser()) {
+      localStorage.removeItem('aiohaOtherLogins')
+    }
+    await this.logout() // logout current user. this will emit a disconnect event.
+  }
+
   private handleLogout() {
     delete this.currentProvider
     if (this.isBrowser()) {
@@ -562,6 +586,11 @@ export class Aioha implements AiohaOperations {
       try {
         const loadedOtherLogins = localStorage.getItem('aiohaOtherLogins')
         if (loadedOtherLogins) this.otherLogins = JSON.parse(loadedOtherLogins) as PersistentLogins
+        for (let u in this.otherLogins) {
+          if (typeof this.otherLogins[u].exp === 'number' && new Date().getTime() >= this.otherLogins[u].exp) {
+            delete this.otherLogins[u]
+          }
+        }
       } catch {}
       const user = localStorage.getItem('aiohaUsername')
       const provider = localStorage.getItem('aiohaProvider') as Providers | null

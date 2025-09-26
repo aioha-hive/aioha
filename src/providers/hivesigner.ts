@@ -167,7 +167,7 @@ export class HiveSigner extends AiohaProviderBase {
       return {
         provider: Providers.HiveSigner,
         token: this.provider.accessToken!,
-        exp: parseInt(localStorage.getItem('hivesignerExpiry')!)
+        exp: parseInt(localStorage.getItem('hivesignerExpiry')!) * 1000
       }
   }
 
@@ -177,7 +177,7 @@ export class HiveSigner extends AiohaProviderBase {
     return this.loginNonInteractive(username, {
       hivesigner: {
         accessToken: info2.token,
-        expiry: info2.exp
+        expiry: info2.exp / 1000
       }
     }).success
   }
@@ -219,7 +219,7 @@ export class HiveSigner extends AiohaProviderBase {
     return {
       success: false,
       errorCode: 4200,
-      error: 'message signing is unsupported with HiveSigner provider'
+      error: 'message signing is unsupported in HiveSigner'
     }
   }
 
@@ -227,7 +227,7 @@ export class HiveSigner extends AiohaProviderBase {
     return {
       success: false,
       errorCode: 4200,
-      error: 'tx signing without broadcast is currently unsupported with HiveSigner provider'
+      error: 'tx signing without broadcast is unsupported in HiveSigner'
     }
   }
 
