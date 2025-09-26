@@ -1,4 +1,4 @@
-import type { IOnlineSignatureProvider, ITransaction, TRole } from '@hiveio/wax'
+import type { IOnlineEncryptionProvider, IOnlineSignatureProvider, ITransaction, TPublicKey, TRole } from '@hiveio/wax'
 import type { Aioha } from '../index.js'
 import { AiohaRpcError } from '../jsonrpc/eip1193-types.js'
 import { KeyTypes } from '../types.js'
@@ -26,7 +26,7 @@ const mapRoles: Record<TRole, KeyTypes | undefined> = {
  * // Perform some operations, e.g. pushing operations...
  *
  * // Sign the transaction
- * await tx.sign(provider);
+ * await provider.signTransaction(tx)
  *
  * // Broadcast
  * await chain.broadcast(tx);
@@ -35,7 +35,7 @@ const mapRoles: Record<TRole, KeyTypes | undefined> = {
  * console.log(tx.id)
  * ```
  */
-export class WaxAiohaSigner implements IOnlineSignatureProvider {
+export class WaxAiohaSigner implements IOnlineSignatureProvider, IOnlineEncryptionProvider {
   private readonly role: KeyTypes
   private readonly aioha: Aioha
 
@@ -51,10 +51,26 @@ export class WaxAiohaSigner implements IOnlineSignatureProvider {
   }
 
   public async signTransaction(transaction: ITransaction): Promise<void> {
+    transaction.performOperationEncryption(this)
+
     // TODO: move away from legacy serialization
     const legacyTx = JSON.parse(transaction.toLegacyApi())
     const signed = await this.aioha.signTx(legacyTx, this.role)
     if (!signed.success) throw new AiohaRpcError(signed.errorCode, signed.error)
-    for (const sig of signed.result.signatures) transaction.sign(sig)
+    for (const sig of signed.result.signatures) transaction.addSignature(sig)
+  }
+
+  public async encryptData(buffer: string, recipient: TPublicKey): Promise<string> {
+    const result = await this.aioha.encryptMemoWithKeys(buffer.startsWith('#') ? buffer : `#${buffer}`, KeyTypes.Memo, [
+      recipient
+    ])
+    if (!result.success) throw new AiohaRpcError(result.errorCode, result.error)
+    return Object.values(result.result)[0] as string
+  }
+
+  public async decryptData(buffer: string): Promise<string> {
+    const result = await this.aioha.decryptMemo(buffer, KeyTypes.Memo)
+    if (!result.success) throw new AiohaRpcError(result.errorCode, result.error)
+    return result.result
   }
 }
