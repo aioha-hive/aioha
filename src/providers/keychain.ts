@@ -23,6 +23,7 @@ const getErrorCode = (resp: any): number => {
 }
 
 const roleMap: Record<KeyTypes, KT> = {
+  owner: KT.owner,
   active: KT.active,
   posting: KT.posting,
   memo: KT.memo

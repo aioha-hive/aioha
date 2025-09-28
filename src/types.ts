@@ -1,5 +1,6 @@
 import type { SignedTransaction } from '@hiveio/dhive'
 import type { MessageType as HaMsgType } from './lib/hiveauth-wrapper.js'
+import type { HF26SignedTransaction } from './lib/hf26-types.js'
 
 export enum Providers {
   Keychain = 'keychain',
@@ -7,6 +8,7 @@ export enum Providers {
   HiveAuth = 'hiveauth',
   Ledger = 'ledger',
   PeakVault = 'peakvault',
+  MetaMaskSnap = 'metamasksnap',
   ViewOnly = 'viewonly',
   Custom = 'custom'
 }
@@ -14,6 +16,7 @@ export enum Providers {
 export enum KeyTypes {
   Posting = 'posting',
   Active = 'active',
+  Owner = 'owner',
   Memo = 'memo'
 }
 
@@ -30,6 +33,10 @@ export interface LoginOptions {
      * @deprecated Use [`hiveauth_login_request` event](https://aioha.dev/docs/core/jsonrpc#hiveauth-login-request) instead
      */
     cbWait?: (payload: string, evt: HaMsgType, cancel: () => void) => any
+  }
+  metamask?: {
+    accountIdx?: number
+    validateUser?: boolean
   }
 }
 
@@ -53,7 +60,7 @@ export interface LoginResultSuccess extends BaseResult {
   publicKey?: string
 }
 
-interface LoginResultError extends BaseResult {
+export interface LoginResultError extends BaseResult {
   success: false
   provider?: Providers
   error: string
@@ -61,6 +68,11 @@ interface LoginResultError extends BaseResult {
 }
 
 export type LoginResult = LoginResultSuccess | LoginResultError
+
+export interface DiscoverOptions {
+  accountIndex?: number
+  roles: KeyTypes[]
+}
 
 export interface AccountDiscStreamObj {
   username: string
@@ -98,6 +110,7 @@ interface SignOperationSuccess<T = string> extends BaseResult {
 
 export type SignOperationResult = SignOperationSuccess | OperationError
 export type SignOperationResultObj = SignOperationSuccess<SignedTransaction> | OperationError
+export type SignOperationResultObjHF26 = SignOperationSuccess<HF26SignedTransaction> | OperationError
 
 export interface VoteParams {
   author: string
@@ -146,7 +159,17 @@ export interface PersistentLoginHiveSigner extends PersistentLoginBase {
   exp: number
 }
 
-export type PersistentLogin = PersistentLoginBase | PersistentLoginLedger | PersistentLoginHiveAuth | PersistentLoginHiveSigner
+export interface PersistentLoginMetamaskSnap extends PersistentLoginBase {
+  provider: Providers.MetaMaskSnap
+  accIdx: number
+}
+
+export type PersistentLogin =
+  | PersistentLoginBase
+  | PersistentLoginLedger
+  | PersistentLoginHiveAuth
+  | PersistentLoginHiveSigner
+  | PersistentLoginMetamaskSnap
 export type PersistentLogins = { [username: string]: PersistentLogin }
 export type PersistentLoginProvs = { [username: string]: Providers }
 
@@ -158,4 +181,18 @@ export enum VscStakeType {
 export interface VscTxIntent {
   args: any
   type: string
+}
+
+interface AccountAuth {
+  key_auths: [string, string][]
+  account_auths: [string, string][]
+  weight_threshold: number
+}
+
+export interface AccountAuths {
+  owner: AccountAuth
+  active: AccountAuth
+  posting: AccountAuth
+  memo: string
+  witness_signing: string
 }

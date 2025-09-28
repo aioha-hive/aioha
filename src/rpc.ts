@@ -1,5 +1,6 @@
 import { SignedTransaction } from '@hiveio/dhive'
 import { AiohaRpcError } from './jsonrpc/eip1193-types.js'
+import { HF26Transaction } from './lib/hf26-types.js'
 
 export const DEFAULT_API = 'https://techcoderx.com'
 export const FALLBACK_APIS = [
@@ -89,4 +90,8 @@ export const hivePerVests = async (api: string = DEFAULT_API) => {
 
 export const broadcastTx = (tx: SignedTransaction, api: string = DEFAULT_API) => {
   return call('condenser_api.broadcast_transaction', [tx], api)
+}
+
+export const broadcastTxHF26 = (trx: HF26Transaction, api: string = DEFAULT_API) => {
+  return call('network_broadcast_api.broadcast_transaction', { trx, max_block_age: -1 }, api)
 }

@@ -31,6 +31,7 @@ export interface KeychainSignTxRequestResponse extends Omit<KeychainRequestRespo
 }
 
 export enum KT {
+  owner = 'Owner', // unsupported role in keychain
   posting = 'Posting',
   active = 'Active',
   memo = 'Memo'

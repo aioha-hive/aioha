@@ -2,15 +2,18 @@ import { AuthorityType, CommentOptionsOperation, Operation, Transaction, Withdra
 import {
   AccountDiscStream,
   Asset,
+  DiscoverOptions,
   KeyTypes,
   LoginOptions,
   LoginOptionsNI,
   LoginResult,
+  OperationError,
   OperationResult,
   OperationResultObj,
   PersistentLogin,
   SignOperationResult,
   SignOperationResultObj,
+  SignOperationResultObjHF26,
   VscFer,
   VscStakeType,
   VscTxIntent
@@ -33,8 +36,15 @@ import {
 import { hivePerVests, getAccounts, getAccountsErrored } from '../rpc.js'
 import { RequestArguments, AiohaRpcError } from '../jsonrpc/eip1193-types.js'
 import { SimpleEventEmitter } from '../lib/event-emitter.js'
+import { HF26Operation, HF26Transaction } from '../lib/hf26-types.js'
 
 export const DEFAULT_VSC_NET_ID = 'vsc-mainnet'
+
+const HF26_UNSUPPORTED_ERR: OperationError = {
+  success: false,
+  errorCode: 4200,
+  error: 'HF26 serialized tx signing is not supported for this provider'
+}
 
 export abstract class AiohaProviderBase implements AiohaOperations {
   protected api: string
@@ -67,6 +77,14 @@ export abstract class AiohaProviderBase implements AiohaOperations {
   abstract signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResultObj>
   abstract signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult>
 
+  async signTxHF26(tx: HF26Transaction, keyType: KeyTypes): Promise<SignOperationResultObjHF26> {
+    return HF26_UNSUPPORTED_ERR
+  }
+
+  async signAndBroadcastTxHF26(tx: HF26Operation[], keyType: KeyTypes): Promise<SignOperationResult> {
+    return HF26_UNSUPPORTED_ERR
+  }
+
   loginNonInteractive(username: string, options: LoginOptionsNI): LoginResult {
     return {
       success: false,
@@ -75,7 +93,7 @@ export abstract class AiohaProviderBase implements AiohaOperations {
     }
   }
 
-  async discoverAccounts(_?: AccountDiscStream): Promise<OperationResultObj> {
+  async discoverAccounts(_?: AccountDiscStream, _2?: DiscoverOptions): Promise<OperationResultObj> {
     return {
       success: false,
       errorCode: 4200,
@@ -404,6 +422,10 @@ export interface AiohaOperations {
   // sign and optionally broadcast generic transaction
   signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResultObj>
   signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult>
+
+  // HF26 serialized transactions
+  signTxHF26(tx: HF26Transaction, keyType: KeyTypes): Promise<SignOperationResultObjHF26>
+  signAndBroadcastTxHF26(tx: HF26Operation[], keyType: KeyTypes): Promise<SignOperationResult>
 
   // posting auth operation helpers
   vote(author: string, permlink: string, weight: number): Promise<SignOperationResult>

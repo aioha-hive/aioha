@@ -24,7 +24,9 @@ import {
   PersistentLoginProvs,
   VscStakeType,
   AccountDiscStream,
-  VscTxIntent
+  VscTxIntent,
+  SignOperationResultObjHF26,
+  DiscoverOptions
 } from './types.js'
 import { SimpleEventEmitter } from './lib/event-emitter.js'
 import { AppMetaType } from './lib/hiveauth-wrapper.js'
@@ -37,11 +39,14 @@ export { broadcastTx, call, hivePerVests } from './rpc.js'
 export { Asset, KeyTypes, Providers, VscStakeType, PersistentLoginProvs } from './types.js'
 import { AiohaRpcError, RequestArguments } from './jsonrpc/eip1193-types.js'
 import { ViewOnly } from './providers/view-only.js'
+import { MetaMaskSnap } from './providers/metamask.js'
+import { HF26Operation, HF26Transaction } from './lib/hf26-types.js'
 export { WaxAiohaSigner } from './lib/wax-signer.js'
 
 interface SetupOptions {
   hivesigner?: HiveSignerOptions
   hiveauth?: AppMetaType
+  metamasksnap?: boolean
 }
 
 const notLoggedInResult: OperationError = {
@@ -68,6 +73,7 @@ export class Aioha implements AiohaOperations {
     hiveauth?: HiveAuth
     ledger?: Ledger
     peakvault?: PeakVault
+    metamasksnap?: MetaMaskSnap
     viewonly?: ViewOnly
     custom?: AiohaProviderBase
   }
@@ -121,6 +127,7 @@ export class Aioha implements AiohaOperations {
       this.registerKeychain()
       this.registerLedger()
       this.registerPeakVault()
+      this.registerMetaMaskSnap()
       this.registerHiveAuth(options.hiveauth)
       if (options.hivesigner) this.registerHiveSigner(options.hivesigner)
       this.loadAuth()
@@ -173,6 +180,12 @@ export class Aioha implements AiohaOperations {
     this.providers.peakvault = new PeakVault(this.eventEmitter)
   }
 
+  registerMetaMaskSnap() {
+    if (!this.isBrowser()) throw new Error(NON_BROWSER_ERR)
+    this.providers.metamasksnap = new MetaMaskSnap(this.api, this.eventEmitter)
+    return this.providers.metamasksnap.initProvider()
+  }
+
   /**
    * Register a view only provider.
    */
@@ -220,6 +233,8 @@ export class Aioha implements AiohaOperations {
         return !!this.providers.keychain && Keychain.isInstalled()
       case Providers.PeakVault:
         return !!this.providers.peakvault && this.providers.peakvault.isInstalled()
+      case Providers.MetaMaskSnap:
+        return !!this.providers.metamasksnap && this.providers.metamasksnap.isInstalled()
       default:
         return !!this.providers[provider]
     }
@@ -419,14 +434,18 @@ export class Aioha implements AiohaOperations {
    * @param stream Stream of accounts discovered
    * @returns Object mapping available account username -> details. The details type may be dependent on the selected provider.
    */
-  async discoverAccounts(provider: Providers, stream?: AccountDiscStream): Promise<OperationResultObj> {
+  async discoverAccounts(
+    provider: Providers,
+    stream?: AccountDiscStream,
+    options?: DiscoverOptions
+  ): Promise<OperationResultObj> {
     if (!this.providers[provider])
       return {
         success: false,
         errorCode: 4201,
         error: provider + 'provider is not registered'
       }
-    return await this.providers[provider].discoverAccounts(stream)
+    return await this.providers[provider].discoverAccounts(stream, options)
   }
 
   /**
@@ -582,6 +601,7 @@ export class Aioha implements AiohaOperations {
    * @returns boolean of whether an authentication has been loaded or not.
    */
   loadAuth(): boolean {
+    if (this.isLoggedIn()) return true
     if (this.isBrowser()) {
       try {
         const loadedOtherLogins = localStorage.getItem('aiohaOtherLogins')
@@ -678,6 +698,30 @@ export class Aioha implements AiohaOperations {
     if (!this.isLoggedIn()) return notLoggedInResult
     else if (keyType === KeyTypes.Memo) return noMemoAllowResult
     return await this.getPI().signAndBroadcastTx(tx, keyType)
+  }
+
+  /**
+   * Sign a full HF26 serialized transaction with headers without broadcasting it.
+   * @param tx The full unsigned transaction containing both headers and operation body
+   * @param keyType Key type to be used to sign the transaction.
+   * @returns Transaction signing result
+   */
+  async signTxHF26(tx: HF26Transaction, keyType: KeyTypes): Promise<SignOperationResultObjHF26> {
+    if (!this.isLoggedIn()) return notLoggedInResult
+    else if (keyType === KeyTypes.Memo) return noMemoAllowResult
+    return await this.getPI().signTxHF26(tx, keyType)
+  }
+
+  /**
+   * Sign and broadcast a HF26 serialized transaction.
+   * @param tx List of operations for the transaction.
+   * @param keyType Key type to be used to sign the transaction.
+   * @returns Transaction result
+   */
+  async signAndBroadcastTxHF26(tx: HF26Operation[], keyType: KeyTypes): Promise<SignOperationResult> {
+    if (!this.isLoggedIn()) return notLoggedInResult
+    else if (keyType === KeyTypes.Memo) return noMemoAllowResult
+    return await this.getPI().signAndBroadcastTxHF26(tx, keyType)
   }
 
   /**

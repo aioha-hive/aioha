@@ -26,6 +26,10 @@
             new QRCode(document.getElementById('hiveauth-qr'), payload)
             updateDisplayByIDs(['hiveauth-qr'], [])
           }
+        },
+        metamask: {
+          accountIdx: 0,
+          validateUser: true
         }
       }
       setTimeout(async () => {
@@ -86,6 +90,10 @@
           console.log(await aioha.login(Providers.PeakVault, getLoginUser(), loginOptions))
           updateDisplayByIDs(['logout'], [], 'inline-block')
         }
+        document.getElementById('login-metamasksnap').onclick = async () => {
+          console.log(await aioha.login(Providers.MetaMaskSnap, getLoginUser(), loginOptions))
+          updateDisplayByIDs(['logout'], [], 'inline-block')
+        }
         document.getElementById('logout').onclick = async () => {
           aioha.logout()
           updateDisplayByIDs([], ['logout'])
@@ -94,7 +102,9 @@
           console.log(aioha.getOtherLogins())
         }
         document.getElementById('discover-accs').onclick = async () => {
-          console.log(await aioha.discoverAccounts(document.getElementById('discover-accs-prov').value))
+          console.log(await aioha.discoverAccounts(document.getElementById('discover-accs-prov').value, null, {
+            roles: [KeyTypes.Owner, KeyTypes.Active, KeyTypes.Posting, KeyTypes.Memo]
+          }))
         }
         document.getElementById('switch-user').onclick = async () => {
           let nextUser = document.getElementById('switch-user-username').value
@@ -259,6 +269,7 @@
     <button id="login-hiveauth">HiveAuth</button>
     <button id="login-ledger">Ledger</button>
     <button id="login-peakvault">Peak Vault</button>
+    <button id="login-metamasksnap">MetaMask Snap</button>
     <button id="logout" style="display: none">Logout</button>
     <button id="log-other-users">Log Other Users To Console</button>
     <br />
@@ -273,6 +284,7 @@
       <option value="hiveauth">HiveAuth</option>
       <option value="ledger">Ledger</option>
       <option value="peakvault">Peak Vault</option>
+      <option value="metamasksnap">MetaMask Snap</option>
     </select>
     <button id="discover-accs">Discover Accounts</button>
     <h2>Encrypt Memo</h2>

@@ -2,6 +2,7 @@ import { Client, Operation, Transaction, Memo, PrivateKey, cryptoUtils } from '@
 import { AiohaProviderBase } from '../provider.js'
 import { DEFAULT_API, callRest } from '../../rpc.js'
 import {
+  AccountAuths,
   LoginOptions,
   LoginResult,
   Providers,
@@ -13,20 +14,6 @@ import {
   PersistentLogin,
   SignOperationResultObj
 } from '../../types.js'
-
-interface AccountAuth {
-  key_auths: [string, string][]
-  account_auths: [string, string][]
-  weight_threshold: number
-}
-
-interface AccountAuths {
-  owner: AccountAuth
-  active: AccountAuth
-  posting: AccountAuth
-  memo: string
-  witness_signing: string
-}
 
 /**
  * Plaintext private key provider for backend usage only.

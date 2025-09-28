@@ -1,7 +1,7 @@
 import type { IOnlineEncryptionProvider, IOnlineSignatureProvider, ITransaction, TPublicKey, TRole } from '@hiveio/wax'
 import type { Aioha } from '../index.js'
 import { AiohaRpcError } from '../jsonrpc/eip1193-types.js'
-import { KeyTypes } from '../types.js'
+import { KeyTypes, Providers } from '../types.js'
 
 const mapRoles: Record<TRole, KeyTypes | undefined> = {
   active: KeyTypes.Active,
@@ -53,9 +53,10 @@ export class WaxAiohaSigner implements IOnlineSignatureProvider, IOnlineEncrypti
   public async signTransaction(transaction: ITransaction): Promise<void> {
     transaction.performOperationEncryption(this)
 
-    // TODO: move away from legacy serialization
-    const legacyTx = JSON.parse(transaction.toLegacyApi())
-    const signed = await this.aioha.signTx(legacyTx, this.role)
+    const signed =
+      this.aioha.getCurrentProvider() === Providers.MetaMaskSnap
+        ? await this.aioha.signTxHF26(JSON.parse(transaction.toApi()), this.role)
+        : await this.aioha.signTx(JSON.parse(transaction.toLegacyApi()), this.role)
     if (!signed.success) throw new AiohaRpcError(signed.errorCode, signed.error)
     for (const sig of signed.result.signatures) transaction.addSignature(sig)
   }
