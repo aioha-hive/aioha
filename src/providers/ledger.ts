@@ -13,7 +13,8 @@ import {
   PersistentLogin,
   OperationResultObj,
   AccountDiscStream,
-  SignOperationResultObj
+  SignOperationResultObj,
+  DiscoverOptions
 } from '../types.js'
 import { broadcastTx, getKeyRefs } from '../rpc.js'
 import { constructTxHeader } from '../opbuilder.js'
@@ -293,7 +294,7 @@ export class Ledger extends AiohaProviderBase {
     } catch {}
   }
 
-  async discoverAccounts(stream?: AccountDiscStream): Promise<OperationResultObj> {
+  async discoverAccounts(stream?: AccountDiscStream, options?: DiscoverOptions): Promise<OperationResultObj> {
     if (!(await this.checkConnection())) return connectionFailedError
     const roles: { [name: string]: SlipRole } = {
       owner: SlipRole.owner,
@@ -303,18 +304,19 @@ export class Ledger extends AiohaProviderBase {
     const result: DiscUsers = {}
     const session: DiscSession = { stopped: false, stream }
     try {
-      for (let r in roles) {
-        const discoveredAccounts = await searchAccounts(roles[r], this.provider!, undefined, this.api, session)
-        for (let a in discoveredAccounts) {
-          const auth: DiscUserAuth = {
-            pubkey: discoveredAccounts[a].pubkey,
-            path: discoveredAccounts[a].path,
-            role: r
+      for (let r in roles)
+        if (!options || !Array.isArray(options.roles) || options.roles.length === 0 || options.roles.includes(r as KeyTypes)) {
+          const discoveredAccounts = await searchAccounts(roles[r], this.provider!, undefined, this.api, session)
+          for (let a in discoveredAccounts) {
+            const auth: DiscUserAuth = {
+              pubkey: discoveredAccounts[a].pubkey,
+              path: discoveredAccounts[a].path,
+              role: r
+            }
+            if (!result[discoveredAccounts[a].username]) result[discoveredAccounts[a].username] = [auth]
+            else result[discoveredAccounts[a].username].push(auth)
           }
-          if (!result[discoveredAccounts[a].username]) result[discoveredAccounts[a].username] = [auth]
-          else result[discoveredAccounts[a].username].push(auth)
         }
-      }
       return {
         success: true,
         result

@@ -71,11 +71,12 @@ export type LoginResult = LoginResultSuccess | LoginResultError
 
 export interface DiscoverOptions {
   accountIndex?: number
-  roles: KeyTypes[]
+  roles?: KeyTypes[]
 }
 
 export interface AccountDiscStreamObj {
   username: string
+  index?: number
   path?: string
   pubkey?: string
   role?: string

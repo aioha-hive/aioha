@@ -199,18 +199,16 @@ export class MetaMaskSnap extends AiohaProviderBase {
     localStorage.removeItem('mmHiveSnapAccIdx')
   }
 
-  async discoverAccounts(_?: AccountDiscStream, options?: DiscoverOptions): Promise<OperationResultObj> {
-    if (!options || !options.roles || !Array.isArray(options.roles) || options.roles.length === 0) {
-      return {
-        success: false,
-        errorCode: 5003,
-        error: 'roles to discover must be specified'
-      }
-    }
+  async discoverAccounts(stream?: AccountDiscStream, options?: DiscoverOptions): Promise<OperationResultObj> {
     if (!(await this.initSnap())) return SNAP_NOT_CONNECTED_ERR
     try {
+      const roles =
+        !options || !Array.isArray(options.roles) || options.roles.length === 0
+          ? [KeyTypes.Owner, KeyTypes.Active, KeyTypes.Posting]
+          : options.roles
+      const accIdx = options?.accountIndex ?? 0
       const response = (await this.invokeSnap('hive_getPublicKeys', {
-        keys: options.roles.map((role) => ({ role, accountIndex: options.accountIndex ?? 0 }))
+        keys: roles.map((role) => ({ role, accountIndex: accIdx }))
       })) as SnapResponsePublicKeys
       const accounts = await getKeyRefs(
         response.publicKeys.map((k) => k.publicKey),
@@ -219,6 +217,18 @@ export class MetaMaskSnap extends AiohaProviderBase {
       if (!accounts.error && accounts.result && Array.isArray(accounts.result.accounts)) {
         for (let i in response.publicKeys) {
           response.publicKeys[i].accounts = accounts.result.accounts[i]
+          if (typeof stream === 'function')
+            response.publicKeys[i].accounts!.forEach((u) => {
+              stream(
+                {
+                  username: u,
+                  index: accIdx,
+                  pubkey: response.publicKeys[i].publicKey,
+                  role: response.publicKeys[i].role
+                },
+                () => {}
+              )
+            })
         }
       }
       return {
