@@ -14,7 +14,7 @@ function concatUint8Arrays(...as: Uint8Array[]) {
   return c
 }
 
-function splitUint8Array(a: Uint8Array, i: number) {
+function splitUint8Array(a: Uint8Array<ArrayBuffer>, i: number) {
   return [a.subarray(0, i), a.subarray(i, a.length)]
 }
 
