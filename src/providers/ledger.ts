@@ -20,6 +20,7 @@ import { broadcastTx, getKeyRefs } from '../rpc.js'
 import { constructTxHeader } from '../opbuilder.js'
 import { sha256 } from '../lib/sha256-browser.js'
 import { SimpleEventEmitter } from '../lib/event-emitter.js'
+import { error, loginError } from '../lib/errors.js'
 
 const CONN_ERROR = 'Failed to establish connection to the device'
 const MEMO_ERROR = 'Memo cryptography is not supported in Ledger provider'
@@ -160,11 +161,7 @@ const searchAccountsByPathsForUser = async (
   else return null
 }
 
-const connectionFailedError: OperationError = {
-  success: false,
-  errorCode: 5900,
-  error: CONN_ERROR
-}
+const connectionFailedError = error(5900, CONN_ERROR)
 
 export class Ledger extends AiohaProviderBase {
   private path?: string
@@ -210,13 +207,7 @@ export class Ledger extends AiohaProviderBase {
   }
 
   async login(username: string, options: LoginOptions): Promise<LoginResult> {
-    if (!(await this.checkConnection()))
-      return {
-        provider: Providers.Ledger,
-        success: false,
-        errorCode: 5900,
-        error: CONN_ERROR
-      }
+    if (!(await this.checkConnection())) return loginError(5900, CONN_ERROR, Providers.Ledger)
     try {
       // username check
       try {
@@ -226,12 +217,11 @@ export class Ledger extends AiohaProviderBase {
           : await searchAccountsAllRolesForUser(this.provider!, username, this.api)
         if (!userFound) {
           await this.closeConnection()
-          return {
-            provider: Providers.Ledger,
-            success: false,
-            errorCode: 5901,
-            error: 'Username is not associated with the device' + (pathSpecified ? ' for the specified path' : '')
-          }
+          return loginError(
+            5901,
+            'Username is not associated with the device' + (pathSpecified ? ' for the specified path' : ''),
+            Providers.Ledger
+          )
         }
         try {
           // obtain signature
@@ -252,29 +242,18 @@ export class Ledger extends AiohaProviderBase {
         } catch (e: any) {
           await this.closeConnection()
           const statusCode: number = e.statusCode
-          return {
-            provider: Providers.Ledger,
-            success: false,
-            errorCode: errorCodes[statusCode] ? errorCodes[statusCode].code : 5903,
-            error: errorCodes[statusCode] ? errorCodes[statusCode].msg : e.message ?? e.toString()
-          }
+          return loginError(
+            errorCodes[statusCode] ? errorCodes[statusCode].code : 5903,
+            errorCodes[statusCode] ? errorCodes[statusCode].msg : e.message ?? e.toString(),
+            Providers.Ledger
+          )
         }
       } catch (e) {
         await this.closeConnection()
-        return {
-          provider: Providers.Ledger,
-          success: false,
-          errorCode: 5902,
-          error: 'Failed to search accounts'
-        }
+        return loginError(5902, 'Failed to search accounts', Providers.Ledger)
       }
     } catch (e) {
-      return {
-        provider: Providers.Ledger,
-        success: false,
-        errorCode: 5000,
-        error: (e as any).message ?? 'Failed to login'
-      }
+      return loginError(5000, (e as any).message ?? 'Failed to login', Providers.Ledger)
     }
   }
 
@@ -322,11 +301,7 @@ export class Ledger extends AiohaProviderBase {
         result
       }
     } catch {
-      return {
-        success: false,
-        errorCode: 5902,
-        error: 'Failed to search accounts'
-      }
+      return error(5902, 'Failed to search accounts')
     }
   }
 
@@ -367,11 +342,7 @@ export class Ledger extends AiohaProviderBase {
   }
 
   async decryptMemo(): Promise<OperationError> {
-    return {
-      success: false,
-      errorCode: 4200,
-      error: MEMO_ERROR
-    }
+    return error(4200, MEMO_ERROR)
   }
 
   async signMessage(message: string, keyType: KeyTypes): Promise<OperationResult> {
@@ -386,11 +357,10 @@ export class Ledger extends AiohaProviderBase {
       }
     } catch (e: any) {
       const statusCode: number = e.statusCode
-      return {
-        success: false,
-        errorCode: errorCodes[statusCode] ? errorCodes[statusCode].code : 5903,
-        error: errorCodes[statusCode] ? errorCodes[statusCode].msg : e.message ?? e.toString()
-      }
+      return error(
+        errorCodes[statusCode] ? errorCodes[statusCode].code : 5903,
+        errorCodes[statusCode] ? errorCodes[statusCode].msg : e.message ?? e.toString()
+      )
     }
   }
 
@@ -406,11 +376,10 @@ export class Ledger extends AiohaProviderBase {
       }
     } catch (e: any) {
       const statusCode: number = e.statusCode
-      return {
-        success: false,
-        errorCode: errorCodes[statusCode] ? errorCodes[statusCode].code : 5903,
-        error: errorCodes[statusCode] ? errorCodes[statusCode].msg : e.message ?? e.toString()
-      }
+      return error(
+        errorCodes[statusCode] ? errorCodes[statusCode].code : 5903,
+        errorCodes[statusCode] ? errorCodes[statusCode].msg : e.message ?? e.toString()
+      )
     }
   }
 
@@ -423,22 +392,17 @@ export class Ledger extends AiohaProviderBase {
       const txId = app.getTxId(unsignedTx)
       const broadcasted = await broadcastTx(signedTx.result, this.api)
       if (broadcasted.error)
-        return {
-          success: false,
-          errorCode: broadcasted.error.code ?? -32603,
-          error: broadcasted.error.message ?? 'Failed to broadcast transaction due to unknown error'
-        }
+        return error(
+          broadcasted.error.code ?? -32603,
+          broadcasted.error.message ?? 'Failed to broadcast transaction due to unknown error'
+        )
       else
         return {
           success: true,
           result: txId
         }
     } catch (e) {
-      return {
-        success: false,
-        errorCode: 5000,
-        error: 'Failed to sign or broadcast tx due to unknown error'
-      }
+      return error(5000, 'Failed to sign or broadcast tx due to unknown error')
     }
   }
 }

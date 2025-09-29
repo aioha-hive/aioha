@@ -26,6 +26,7 @@ import { AiohaRpcError } from '../jsonrpc/eip1193-types.js'
 import { broadcastTxHF26, callRest, getKeyRefs } from '../rpc.js'
 import { oldToHF26Operation, oldToHF26Tx } from '../lib/hf26-adapter.js'
 import { constructTxHeader } from '../opbuilder.js'
+import { error, loginError } from '../lib/errors.js'
 
 type SnapData = {
   permissionName: string
@@ -52,11 +53,7 @@ interface SnapResponseSign {
 const SNAP_ORIGIN = `npm:@hiveio/metamask-snap`
 const SNAP_VERSION = '1.6.0'
 
-const SNAP_NOT_CONNECTED_ERR: OperationError = {
-  success: false,
-  errorCode: 4900,
-  error: 'Snap is not connected'
-}
+const SNAP_NOT_CONNECTED_ERR = error(4900, 'Snap is not connected')
 
 export class MetaMaskSnap extends AiohaProviderBase {
   private snap?: SnapData
@@ -142,12 +139,7 @@ export class MetaMaskSnap extends AiohaProviderBase {
     }
     const foundAccounts = result.result as SnapResponsePublicKeys['publicKeys']
     if (foundAccounts.length === 0 || !foundAccounts[0].accounts || !foundAccounts[0].accounts.includes(username)) {
-      return {
-        provider: Providers.MetaMaskSnap,
-        success: false,
-        errorCode: 5901,
-        error: 'Username is not associated with the snap'
-      }
+      return loginError(5901, 'Username is not associated with the snap', Providers.MetaMaskSnap)
     }
   }
 
@@ -176,7 +168,17 @@ export class MetaMaskSnap extends AiohaProviderBase {
       const check = await this.checkAssociation(username, options.keyType!, accIdx)
       if (!!check) return check
     }
-    throw new Error('Method not implemented.')
+    const decoded = await this.decryptMemo(options.msg!, options.keyType!)
+    if (!decoded.success) return decoded
+    this.accountIdx = accIdx
+    this.username = username
+    localStorage.setItem('mmHiveSnapAccIdx', accIdx.toString())
+    return {
+      provider: Providers.MetaMaskSnap,
+      success: true,
+      username,
+      result: decoded.result
+    }
   }
 
   async logout(): Promise<void> {
@@ -222,11 +224,7 @@ export class MetaMaskSnap extends AiohaProviderBase {
         result: response.publicKeys
       }
     } catch (e: any) {
-      return {
-        success: false,
-        errorCode: 5902,
-        error: e.message
-      }
+      return error(5902, e.message)
     }
   }
 
@@ -267,11 +265,7 @@ export class MetaMaskSnap extends AiohaProviderBase {
         result: Object.values(encoded.result)[0]
       }
     } catch {
-      return {
-        success: false,
-        errorCode: 5000,
-        error: 'failed to encrypt memo'
-      }
+      return error(5000, 'Failed to encrypt memo')
     }
   }
 
@@ -288,11 +282,7 @@ export class MetaMaskSnap extends AiohaProviderBase {
         results[recipientKeys[k]] = response.buffer
       }
     } catch (e: any) {
-      return {
-        success: false,
-        errorCode: e.code,
-        error: e.message
-      }
+      return error(e.code, e.message)
     }
     return {
       success: true,
@@ -311,20 +301,12 @@ export class MetaMaskSnap extends AiohaProviderBase {
         result: response.buffer
       }
     } catch (e: any) {
-      return {
-        success: false,
-        errorCode: e.code,
-        error: e.message
-      }
+      return error(e.code, e.message)
     }
   }
 
   async signMessage(message: string, keyType: KeyTypes): Promise<OperationResult> {
-    return {
-      success: false,
-      errorCode: 4200,
-      error: 'message signing is unsupported in the MetaMask snap'
-    }
+    return error(4200, 'message signing is unsupported in the MetaMask snap')
   }
 
   async signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResultObj> {
@@ -359,11 +341,7 @@ export class MetaMaskSnap extends AiohaProviderBase {
         result
       }
     } catch (e: any) {
-      return {
-        success: false,
-        errorCode: e.code,
-        error: e.message
-      }
+      return error(e.code, e.message)
     }
   }
 
@@ -376,22 +354,17 @@ export class MetaMaskSnap extends AiohaProviderBase {
       const txId = (await transactionDigest(unsignedTx)).txId
       const broadcasted = await broadcastTxHF26(signedTx.result, this.api)
       if (broadcasted.error)
-        return {
-          success: false,
-          errorCode: broadcasted.error.code ?? -32603,
-          error: broadcasted.error.message ?? 'Failed to broadcast transaction due to unknown error'
-        }
+        return error(
+          broadcasted.error.code ?? -32603,
+          broadcasted.error.message ?? 'Failed to broadcast transaction due to unknown error'
+        )
       else
         return {
           success: true,
           result: txId
         }
     } catch (e: any) {
-      return {
-        success: false,
-        errorCode: 5000,
-        error: 'Failed to sign or broadcast tx due to unknown error'
-      }
+      return error(5000, 'Failed to sign or broadcast tx due to unknown error')
     }
   }
 }

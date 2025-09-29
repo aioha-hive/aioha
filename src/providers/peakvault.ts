@@ -13,6 +13,7 @@ import {
 } from '../types.js'
 import { VaultBroadcastResponse, VaultError, VaultResponse } from '../lib/peakvault-types.js'
 import { SimpleEventEmitter } from '../lib/event-emitter.js'
+import { error, loginError } from '../lib/errors.js'
 
 export class PeakVault extends AiohaProviderBase {
   private username?: string
@@ -22,13 +23,7 @@ export class PeakVault extends AiohaProviderBase {
   }
 
   async login(username: string, options: LoginOptions): Promise<LoginResult> {
-    if (!this.isInstalled())
-      return {
-        provider: Providers.PeakVault,
-        success: false,
-        errorCode: 5001,
-        error: 'Peak Vault extension is not installed'
-      }
+    if (!this.isInstalled()) return loginError(5001, 'Peak Vault extension is not installed', Providers.PeakVault)
     try {
       this.eventEmitter.emit('login_request')
       const res: VaultResponse = await window.peakvault.requestSignBuffer(username, options.keyType, options.msg)
@@ -41,13 +36,7 @@ export class PeakVault extends AiohaProviderBase {
         publicKey: res.publicKey
       }
     } catch (e) {
-      const error = e as VaultError
-      return {
-        provider: Providers.PeakVault,
-        success: false,
-        errorCode: 5000,
-        error: error.message
-      }
+      return loginError(5000, (e as VaultError).message, Providers.PeakVault)
     }
   }
 
@@ -68,11 +57,7 @@ export class PeakVault extends AiohaProviderBase {
             result: memo.result,
             username
           }
-        : {
-            success: false,
-            errorCode: memo.errorCode,
-            error: memo.error
-          })
+        : error(memo.errorCode, memo.error))
     }
   }
 
@@ -103,11 +88,7 @@ export class PeakVault extends AiohaProviderBase {
 
   async encryptMemo(message: string, keyType: KeyTypes, recipient: string): Promise<OperationResult> {
     if (keyType !== KeyTypes.Memo) {
-      return {
-        success: false,
-        errorCode: 5005,
-        error: 'keyType must be memo for peakvault memo encryption'
-      }
+      return error(5005, 'keyType must be memo for peakvault memo encryption')
     }
     try {
       this.eventEmitter.emit('memo_request')
@@ -118,12 +99,7 @@ export class PeakVault extends AiohaProviderBase {
         publicKey: encoded.publicKey
       }
     } catch (e) {
-      const error = e as VaultError
-      return {
-        success: false,
-        errorCode: 5000,
-        error: error.message
-      }
+      return error(5000, (e as VaultError).message)
     }
   }
 
@@ -144,12 +120,7 @@ export class PeakVault extends AiohaProviderBase {
         publicKey: encoded.publicKey
       }
     } catch (e) {
-      const error = e as VaultError
-      return {
-        success: false,
-        errorCode: 5000,
-        error: error.message
-      }
+      return error(5000, (e as VaultError).message)
     }
   }
 
@@ -163,12 +134,7 @@ export class PeakVault extends AiohaProviderBase {
         publicKey: decoded.publicKey
       }
     } catch (e) {
-      const error = e as VaultError
-      return {
-        success: false,
-        errorCode: 5000,
-        error: error.message
-      }
+      return error(5000, (e as VaultError).message)
     }
   }
 
@@ -182,12 +148,7 @@ export class PeakVault extends AiohaProviderBase {
         publicKey: res.publicKey
       }
     } catch (e) {
-      const error = e as VaultError
-      return {
-        success: false,
-        errorCode: 5000,
-        error: error.message
-      }
+      return error(5000, (e as VaultError).message)
     }
   }
 
@@ -200,12 +161,7 @@ export class PeakVault extends AiohaProviderBase {
         result: res.result!
       }
     } catch (e) {
-      const error = e as VaultError
-      return {
-        success: false,
-        errorCode: 5000,
-        error: error.message
-      }
+      return error(5000, (e as VaultError).message)
     }
   }
 
@@ -218,12 +174,7 @@ export class PeakVault extends AiohaProviderBase {
         result: res.result!.tx_id
       }
     } catch (e) {
-      const error = e as VaultError
-      return {
-        success: false,
-        errorCode: 5000,
-        error: error.message
-      }
+      return error(5000, (e as VaultError).message)
     }
   }
 }

@@ -17,6 +17,7 @@ import {
   SignOperationResultObj
 } from '../types.js'
 import { SimpleEventEmitter } from '../lib/event-emitter.js'
+import { error, loginError } from '../lib/errors.js'
 
 // https://github.com/ecency/hivesigner-api/blob/9fa9f51f319b5d9f9d86a4a028fcdf71b10b7836/config.json
 const authorizedOps = [
@@ -69,13 +70,7 @@ export class HiveSigner extends AiohaProviderBase {
               result: token,
               username: loggedInUser
             })
-          } else
-            rs({
-              provider: Providers.HiveSigner,
-              success: false,
-              errorCode: 5000,
-              error: 'Failed to obtain HiveSigner access token'
-            })
+          } else rs(loginError(5000, 'Failed to obtain HiveSigner access token', Providers.HiveSigner))
         }
       }, 1000)
     })
@@ -92,12 +87,7 @@ export class HiveSigner extends AiohaProviderBase {
         username: login.username,
         result: result.result
       }
-    return {
-      provider: Providers.HiveSigner,
-      errorCode: 5000,
-      error: result.error!,
-      success: false
-    }
+    return loginError(5000, result.error!, Providers.HiveSigner)
   }
 
   loginNonInteractive(username: string, options: LoginOptionsNI): LoginResult {
@@ -107,19 +97,8 @@ export class HiveSigner extends AiohaProviderBase {
       typeof options.hivesigner.accessToken !== 'string' ||
       typeof options.hivesigner.expiry !== 'number'
     )
-      return {
-        provider: Providers.HiveSigner,
-        success: false,
-        errorCode: 5003,
-        error: 'hivesigner options are required'
-      }
-    else if (isExpired(options.hivesigner.expiry))
-      return {
-        provider: Providers.HiveSigner,
-        success: false,
-        errorCode: 5003,
-        error: 'already expired'
-      }
+      return loginError(5003, 'hivesigner options are required', Providers.HiveSigner)
+    else if (isExpired(options.hivesigner.expiry)) return loginError(5003, 'already expired', Providers.HiveSigner)
     this.provider.setAccessToken(options.hivesigner.accessToken)
     this.username = username
     localStorage.setItem('hivesignerToken', options.hivesigner.accessToken)
@@ -183,11 +162,7 @@ export class HiveSigner extends AiohaProviderBase {
   }
 
   async encryptMemo(): Promise<OperationError> {
-    return {
-      success: false,
-      errorCode: 4200,
-      error: 'Memo encryption is not supported in HiveSigner'
-    }
+    return error(4200, 'Memo encryption is not supported in HiveSigner')
   }
 
   encryptMemoWithKeys(): Promise<OperationError> {
@@ -195,40 +170,22 @@ export class HiveSigner extends AiohaProviderBase {
   }
 
   async decryptMemo(memo: string, keyType: KeyTypes): Promise<OperationResult> {
-    if (keyType !== KeyTypes.Posting)
-      return {
-        success: false,
-        errorCode: 5005,
-        error: 'Memo must be decrypted using @hivesigner account posting key'
-      }
+    if (keyType !== KeyTypes.Posting) return error(5005, 'Memo must be decrypted using @hivesigner account posting key')
     const decoded = await this.provider.decode(memo)
     if (decoded.memoDecoded)
       return {
         success: true,
         result: decoded.memoDecoded
       }
-    else
-      return {
-        success: false,
-        errorCode: 5000,
-        error: 'Failed to decrypt memo'
-      }
+    else return error(5000, 'Failed to decrypt memo')
   }
 
   async signMessage(): Promise<OperationResult> {
-    return {
-      success: false,
-      errorCode: 4200,
-      error: 'message signing is unsupported in HiveSigner'
-    }
+    return error(4200, 'message signing is unsupported in HiveSigner')
   }
 
   async signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResultObj> {
-    return {
-      success: false,
-      errorCode: 4200,
-      error: 'tx signing without broadcast is unsupported in HiveSigner'
-    }
+    return error(4200, 'tx signing without broadcast is unsupported in HiveSigner')
   }
 
   async signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult> {
@@ -240,13 +197,12 @@ export class HiveSigner extends AiohaProviderBase {
         result: broadcasted.result.id
       }
     } catch (e) {
-      const error = e as HiveSignerError
-      if (error.error === 'invalid_scope') return await this.signTxInWindow(tx)
-      return {
-        success: false,
-        errorCode: error.error_description ? getErrorCode(error.error) : 5000,
-        error: error.error_description ?? 'Failed to broadcast tx due to unknown error'
-      }
+      const err = e as HiveSignerError
+      if (err.error === 'invalid_scope') return await this.signTxInWindow(tx)
+      return error(
+        err.error_description ? getErrorCode(err.error) : 5000,
+        err.error_description ?? 'Failed to broadcast tx due to unknown error'
+      )
     }
   }
 
@@ -267,12 +223,7 @@ export class HiveSigner extends AiohaProviderBase {
               success: true,
               result: txid
             })
-          } else
-            rs({
-              success: false,
-              errorCode: 5000,
-              error: 'Failed to broadcast transaction.'
-            })
+          } else rs(error(5000, 'Failed to broadcast transaction.'))
         }
       }, 1000)
     })

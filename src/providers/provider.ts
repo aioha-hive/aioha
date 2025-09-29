@@ -37,14 +37,11 @@ import { hivePerVests, getAccounts, getAccountsErrored } from '../rpc.js'
 import { RequestArguments, AiohaRpcError } from '../jsonrpc/eip1193-types.js'
 import { SimpleEventEmitter } from '../lib/event-emitter.js'
 import { HF26Operation, HF26Transaction } from '../lib/hf26-types.js'
+import { error } from '../lib/errors.js'
 
 export const DEFAULT_VSC_NET_ID = 'vsc-mainnet'
 
-const HF26_UNSUPPORTED_ERR: OperationError = {
-  success: false,
-  errorCode: 4200,
-  error: 'HF26 serialized tx signing is not supported for this provider'
-}
+const HF26_UNSUPPORTED_ERR = error(4200, 'HF26 serialized tx signing is not supported for this provider')
 
 export abstract class AiohaProviderBase implements AiohaOperations {
   protected api: string
@@ -86,19 +83,11 @@ export abstract class AiohaProviderBase implements AiohaOperations {
   }
 
   loginNonInteractive(username: string, options: LoginOptionsNI): LoginResult {
-    return {
-      success: false,
-      errorCode: 4200,
-      error: 'non-interactive login is not supported for this provider'
-    }
+    return error(4200, 'non-interactive login is not supported for this provider')
   }
 
   async discoverAccounts(_?: AccountDiscStream, _2?: DiscoverOptions): Promise<OperationResultObj> {
-    return {
-      success: false,
-      errorCode: 4200,
-      error: 'account discovery is not supported for this provider'
-    }
+    return error(4200, 'account discovery is not supported for this provider')
   }
 
   request(args: RequestArguments): Promise<unknown> {
@@ -161,11 +150,7 @@ export abstract class AiohaProviderBase implements AiohaOperations {
     try {
       op = await createUnstakeHive(this.getUser()!, amount)
     } catch {
-      return {
-        success: false,
-        errorCode: -32603,
-        error: 'Failed to retrieve VESTS from staked HIVE'
-      }
+      return error(-32603, 'Failed to retrieve VESTS from staked HIVE')
     }
     return await this.signAndBroadcastTx([op], KeyTypes.Active)
   }
@@ -179,11 +164,7 @@ export abstract class AiohaProviderBase implements AiohaOperations {
     try {
       hpv = await hivePerVests(this.api)
     } catch {
-      return {
-        success: false,
-        errorCode: -32603,
-        error: 'Failed to retrieve HIVE per VESTS'
-      }
+      return error(-32603, 'Failed to retrieve HIVE per VESTS')
     }
     return await this.delegateVests(to, amount / hpv)
   }
@@ -227,32 +208,12 @@ export abstract class AiohaProviderBase implements AiohaOperations {
     role: KeyTypes,
     weight: number
   ): Promise<SignOperationResult> {
-    if (role === KeyTypes.Memo)
-      return {
-        success: false,
-        errorCode: 5005,
-        error: `cannot ${action} ${type} memo auth`
-      }
-    else if (action === 'add' && weight <= 0)
-      return {
-        success: false,
-        errorCode: -32003,
-        error: 'weight must be greater than 0'
-      }
-    else if (type === 'account' && this.getUser()! === theAuth)
-      return {
-        success: false,
-        errorCode: 5201,
-        error: `cannot ${action} itself as account auth`
-      }
+    if (role === KeyTypes.Memo) return error(5005, `cannot ${action} ${type} memo auth`)
+    else if (action === 'add' && weight <= 0) return error(-32003, 'weight must be greater than 0')
+    else if (type === 'account' && this.getUser()! === theAuth) return error(5201, `cannot ${action} itself as account auth`)
     try {
       const acc = await getAccounts([this.getUser()!], this.api)
-      if (getAccountsErrored(acc))
-        return {
-          success: false,
-          errorCode: -32603,
-          error: `Failed to fetch current ${type} auths`
-        }
+      if (getAccountsErrored(acc)) return error(-32603, `Failed to fetch current ${type} auths`)
       const currentAuths = acc.result[0][role]
       const authExists = currentAuths[`${type}_auths`].findIndex((a: [string, number]) => a[0] === theAuth)
       if (action === 'add') {
@@ -260,12 +221,7 @@ export abstract class AiohaProviderBase implements AiohaOperations {
           // update weight if key auth already exists
           if (currentAuths[`${type}_auths`][authExists][1] !== weight) {
             currentAuths[`${type}_auths`][authExists][1] = weight
-          } else
-            return {
-              success: false,
-              errorCode: 5200,
-              error: 'Nothing to update'
-            }
+          } else return error(5200, 'Nothing to update')
         } else {
           // push new auth if not exist
           currentAuths[`${type}_auths`].push([theAuth, weight])
@@ -275,11 +231,7 @@ export abstract class AiohaProviderBase implements AiohaOperations {
         if (authExists > -1) {
           currentAuths[`${type}_auths`].splice(authExists, 1)
         } else {
-          return {
-            success: false,
-            errorCode: 5200,
-            error: 'Nothing to remove'
-          }
+          return error(5200, 'Nothing to remove')
         }
       }
       return await this.signAndBroadcastTx(
@@ -298,11 +250,7 @@ export abstract class AiohaProviderBase implements AiohaOperations {
         KeyTypes.Active
       )
     } catch {
-      return {
-        success: false,
-        errorCode: 5000,
-        error: `Failed to ${action} ${type} auth due to unknown error`
-      }
+      return error(5000, `Failed to ${action} ${type} auth due to unknown error`)
     }
   }
 

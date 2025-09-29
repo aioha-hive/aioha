@@ -41,6 +41,7 @@ import { AiohaRpcError, RequestArguments } from './jsonrpc/eip1193-types.js'
 import { ViewOnly } from './providers/view-only.js'
 import { MetaMaskSnap } from './providers/metamask.js'
 import { HF26Operation, HF26Transaction } from './lib/hf26-types.js'
+import { error, loginError } from './lib/errors.js'
 export { WaxAiohaSigner } from './lib/wax-signer.js'
 
 interface SetupOptions {
@@ -49,17 +50,8 @@ interface SetupOptions {
   metamasksnap?: boolean
 }
 
-const notLoggedInResult: OperationError = {
-  success: false,
-  errorCode: 4900,
-  error: 'Not logged in'
-}
-
-const noMemoAllowResult: OperationError = {
-  success: false,
-  errorCode: 5005,
-  error: 'key type cannot be memo'
-}
+const notLoggedInResult = error(4900, 'Not logged in')
+const noMemoAllowResult = error(5005, 'key type cannot be memo')
 
 const NON_BROWSER_ERR = 'Provider only available in browser env'
 
@@ -360,37 +352,12 @@ export class Aioha implements AiohaOperations {
   }
 
   private loginCheck(provider: Providers, username: string, options: LoginOptions | LoginOptionsNI): LoginResult {
-    if (this.getCurrentUser() === username || this.otherLogins[username])
-      return {
-        success: false,
-        errorCode: 4901,
-        error: 'Already logged in'
-      }
-    if (!this.providers[provider])
-      return {
-        success: false,
-        errorCode: 4201,
-        error: provider + ' provider is not registered'
-      }
-    if (!username && provider !== Providers.HiveSigner)
-      return {
-        success: false,
-        errorCode: 5002,
-        error: 'username is required'
-      }
-    if (typeof options !== 'object')
-      return {
-        success: false,
-        errorCode: 5003,
-        error: 'options are required'
-      }
+    if (this.getCurrentUser() === username || this.otherLogins[username]) return loginError(4901, 'Already logged in')
+    if (!this.providers[provider]) return loginError(4201, provider + ' provider is not registered')
+    if (!username && provider !== Providers.HiveSigner) return loginError(5002, 'username is required')
+    if (typeof options !== 'object') return loginError(5003, 'options are required')
     if (!options.keyType && provider !== Providers.HiveSigner && provider !== Providers.Ledger && provider !== Providers.Custom)
-      return {
-        provider: provider,
-        success: false,
-        errorCode: 5003,
-        error: 'keyType options are required'
-      }
+      return loginError(5003, 'keyType options are required', provider)
     return {
       provider: Providers.Custom,
       success: true,
@@ -446,12 +413,7 @@ export class Aioha implements AiohaOperations {
     stream?: AccountDiscStream,
     options?: DiscoverOptions
   ): Promise<OperationResultObj> {
-    if (!this.providers[provider])
-      return {
-        success: false,
-        errorCode: 4201,
-        error: provider + 'provider is not registered'
-      }
+    if (!this.providers[provider]) return error(4201, provider + ' provider is not registered')
     return await this.providers[provider].discoverAccounts(stream, options)
   }
 
@@ -526,11 +488,7 @@ export class Aioha implements AiohaOperations {
     const check = this.loginCheck(provider, username, options)
     if (!check.success) return check
     if (!options || typeof options.msg !== 'string' || !options.msg.startsWith('#'))
-      return {
-        success: false,
-        errorCode: 5004,
-        error: 'memo to decode must start with #'
-      }
+      return loginError(5004, 'memo to decode must start with #')
     let prevLogin: PersistentLogin | undefined, prevUser: string | undefined
     if (this.isLoggedIn()) {
       prevLogin = this.getPI().getLoginInfo()!
@@ -911,21 +869,13 @@ export class Aioha implements AiohaOperations {
     if (!this.isLoggedIn()) return notLoggedInResult
     const accResp = await getAccounts([this.getCurrentUser()!], this.api)
     if (accResp.error || !Array.isArray(accResp.result) || accResp.result.length === 0)
-      return {
-        success: false,
-        errorCode: -32603, // should we return error from hived instead?
-        error: 'Failed to fetch pending account rewards'
-      }
+      return error(-32603, 'Failed to fetch pending account rewards') // should we return error from hived instead?
     else if (
       accResp.result[0].reward_hive_balance === '0.000 HIVE' &&
       accResp.result[0].reward_hbd_balance === '0.000 HBD' &&
       accResp.result[0].reward_vesting_balance === '0.000000 VESTS'
     )
-      return {
-        success: false,
-        errorCode: 5200,
-        error: 'There are no pending rewards to claim'
-      }
+      return error(5200, 'There are no pending rewards to claim')
     return await this.signAndBroadcastTx(
       [
         [
@@ -974,12 +924,7 @@ export class Aioha implements AiohaOperations {
     memo?: string
   ): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    if (recurrence < 24)
-      return {
-        success: false,
-        errorCode: -32003, // should we let hived throw this error upon broadcast instead?
-        error: 'recurrence must be at least 24 hours'
-      }
+    if (recurrence < 24) return error(-32003, 'recurrence must be at least 24 hours') // should we let hived throw this error upon broadcast instead?
     return await this.getPI().recurrentTransfer(to, amount, currency, recurrence, executions, memo)
   }
 

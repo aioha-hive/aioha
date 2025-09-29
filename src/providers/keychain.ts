@@ -15,6 +15,7 @@ import {
 } from '../types.js'
 import { KeychainMini, KeychainRequestResponse, KT } from '../lib/keychain-mini.js'
 import { SimpleEventEmitter } from '../lib/event-emitter.js'
+import { error, loginError } from '../lib/errors.js'
 
 const getErrorCode = (resp: any): number => {
   if (typeof resp.error === 'string' && resp.error === 'user_cancel') return 4001
@@ -40,13 +41,7 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async login(username: string, options: LoginOptions): Promise<LoginResult> {
-    if (!KeychainMini.isInstalledSync())
-      return {
-        provider: Providers.Keychain,
-        success: false,
-        errorCode: 5001,
-        error: 'Keychain extension is not installed'
-      }
+    if (!KeychainMini.isInstalledSync()) return loginError(5001, 'Keychain extension is not installed', Providers.Keychain)
     this.eventEmitter.emit('login_request')
     const login: any = await this.provider.challenge(
       false,
@@ -67,13 +62,7 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async loginAndDecryptMemo(username: string, options: LoginOptions): Promise<LoginResult> {
-    if (!KeychainMini.isInstalledSync())
-      return {
-        provider: Providers.Keychain,
-        success: false,
-        errorCode: 5001,
-        error: 'Keychain extension is not installed'
-      }
+    if (!KeychainMini.isInstalledSync()) return loginError(5001, 'Keychain extension is not installed', Providers.Keychain)
     this.eventEmitter.emit('login_request')
     const login = await this.provider.challenge(true, username, options.msg!, roleMap[options.keyType!])
     if (login.success) this.username = username
@@ -85,12 +74,7 @@ export class Keychain extends AiohaProviderBase {
         username
       }
     }
-    return {
-      provider: Providers.Keychain,
-      success: false,
-      errorCode: getErrorCode(login),
-      error: login.message
-    }
+    return loginError(getErrorCode(login), login.message, Providers.Keychain)
   }
 
   async logout(): Promise<void> {
@@ -126,12 +110,7 @@ export class Keychain extends AiohaProviderBase {
         success: true,
         result: encoded.result as unknown as string
       }
-    else
-      return {
-        success: false,
-        errorCode: getErrorCode(encoded),
-        error: encoded.message
-      }
+    else return error(getErrorCode(encoded), encoded.message)
   }
 
   async encryptMemoWithKeys(message: string, keyType: KeyTypes, recipientKeys: string[]): Promise<OperationResultObj> {
@@ -142,12 +121,7 @@ export class Keychain extends AiohaProviderBase {
         success: true,
         result: encoded.result as unknown as object
       }
-    else
-      return {
-        success: false,
-        errorCode: getErrorCode(encoded),
-        error: encoded.message
-      }
+    else return error(getErrorCode(encoded), encoded.message)
   }
 
   async decryptMemo(memo: string, keyType: KeyTypes): Promise<OperationResult> {
@@ -158,23 +132,13 @@ export class Keychain extends AiohaProviderBase {
         success: true,
         result: decoded.result as unknown as string
       }
-    else
-      return {
-        success: false,
-        errorCode: getErrorCode(decoded),
-        error: decoded.message
-      }
+    else return error(getErrorCode(decoded), decoded.message)
   }
 
   async signMessage(message: string, keyType: KeyTypes): Promise<OperationResult> {
     this.eventEmitter.emit('sign_msg_request')
     const signBuf = await this.provider.challenge(false, this.getUser()!, message, roleMap[keyType])
-    if (!signBuf.success)
-      return {
-        success: false,
-        errorCode: getErrorCode(signBuf),
-        error: signBuf.error
-      }
+    if (!signBuf.success) return error(getErrorCode(signBuf), signBuf.error)
     return {
       success: signBuf.success,
       result: signBuf.result as unknown as string,
@@ -185,12 +149,7 @@ export class Keychain extends AiohaProviderBase {
   async signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResultObj> {
     this.emitSignTx()
     const signedTx = await this.provider.signTx(this.username, tx, roleMap[keyType])
-    if (!signedTx.success)
-      return {
-        success: false,
-        errorCode: getErrorCode(signedTx),
-        error: signedTx.error
-      }
+    if (!signedTx.success) return error(getErrorCode(signedTx), signedTx.error)
     return {
       success: signedTx.success,
       result: signedTx.result
@@ -203,21 +162,12 @@ export class Keychain extends AiohaProviderBase {
       const broadcastedTx = await this.provider.broadcast(this.username, tx, roleMap[keyType])
       return this.txResult(broadcastedTx)
     } catch (e) {
-      return {
-        success: false,
-        errorCode: getErrorCode(e),
-        error: (e as KeychainRequestResponse).message
-      }
+      return error(getErrorCode(e), (e as KeychainRequestResponse).message)
     }
   }
 
   txResult(tx: KeychainRequestResponse): SignOperationResult {
-    if (!tx.success)
-      return {
-        success: false,
-        errorCode: getErrorCode(tx),
-        error: tx.message
-      }
+    if (!tx.success) return error(getErrorCode(tx), tx.message)
     return {
       success: tx.success,
       result: tx.result!.id

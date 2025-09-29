@@ -1,3 +1,4 @@
+import { error } from '../lib/errors.js'
 import {
   LoginResult,
   PersistentLogin,
@@ -10,11 +11,7 @@ import {
 } from '../types.js'
 import { AiohaProviderBase } from './provider.js'
 
-const VIEW_ONLY_ERR: OperationError = {
-  success: false,
-  errorCode: 4200,
-  error: 'Cannot sign or transact in view only mode'
-}
+const VIEW_ONLY_ERR = error(4200, 'Cannot sign or transact in view only mode')
 
 export class ViewOnly extends AiohaProviderBase {
   private user?: string

@@ -14,6 +14,7 @@ import {
   SignOperationResultObj
 } from '../types.js'
 import { SimpleEventEmitter } from '../lib/event-emitter.js'
+import { error, loginError } from '../lib/errors.js'
 
 const HiveAuthError = (e: any): string => {
   if (e.name === 'HiveAuthInternalError') return e.message
@@ -68,12 +69,7 @@ export class HiveAuth extends AiohaProviderBase {
         username
       }
     } catch (e) {
-      return {
-        provider: Providers.HiveAuth,
-        success: false,
-        errorCode: HiveAuthErrorCode(e),
-        error: HiveAuthError(e)
-      }
+      return loginError(HiveAuthErrorCode(e), HiveAuthError(e), Providers.HiveAuth)
     }
   }
 
@@ -136,11 +132,7 @@ export class HiveAuth extends AiohaProviderBase {
   }
 
   async decryptMemo(): Promise<OperationError> {
-    return {
-      success: false,
-      errorCode: 4200,
-      error: NO_MEMO
-    }
+    return error(4200, NO_MEMO)
   }
 
   async signMessage(message: string, keyType: KeyTypes): Promise<OperationResult> {
@@ -163,11 +155,7 @@ export class HiveAuth extends AiohaProviderBase {
         publicKey: signed.pubkey
       }
     } catch (e) {
-      return {
-        success: false,
-        errorCode: HiveAuthErrorCode(e),
-        error: HiveAuthError(e)
-      }
+      return error(HiveAuthErrorCode(e), HiveAuthError(e))
     }
   }
 
@@ -175,11 +163,7 @@ export class HiveAuth extends AiohaProviderBase {
     // the HiveAuth sign tx without broadcast implementation at protocol level is not the same as keychain
     // as it only accepts array of tx operations as inputs without tx headers which is not very useful when
     // trying to sign a multisig transaction.
-    return {
-      success: false,
-      errorCode: 4200,
-      error: 'Not implemented'
-    }
+    return error(4200, 'Not implemented')
   }
 
   async signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult> {
@@ -193,11 +177,7 @@ export class HiveAuth extends AiohaProviderBase {
         result: broadcasted.data
       }
     } catch (e) {
-      return {
-        success: false,
-        errorCode: HiveAuthErrorCode(e),
-        error: HiveAuthError(e)
-      }
+      return error(HiveAuthErrorCode(e), HiveAuthError(e))
     }
   }
 }
