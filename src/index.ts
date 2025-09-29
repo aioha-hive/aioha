@@ -384,6 +384,13 @@ export class Aioha implements AiohaOperations {
         errorCode: 5003,
         error: 'options are required'
       }
+    if (!options.keyType && provider !== Providers.HiveSigner && provider !== Providers.Ledger && provider !== Providers.Custom)
+      return {
+        provider: provider,
+        success: false,
+        errorCode: 5003,
+        error: 'keyType options are required'
+      }
     return {
       provider: Providers.Custom,
       success: true,

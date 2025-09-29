@@ -43,19 +43,12 @@ export class HiveAuth extends AiohaProviderBase {
   }
 
   async login(username: string, options: LoginOptions): Promise<LoginResult> {
-    if (!options || !options.keyType)
-      return {
-        provider: Providers.HiveAuth,
-        success: false,
-        errorCode: 5003,
-        error: 'keyType options are required'
-      }
     try {
       const login = await HaWrapper.authenticate(
         this.provider,
         username,
         {
-          key_type: options.keyType,
+          key_type: options.keyType!,
           challenge: options.msg ?? window.crypto.randomUUID(),
           nonce: Date.now()
         },

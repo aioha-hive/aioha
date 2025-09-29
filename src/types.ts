@@ -41,6 +41,7 @@ export interface LoginOptions {
 }
 
 export interface LoginOptionsNI {
+  keyType?: KeyTypes
   ignorePersistence?: boolean
   hivesigner?: {
     accessToken: string

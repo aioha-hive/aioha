@@ -152,17 +152,10 @@ export class MetaMaskSnap extends AiohaProviderBase {
   }
 
   async login(username: string, options: LoginOptions): Promise<LoginResult> {
-    if (!options || !options.keyType)
-      return {
-        provider: Providers.MetaMaskSnap,
-        success: false,
-        errorCode: 5003,
-        error: 'keyType options are required'
-      }
     if (!(await this.initSnap())) return SNAP_NOT_CONNECTED_ERR
     const accIdx = options?.metamask?.accountIdx ?? 0
     if (options.metamask && options.metamask.validateUser) {
-      const check = await this.checkAssociation(username, options.keyType, accIdx)
+      const check = await this.checkAssociation(username, options.keyType!, accIdx)
       if (!!check) return check
     }
     this.accountIdx = accIdx
@@ -177,17 +170,10 @@ export class MetaMaskSnap extends AiohaProviderBase {
   }
 
   async loginAndDecryptMemo(username: string, options: LoginOptions): Promise<LoginResult> {
-    if (!options || !options.keyType)
-      return {
-        provider: Providers.MetaMaskSnap,
-        success: false,
-        errorCode: 5003,
-        error: 'keyType options are required'
-      }
     if (!(await this.initSnap())) return SNAP_NOT_CONNECTED_ERR
     const accIdx = options?.metamask?.accountIdx ?? 0
     if (options.metamask && options.metamask.validateUser) {
-      const check = await this.checkAssociation(username, options.keyType, accIdx)
+      const check = await this.checkAssociation(username, options.keyType!, accIdx)
       if (!!check) return check
     }
     throw new Error('Method not implemented.')

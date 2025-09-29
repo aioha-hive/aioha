@@ -40,14 +40,7 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async login(username: string, options: LoginOptions): Promise<LoginResult> {
-    if (!options || !options.keyType)
-      return {
-        provider: Providers.Keychain,
-        success: false,
-        errorCode: 5003,
-        error: 'keyType options are required'
-      }
-    else if (!KeychainMini.isInstalledSync())
+    if (!KeychainMini.isInstalledSync())
       return {
         provider: Providers.Keychain,
         success: false,
@@ -59,7 +52,7 @@ export class Keychain extends AiohaProviderBase {
       false,
       username,
       options.msg ?? '',
-      roleMap[options.keyType],
+      roleMap[options.keyType!],
       options.loginTitle
     )
     if (login.success) this.username = username
@@ -74,14 +67,7 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async loginAndDecryptMemo(username: string, options: LoginOptions): Promise<LoginResult> {
-    if (!options || !options.keyType)
-      return {
-        provider: Providers.Keychain,
-        success: false,
-        errorCode: 5003,
-        error: 'keyType options are required'
-      }
-    else if (!KeychainMini.isInstalledSync())
+    if (!KeychainMini.isInstalledSync())
       return {
         provider: Providers.Keychain,
         success: false,
@@ -89,7 +75,7 @@ export class Keychain extends AiohaProviderBase {
         error: 'Keychain extension is not installed'
       }
     this.eventEmitter.emit('login_request')
-    const login = await this.provider.challenge(true, username, options.msg!, roleMap[options.keyType])
+    const login = await this.provider.challenge(true, username, options.msg!, roleMap[options.keyType!])
     if (login.success) this.username = username
     if (login.success) {
       return {

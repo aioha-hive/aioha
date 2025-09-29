@@ -22,14 +22,7 @@ export class PeakVault extends AiohaProviderBase {
   }
 
   async login(username: string, options: LoginOptions): Promise<LoginResult> {
-    if (!options || !options.keyType)
-      return {
-        provider: Providers.PeakVault,
-        success: false,
-        errorCode: 5003,
-        error: 'keyType options are required'
-      }
-    else if (!this.isInstalled())
+    if (!this.isInstalled())
       return {
         provider: Providers.PeakVault,
         success: false,
