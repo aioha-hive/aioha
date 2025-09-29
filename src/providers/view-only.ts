@@ -6,8 +6,7 @@ import {
   OperationResultObj,
   SignOperationResultObj,
   SignOperationResult,
-  Providers,
-  OperationError
+  Providers
 } from '../types.js'
 import { AiohaProviderBase } from './provider.js'
 

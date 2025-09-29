@@ -7,7 +7,6 @@ import {
   LoginOptions,
   LoginOptionsNI,
   LoginResult,
-  OperationError,
   OperationResult,
   OperationResultObj,
   PersistentLogin,

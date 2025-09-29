@@ -10,7 +10,6 @@ import {
   SignOperationResult,
   AccountDiscStream,
   DiscoverOptions,
-  OperationError,
   Providers,
   PersistentLoginMetamaskSnap,
   LoginResultError,

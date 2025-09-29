@@ -17,7 +17,6 @@ import {
   Providers,
   VoteParams,
   LoginOptionsNI,
-  OperationError,
   OperationResultObj,
   PersistentLogins,
   PersistentLogin,
