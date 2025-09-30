@@ -341,12 +341,12 @@ export class Aioha implements AiohaOperations {
    * @param username Username to remove
    * @returns The removed login details.
    */
-  removeOtherLogin(username: string): PersistentLogin {
+  removeOtherLogin(username: string, emit: boolean = true): PersistentLogin {
     if (!this.otherLogins[username]) throw new Error('Cannot remove non-existent login')
     const popped = this.otherLogins[username]
     delete this.otherLogins[username]
     if (this.isBrowser()) localStorage.setItem('aiohaOtherLogins', JSON.stringify(this.otherLogins))
-    this.eventEmitter.emit('account_changed')
+    if (emit) this.eventEmitter.emit('account_changed')
     return popped
   }
 
@@ -430,7 +430,7 @@ export class Aioha implements AiohaOperations {
       if (!current) throw new Error('Failed to get current login info') // this should not happen
       this.addOtherLogin(this.getCurrentUser()!, current)
     }
-    const nextUser = this.removeOtherLogin(username)
+    const nextUser = this.removeOtherLogin(username, false)
     const loaded = this.providers[nextUser.provider]!.loadLogin(username, nextUser)
     if (!loaded) {
       if (prevUser) {
