@@ -227,7 +227,7 @@ export class Ledger extends AiohaProviderBase {
           // obtain signature
           // message signing is supported as of v1.2.0 however it isn't on ledger live yet :\
           // const signature = await app.signMessage(options.msg ?? 'Aioha app login', userFound.path)
-          this.eventEmitter.emit('login_request')
+          this.emitLoginReq()
           const signature = await this.provider!.signHash(await this.sha256(options.msg ?? 'Aioha app login'), userFound.path)
           this.username = username
           this.path = userFound.path

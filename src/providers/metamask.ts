@@ -143,6 +143,7 @@ export class MetaMaskSnap extends AiohaProviderBase {
   }
 
   async login(username: string, options: LoginOptions): Promise<LoginResult> {
+    this.emitLoginReq()
     if (!(await this.initSnap())) return SNAP_NOT_CONNECTED_ERR
     const accIdx = options?.metamask?.accountIdx ?? 0
     if (options.metamask && options.metamask.validateUser) {
@@ -161,13 +162,14 @@ export class MetaMaskSnap extends AiohaProviderBase {
   }
 
   async loginAndDecryptMemo(username: string, options: LoginOptions): Promise<LoginResult> {
+    this.emitLoginReq()
     if (!(await this.initSnap())) return SNAP_NOT_CONNECTED_ERR
     const accIdx = options?.metamask?.accountIdx ?? 0
     if (options.metamask && options.metamask.validateUser) {
       const check = await this.checkAssociation(username, options.keyType!, accIdx)
       if (!!check) return check
     }
-    const decoded = await this.decryptMemo(options.msg!, options.keyType!)
+    const decoded = await this.decryptMemo(options.msg!, options.keyType!, false)
     if (!decoded.success) return decoded
     this.accountIdx = accIdx
     this.username = username
@@ -183,7 +185,7 @@ export class MetaMaskSnap extends AiohaProviderBase {
   async logout(): Promise<void> {
     delete this.accountIdx
     delete this.username
-    localStorage.removeItem('mmHiveSnapAccIdx')
+    this.rmItems(['mmHiveSnapAccIdx'])
   }
 
   async discoverAccounts(stream?: AccountDiscStream, options?: DiscoverOptions): Promise<OperationResultObj> {
@@ -271,6 +273,7 @@ export class MetaMaskSnap extends AiohaProviderBase {
   async encryptMemoWithKeys(message: string, keyType: KeyTypes, recipientKeys: string[]): Promise<OperationResultObj> {
     if (!(await this.initSnap())) return SNAP_NOT_CONNECTED_ERR
     const results: { [key: string]: string } = {}
+    this.emitMemoReq()
     try {
       for (let k in recipientKeys) {
         const response = (await this.invokeSnap('hive_encrypt', {
@@ -289,7 +292,8 @@ export class MetaMaskSnap extends AiohaProviderBase {
     }
   }
 
-  async decryptMemo(memo: string, keyType: KeyTypes): Promise<OperationResult> {
+  async decryptMemo(memo: string, keyType: KeyTypes, emit: boolean = true): Promise<OperationResult> {
+    if (emit) this.emitMemoReq()
     try {
       const response = (await this.invokeSnap('hive_decrypt', {
         buffer: memo,
@@ -329,6 +333,7 @@ export class MetaMaskSnap extends AiohaProviderBase {
   async signTxHF26(tx: HF26Transaction, keyType: KeyTypes): Promise<SignOperationResultObjHF26> {
     try {
       if (!(await this.initSnap())) return SNAP_NOT_CONNECTED_ERR
+      this.emitSignTx()
       const response = (await this.invokeSnap('hive_signTransaction', {
         transaction: JSON.stringify(tx),
         keys: [{ role: keyType, accountIndex: this.accountIdx }]

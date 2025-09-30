@@ -52,7 +52,7 @@ export class HiveSigner extends AiohaProviderBase {
 
   async login(username: string, options: LoginOptions): Promise<LoginResult> {
     return new Promise((rs) => {
-      this.eventEmitter.emit('login_request')
+      this.emitLoginReq()
       let loggedInUser: string | null, token: string | null
       const loginURL = this.getLoginURL(options, username ?? undefined)
       const hsWindow = window.open(loginURL)

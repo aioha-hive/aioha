@@ -42,7 +42,7 @@ export class Keychain extends AiohaProviderBase {
 
   async login(username: string, options: LoginOptions): Promise<LoginResult> {
     if (!KeychainMini.isInstalledSync()) return loginError(5001, 'Keychain extension is not installed', Providers.Keychain)
-    this.eventEmitter.emit('login_request')
+    this.emitLoginReq()
     const login: any = await this.provider.challenge(
       false,
       username,
@@ -63,7 +63,7 @@ export class Keychain extends AiohaProviderBase {
 
   async loginAndDecryptMemo(username: string, options: LoginOptions): Promise<LoginResult> {
     if (!KeychainMini.isInstalledSync()) return loginError(5001, 'Keychain extension is not installed', Providers.Keychain)
-    this.eventEmitter.emit('login_request')
+    this.emitLoginReq()
     const login = await this.provider.challenge(true, username, options.msg!, roleMap[options.keyType!])
     if (login.success) this.username = username
     if (login.success) {
@@ -103,7 +103,7 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async encryptMemo(message: string, keyType: KeyTypes, recipient: string): Promise<OperationResult> {
-    this.eventEmitter.emit('memo_request')
+    this.emitMemoReq()
     const encoded = await this.provider.encode(false, this.getUser()!, recipient, message, roleMap[keyType])
     if (encoded.success)
       return {
@@ -114,7 +114,7 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async encryptMemoWithKeys(message: string, keyType: KeyTypes, recipientKeys: string[]): Promise<OperationResultObj> {
-    this.eventEmitter.emit('memo_request')
+    this.emitMemoReq()
     const encoded = await this.provider.encode(true, this.getUser()!, recipientKeys, message, roleMap[keyType])
     if (encoded.success)
       return {
@@ -125,7 +125,7 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async decryptMemo(memo: string, keyType: KeyTypes): Promise<OperationResult> {
-    this.eventEmitter.emit('memo_request')
+    this.emitMemoReq()
     const decoded = await this.provider.challenge(true, this.getUser()!, memo, roleMap[keyType])
     if (decoded.success)
       return {

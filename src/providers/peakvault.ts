@@ -25,7 +25,7 @@ export class PeakVault extends AiohaProviderBase {
   async login(username: string, options: LoginOptions): Promise<LoginResult> {
     if (!this.isInstalled()) return loginError(5001, 'Peak Vault extension is not installed', Providers.PeakVault)
     try {
-      this.eventEmitter.emit('login_request')
+      this.emitLoginReq()
       const res: VaultResponse = await window.peakvault.requestSignBuffer(username, options.keyType, options.msg)
       this.username = username
       return {
@@ -41,7 +41,7 @@ export class PeakVault extends AiohaProviderBase {
   }
 
   async loginAndDecryptMemo(username: string, options: LoginOptions): Promise<LoginResult> {
-    this.eventEmitter.emit('login_request')
+    this.emitLoginReq()
     const memo = await this.decryptMemo(
       options.msg || window.crypto.randomUUID(),
       options.keyType || KeyTypes.Posting,
@@ -91,7 +91,7 @@ export class PeakVault extends AiohaProviderBase {
       return error(5005, 'keyType must be memo for peakvault memo encryption')
     }
     try {
-      this.eventEmitter.emit('memo_request')
+      this.emitMemoReq()
       const encoded: VaultResponse = await window.peakvault.requestEncode(this.getUser()!, recipient, message)
       return {
         success: true,
@@ -105,7 +105,7 @@ export class PeakVault extends AiohaProviderBase {
 
   async encryptMemoWithKeys(message: string, keyType: KeyTypes, recipientKeys: string[]): Promise<OperationResultObj> {
     try {
-      this.eventEmitter.emit('memo_request')
+      this.emitMemoReq()
       const encoded: VaultResponse = await window.peakvault.requestEncodeWithKeys(
         this.getUser()!,
         keyType,
@@ -126,7 +126,7 @@ export class PeakVault extends AiohaProviderBase {
 
   async decryptMemo(memo: string, keyType: KeyTypes, overrideUser?: string, emit: boolean = true): Promise<OperationResult> {
     try {
-      if (emit) this.eventEmitter.emit('memo_request')
+      if (emit) this.emitMemoReq()
       const decoded: VaultResponse = await window.peakvault.requestDecode(this.getUser() || overrideUser, memo, keyType)
       return {
         success: true,

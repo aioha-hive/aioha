@@ -17,21 +17,7 @@ import {
   VscStakeType,
   VscTxIntent
 } from '../types.js'
-import {
-  createVote,
-  createComment,
-  createCustomJSON,
-  createXfer,
-  createRecurrentXfer,
-  createStakeHive,
-  createUnstakeHive,
-  createUnstakeHiveByVests,
-  createDelegateVests,
-  createVoteWitness,
-  createVoteProposals,
-  createSetProxy,
-  deleteComment
-} from '../opbuilder.js'
+import { createVote, createComment, createUnstakeHive, createUnstakeHiveByVests } from '../opbuilder.js'
 import { hivePerVests, getAccounts, getAccountsErrored } from '../rpc.js'
 import { RequestArguments, AiohaRpcError } from '../jsonrpc/eip1193-types.js'
 import { SimpleEventEmitter } from '../lib/event-emitter.js'
@@ -113,17 +99,20 @@ export abstract class AiohaProviderBase implements AiohaOperations {
   }
 
   async deleteComment(permlink: string): Promise<SignOperationResult> {
-    return await this.signAndBroadcastTx([deleteComment(this.getUser()!, permlink)], KeyTypes.Posting)
+    return await this.signAndBroadcastTx([['delete_comment', { author: this.getUser()!, permlink }]], KeyTypes.Posting)
   }
 
   customJSON(keyType: KeyTypes, id: string, json: string, displayTitle?: string | undefined): Promise<SignOperationResult> {
-    const requiredAuths = keyType === KeyTypes.Active ? [this.getUser()!] : []
-    const requiredPostingAuths = keyType === KeyTypes.Posting ? [this.getUser()!] : []
-    return this.signAndBroadcastTx([createCustomJSON(requiredAuths, requiredPostingAuths, id, json)], keyType)
+    const required_auths = keyType === KeyTypes.Active ? [this.getUser()!] : []
+    const required_posting_auths = keyType === KeyTypes.Posting ? [this.getUser()!] : []
+    return this.signAndBroadcastTx([['custom_json', { required_auths, required_posting_auths, id, json }]], keyType)
   }
 
   async transfer(to: string, amount: number, currency: Asset, memo?: string): Promise<SignOperationResult> {
-    return await this.signAndBroadcastTx([createXfer(this.getUser()!, to, amount, currency, memo)], KeyTypes.Active)
+    return await this.signAndBroadcastTx(
+      [['transfer', { from: this.getUser()!, to, amount: amount.toFixed(3) + ' ' + currency, memo: memo ?? '' }]],
+      KeyTypes.Active
+    )
   }
 
   async recurrentTransfer(
@@ -135,13 +124,29 @@ export abstract class AiohaProviderBase implements AiohaOperations {
     memo?: string | undefined
   ): Promise<SignOperationResult> {
     return await this.signAndBroadcastTx(
-      [createRecurrentXfer(this.getUser()!, to, amount, currency, recurrence, executions, memo)],
+      [
+        [
+          'recurrent_transfer',
+          {
+            from: this.getUser()!,
+            to,
+            amount: amount.toFixed(3) + ' ' + currency,
+            recurrence,
+            executions,
+            memo: memo ?? '',
+            extensions: []
+          }
+        ]
+      ],
       KeyTypes.Active
     )
   }
 
   async stakeHive(amount: number, to?: string | undefined): Promise<SignOperationResult> {
-    return await this.signAndBroadcastTx([createStakeHive(this.getUser()!, to ?? this.getUser()!, amount)], KeyTypes.Active)
+    return await this.signAndBroadcastTx(
+      [['transfer_to_vesting', { from: this.getUser()!, to: to ?? this.getUser()!, amount: amount.toFixed(3) + ' HIVE' }]],
+      KeyTypes.Active
+    )
   }
 
   async unstakeHive(amount: number): Promise<SignOperationResult> {
@@ -169,19 +174,28 @@ export abstract class AiohaProviderBase implements AiohaOperations {
   }
 
   async delegateVests(to: string, amount: number): Promise<SignOperationResult> {
-    return await this.signAndBroadcastTx([createDelegateVests(this.getUser()!, to, amount)], KeyTypes.Active)
+    return await this.signAndBroadcastTx(
+      [['delegate_vesting_shares', { delegator: this.getUser()!, delegatee: to, vesting_shares: amount.toFixed(6) + ' VESTS' }]],
+      KeyTypes.Active
+    )
   }
 
   async voteWitness(witness: string, approve: boolean): Promise<SignOperationResult> {
-    return await this.signAndBroadcastTx([createVoteWitness(this.getUser()!, witness, approve)], KeyTypes.Active)
+    return await this.signAndBroadcastTx(
+      [['account_witness_vote', { account: this.getUser()!, witness, approve }]],
+      KeyTypes.Active
+    )
   }
 
   async voteProposals(proposals: number[], approve: boolean): Promise<SignOperationResult> {
-    return await this.signAndBroadcastTx([createVoteProposals(this.getUser()!, proposals, approve)], KeyTypes.Active)
+    return await this.signAndBroadcastTx(
+      [['update_proposal_votes', { voter: this.getUser()!, proposal_ids: proposals, approve, extensions: [] }]],
+      KeyTypes.Active
+    )
   }
 
   async setProxy(proxy: string): Promise<SignOperationResult> {
-    return await this.signAndBroadcastTx([createSetProxy(this.getUser()!, proxy)], KeyTypes.Active)
+    return await this.signAndBroadcastTx([['account_witness_proxy', { account: this.getUser()!, proxy }]], KeyTypes.Active)
   }
 
   addAccountAuthority(username: string, role: KeyTypes, weight: number): Promise<SignOperationResult> {
@@ -350,6 +364,14 @@ export abstract class AiohaProviderBase implements AiohaOperations {
 
   protected emitSignTx() {
     this.eventEmitter.emit('sign_tx_request')
+  }
+
+  protected emitMemoReq() {
+    this.eventEmitter.emit('memo_request')
+  }
+
+  protected emitLoginReq() {
+    this.eventEmitter.emit('login_request')
   }
 
   protected rmItems(itms: string[]) {
