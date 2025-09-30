@@ -9,7 +9,7 @@
     "build": "tsc",
     "webpack": "webpack",
     "clean": "rm -r dist/* build/*",
-    "prepublish": "pnpm run clean; pnpm run build; pnpm run webpack; cp src/lib/hivesigner-cb.ts dist/hivesigner-cb.js",
+    "prepublish": "pnpm run clean && pnpm run build && pnpm run webpack && cp src/lib/hivesigner-cb.ts dist/hivesigner-cb.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [

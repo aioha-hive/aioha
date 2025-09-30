@@ -11,6 +11,7 @@ This repository contains the core API designed for use in browser contexts.
 * [HiveSigner](https://hivesigner.com)
 * [Ledger](https://hiveledger.io)
 * [Peak Vault](https://vault.peakd.com)
+* [MetaMask Snap](https://snaps.metamask.io/snap/npm/hiveio/metamask-snap)
 
 ## Frameworks Libraries
 
@@ -76,6 +77,7 @@ The following keys are reserved:
 * HiveAuth: `hiveauthToken`, `hiveauthKey`, `hiveauthExp`
 * HiveSigner: `hivesignerTxId`, `hivesignerToken`, `hivesignerExpiry`, `hivesignerUsername`
 * Ledger: `ledgerPath`
+* MetaMask: `mmHiveSnapAccIdx`
 
 ## HiveSigner callback page
 
