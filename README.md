@@ -15,7 +15,9 @@ This repository contains the core API designed for use in browser contexts.
 
 ## Frameworks Libraries
 
-* React ([Provider](https://github.com/aioha-hive/react-provider), [Ready Made UI](https://github.com/aioha-hive/react-ui))
+* React ([Provider](https://github.com/aioha-hive/providers/tree/main/react), [Ready Made UI](https://github.com/aioha-hive/react-ui))
+* Vue ([Provider](https://github.com/aioha-hive/providers/tree/main/vue))
+* Lit ([Provider](https://github.com/aioha-hive/providers/tree/main/lit))
 
 ## Installation
 
