@@ -355,7 +355,13 @@ export class Aioha implements AiohaOperations {
     if (!this.providers[provider]) return loginError(4201, provider + ' provider is not registered')
     if (!username && provider !== Providers.HiveSigner) return loginError(5002, 'username is required')
     if (typeof options !== 'object') return loginError(5003, 'options are required')
-    if (!options.keyType && provider !== Providers.HiveSigner && provider !== Providers.Ledger && provider !== Providers.Custom)
+    if (
+      !options.keyType &&
+      provider !== Providers.HiveSigner &&
+      provider !== Providers.Ledger &&
+      provider !== Providers.ViewOnly &&
+      provider !== Providers.Custom
+    )
       return loginError(5003, 'keyType options are required', provider)
     return {
       provider: Providers.Custom,
