@@ -957,6 +957,13 @@ export interface RecurrentTransferOperation extends HF26OperationBase {
     memo: string
     recurrence: number
     executions: number
-    extensions: any[]
+    extensions: RecurrentTransferPairId[]
+  }
+}
+
+export interface RecurrentTransferPairId {
+  type: 'recurrent_transfer_pair_id'
+  value: {
+    pair_id: number
   }
 }

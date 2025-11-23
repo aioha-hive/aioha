@@ -69,12 +69,19 @@ export const oldToHF26Operation = (oldOperation: Operation): HF26Operation => {
         }
       })
       break
+    case 'recurrent_transfer':
+      newBody.extensions = newBody.extensions.map((ext: any) => {
+        return {
+          type: 'recurrent_transfer_pair_id',
+          value: ext[1]
+        }
+      })
+    // fallthrough
     case 'convert':
     case 'transfer':
     case 'transfer_from_savings':
     case 'transfer_to_savings':
     case 'transfer_to_vesting':
-    case 'recurrent_transfer':
     case 'collateralized_convert':
       newBody.amount = toNai(newBody.amount)
       break
@@ -82,14 +89,12 @@ export const oldToHF26Operation = (oldOperation: Operation): HF26Operation => {
     case 'withdraw_vesting':
       newBody.vesting_shares = toNai(newBody.vesting_shares)
       break
+    case 'escrow_transfer':
+      newBody.fee = toNai(newBody.fee)
+    // fallthrough
     case 'escrow_release':
       newBody.hbd_amount = toNai(newBody.hbd_amount)
       newBody.hive_amount = toNai(newBody.hive_amount)
-      break
-    case 'escrow_transfer':
-      newBody.hbd_amount = toNai(newBody.hbd_amount)
-      newBody.hive_amount = toNai(newBody.hive_amount)
-      newBody.fee = toNai(newBody.fee)
       break
     case 'feed_publish':
       newBody.exchange_rate = toNewPrice(newBody.exchange_rate)

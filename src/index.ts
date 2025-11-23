@@ -926,11 +926,12 @@ export class Aioha implements AiohaOperations {
     currency: Asset,
     recurrence: number,
     executions: number,
-    memo?: string
+    memo?: string,
+    pair_id?: number
   ): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
     if (recurrence < 24) return error(-32003, 'recurrence must be at least 24 hours') // should we let hived throw this error upon broadcast instead?
-    return await this.getPI().recurrentTransfer(to, amount, currency, recurrence, executions, memo)
+    return await this.getPI().recurrentTransfer(to, amount, currency, recurrence, executions, memo, pair_id)
   }
 
   /**

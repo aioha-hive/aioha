@@ -121,7 +121,8 @@ export abstract class AiohaProviderBase implements AiohaOperations {
     currency: Asset,
     recurrence: number,
     executions: number,
-    memo?: string | undefined
+    memo?: string,
+    pair_id?: number
   ): Promise<SignOperationResult> {
     return await this.signAndBroadcastTx(
       [
@@ -134,7 +135,7 @@ export abstract class AiohaProviderBase implements AiohaOperations {
             recurrence,
             executions,
             memo: memo ?? '',
-            extensions: []
+            extensions: typeof pair_id === 'number' ? [[1, { pair_id }]] : []
           }
         ]
       ],
@@ -420,7 +421,8 @@ export interface AiohaOperations {
     currency: Asset,
     recurrence: number,
     executions: number,
-    memo?: string
+    memo?: string,
+    pair_id?: number
   ): Promise<SignOperationResult>
   stakeHive(amount: number, to?: string): Promise<SignOperationResult>
   unstakeHive(amount: number): Promise<SignOperationResult>

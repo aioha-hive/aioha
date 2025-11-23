@@ -210,7 +210,8 @@ export class KeychainMini {
     currency: Asset,
     memo: string,
     recurrence: number,
-    executions: number
+    executions: number,
+    pair_id?: number
   ): Promise<KeychainRequestResponse> {
     return new Promise(async (resolve) => {
       try {
@@ -224,7 +225,9 @@ export class KeychainMini {
           executions,
           (response: KeychainRequestResponse) => {
             resolve(response)
-          }
+          },
+          undefined,
+          pair_id
         )
       } catch (error) {
         throw error

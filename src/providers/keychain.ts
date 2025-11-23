@@ -221,11 +221,21 @@ export class Keychain extends AiohaProviderBase {
     currency: Asset,
     recurrence: number,
     executions: number,
-    memo?: string
+    memo?: string,
+    pair_id?: number
   ): Promise<SignOperationResult> {
     this.emitSignTx()
     return this.txResult(
-      await this.provider.recurrentTransfer(this.username, to, amount.toFixed(3), currency, memo ?? '', recurrence, executions)
+      await this.provider.recurrentTransfer(
+        this.username,
+        to,
+        amount.toFixed(3),
+        currency,
+        memo ?? '',
+        recurrence,
+        executions,
+        pair_id
+      )
     )
   }
 
