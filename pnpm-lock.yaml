@@ -18,8 +18,8 @@ importers:
         specifier: ^1.3.2
         version: 1.3.2
       '@hiveio/wax':
-        specifier: 1.27.11-rc0
-        version: 1.27.11-rc0
+        specifier: 1.28.4-rc0
+        version: 1.28.4-rc0
       '@ledgerhq/hw-transport-webusb':
         specifier: ^6.29.7
         version: 6.29.7
@@ -85,8 +85,8 @@ packages:
   '@hiveio/dhive@1.3.2':
     resolution: {integrity: sha512-kJjp3TbpIlODxjJX4BWwvOf+cMxT8CFH/mNQ40RRjR2LP0a4baSWae1G+U/q/NtgjsIQz6Ja40tvnw6KF12I+g==}
 
-  '@hiveio/wax@1.27.11-rc0':
-    resolution: {integrity: sha512-9t7rYkGYby4zXUkE1DaF6VseTj5P4Ka/AQai7z9nSKRqzVnmuNlKI+ZTWxEwmJLU9SyKdz5rKrUNwAi7Xig1tg==}
+  '@hiveio/wax@1.28.4-rc0':
+    resolution: {integrity: sha512-CjYfSa4abzkASNgZtA2D50+6T7rmsw/hZIUGDOec+Haz1yuk5gbCgBi91nHUtP2mXlzXuv6VGESlYpKsd+V+kw==}
     engines: {node: ^20.11 || >= 21.2}
 
   '@jridgewell/gen-mapping@0.3.8':
@@ -1076,7 +1076,7 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
-  '@hiveio/wax@1.27.11-rc0':
+  '@hiveio/wax@1.28.4-rc0':
     dependencies:
       events: 3.3.0
 
