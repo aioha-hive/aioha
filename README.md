@@ -15,9 +15,10 @@ This repository contains the core API designed for use in browser contexts.
 
 ## Frameworks Libraries
 
+* Universal Web Components ([Ready Made UI](https://github.com/aioha-hive/lit-ui))
+* Lit ([Provider](https://github.com/aioha-hive/providers/tree/main/lit), [Ready Made UI](https://github.com/aioha-hive/lit-ui))
 * React ([Provider](https://github.com/aioha-hive/providers/tree/main/react), [Ready Made UI](https://github.com/aioha-hive/react-ui))
 * Vue ([Provider](https://github.com/aioha-hive/providers/tree/main/vue))
-* Lit ([Provider](https://github.com/aioha-hive/providers/tree/main/lit))
 * Svelte ([Provider](https://github.com/aioha-hive/providers/tree/main/svelte))
 
 ## Installation
