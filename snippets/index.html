@@ -102,9 +102,11 @@
           console.log(aioha.getOtherLogins())
         }
         document.getElementById('discover-accs').onclick = async () => {
-          console.log(await aioha.discoverAccounts(document.getElementById('discover-accs-prov').value, null, {
-            roles: [KeyTypes.Owner, KeyTypes.Active, KeyTypes.Posting, KeyTypes.Memo]
-          }))
+          console.log(
+            await aioha.discoverAccounts(document.getElementById('discover-accs-prov').value, null, {
+              roles: [KeyTypes.Owner, KeyTypes.Active, KeyTypes.Posting, KeyTypes.Memo]
+            })
+          )
         }
         document.getElementById('switch-user').onclick = async () => {
           let nextUser = document.getElementById('switch-user-username').value
@@ -362,7 +364,7 @@
     <textarea type="text" id="comment-body" placeholder="Body"></textarea>
     <textarea type="text" id="comment-json" placeholder="Json"></textarea><br />
     <button id="comment-btn">Comment</button>
-    <h2>VSC Contract Call</h2>
+    <h2>Magi Contract Call</h2>
     <input type="text" id="vsc-contract-id" placeholder="Contract ID" style="width: 250px" />
     <input type="text" id="vsc-action" placeholder="Action" />
     <input type="number" id="vsc-rc-limit" placeholder="RC Limit" /><br /><br />

@@ -1086,15 +1086,15 @@ export class Aioha implements AiohaOperations {
   }
 
   /**
-   * Set the VSC network ID for VSC related functions.
-   * @param net_id VSC network ID to use.
+   * Set the Magi network ID for Magi related functions.
+   * @param net_id Magi network ID to use.
    */
   vscSetNetId(net_id: string) {
     this.vscNetId = net_id
   }
 
   /**
-   * Call a VSC contract from L1.
+   * Call a Magi contract from L1.
    * @param contractId Contract ID
    * @param action Contract action
    * @param payload Contract call payload
@@ -1117,7 +1117,7 @@ export class Aioha implements AiohaOperations {
   }
 
   /**
-   * Transfer native assets on VSC.
+   * Transfer native assets on Magi.
    * @param to Destination address
    * @param amount Amount to transfer
    * @param currency HIVE or HBD
@@ -1130,7 +1130,7 @@ export class Aioha implements AiohaOperations {
   }
 
   /**
-   * Withdraw native assets from VSC.
+   * Withdraw native assets from Magi.
    * @param to Destination username
    * @param amount Amount to withdraw
    * @param currency HIVE or HBD
@@ -1143,7 +1143,7 @@ export class Aioha implements AiohaOperations {
   }
 
   /**
-   * Stake native assets on VSC.
+   * Stake native assets on Magi.
    * @param stakeType VscStakeType enum of consensus stake or HBD savings
    * @param amount Amount to stake
    * @param to Destination address (default: logged in user)
@@ -1156,7 +1156,7 @@ export class Aioha implements AiohaOperations {
   }
 
   /**
-   * Unstake native assets on VSC.
+   * Unstake native assets on Magi.
    * @param stakeType VscStakeType enum of consensus stake or HBD savings
    * @param amount Amount to unstake
    * @param to Destination address (default: logged in user)
