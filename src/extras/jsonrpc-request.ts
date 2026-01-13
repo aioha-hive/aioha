@@ -45,11 +45,9 @@ export class AiohaJsonRpc {
   }
 
   /**
-   * EIP-1193 style JSON-RPC request.
+   * JSON-RPC request.
    *
-   * See [EIP-1193](https://eips.ethereum.org/EIPS/eip-1193) for spec details.
-   *
-   * See [Aioha RPC specs](https://aioha.dev/docs/core/jsonrpc) for Aioha RPC methods.
+   * See [docs](https://aioha.dev/docs/core/jsonrpc) for Aioha RPC methods.
    * @param {RequestArguments} args JSON-RPC call body
    * @returns RPC call result
    */

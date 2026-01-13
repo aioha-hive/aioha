@@ -107,6 +107,10 @@ export class Aioha implements AiohaOperations {
     return this.publicKey
   }
 
+  /**
+   * Register all providers (excluding HiveSigner if not specified in options) and load persistent auths.
+   * @param options Instantiation options for each provider where applicable.
+   */
   setup(options?: SetupOptions) {
     if (!this.isLoggedIn()) {
       if (!options) options = {}
@@ -372,11 +376,9 @@ export class Aioha implements AiohaOperations {
   }
 
   /**
-   * EIP-1193 style JSON-RPC request.
+   * JSON-RPC request.
    *
-   * See [EIP-1193](https://eips.ethereum.org/EIPS/eip-1193) for spec details.
-   *
-   * See [Aioha RPC specs](https://aioha.dev/docs/core/jsonrpc) for Aioha RPC methods.
+   * See [docs](https://aioha.dev/docs/core/jsonrpc) for Aioha RPC methods.
    * @param {RequestArguments} args JSON-RPC call body
    * @returns RPC call result
    * @deprecated Use AiohaJsonRpc class in extras instead. Will be removed in v2.
@@ -1168,15 +1170,35 @@ export class Aioha implements AiohaOperations {
     return await this.getPI().vscUnstake(stakeType, amount, to, memo, this.vscNetId)
   }
 
-  // Event emitters
+  /**
+   * Subscribe to an event. The listener function will be called every time the event is emitted.
+   *
+   * The list of event names may be found in the [docs](https://aioha.dev/docs/core/jsonrpc#events).
+   * @param eventName Event name to subscribe to
+   * @param listener Listener function
+   */
   on(eventName: Events, listener: Function) {
     this.eventEmitter.on(eventName, listener)
     return this
   }
+
+  /**
+   * Subscribe to an event once. The listener function will be called once on the next time the event is emitted.
+   *
+   * The list of event names may be found in the [docs](https://aioha.dev/docs/core/jsonrpc#events).
+   * @param eventName Event name to subscribe to
+   * @param listener Listener function
+   */
   once(eventName: Events, listener: Function) {
     this.eventEmitter.once(eventName, listener)
     return this
   }
+
+  /**
+   * Unsubscribe to an event by name and listener function.
+   * @param eventName Event name to unsubscribe from
+   * @param listener Listener function
+   */
   off(eventName: Events, listener?: Function) {
     this.eventEmitter.off(eventName, listener)
     return this
