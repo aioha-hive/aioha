@@ -223,7 +223,7 @@ export class Aioha implements AiohaOperations {
       case Providers.Keychain:
         return !!this.providers.keychain && Keychain.isInstalled()
       case Providers.PeakVault:
-        return !!this.providers.peakvault && this.providers.peakvault.isInstalled()
+        return !!this.providers.peakvault && PeakVault.isInstalled()
       case Providers.MetaMaskSnap:
         return !!this.providers.metamasksnap && this.providers.metamasksnap.isInstalled()
       default:

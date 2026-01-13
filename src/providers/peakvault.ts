@@ -23,7 +23,7 @@ export class PeakVault extends AiohaProviderBase {
   }
 
   async login(username: string, options: LoginOptions): Promise<LoginResult> {
-    if (!this.isInstalled()) return loginError(5001, 'Peak Vault extension is not installed', Providers.PeakVault)
+    if (!PeakVault.isInstalled()) return loginError(5001, 'Peak Vault extension is not installed', Providers.PeakVault)
     try {
       this.emitLoginReq()
       const res: VaultResponse = await window.peakvault.requestSignBuffer(username, options.keyType, options.msg)
@@ -82,7 +82,7 @@ export class PeakVault extends AiohaProviderBase {
     return this.loadAuth(username)
   }
 
-  isInstalled(): boolean {
+  static isInstalled(): boolean {
     return !!window.peakvault
   }
 
