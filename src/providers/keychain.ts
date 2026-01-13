@@ -41,7 +41,7 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async login(username: string, options: LoginOptions): Promise<LoginResult> {
-    if (!KeychainMini.isInstalledSync()) return loginError(5001, 'Keychain extension is not installed', Providers.Keychain)
+    if (!Keychain.isInstalled()) return loginError(5001, 'Keychain extension is not installed', Providers.Keychain)
     this.emitLoginReq()
     const login: any = await this.provider.challenge(
       false,
@@ -62,7 +62,7 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async loginAndDecryptMemo(username: string, options: LoginOptions): Promise<LoginResult> {
-    if (!KeychainMini.isInstalledSync()) return loginError(5001, 'Keychain extension is not installed', Providers.Keychain)
+    if (!Keychain.isInstalled()) return loginError(5001, 'Keychain extension is not installed', Providers.Keychain)
     this.emitLoginReq()
     const login = await this.provider.challenge(true, username, options.msg!, roleMap[options.keyType!])
     if (login.success) this.username = username
@@ -99,7 +99,7 @@ export class Keychain extends AiohaProviderBase {
   }
 
   static isInstalled(): boolean {
-    return KeychainMini.isInstalledSync()
+    return !!window.hive_keychain
   }
 
   async encryptMemo(message: string, keyType: KeyTypes, recipient: string): Promise<OperationResult> {
@@ -294,6 +294,7 @@ export class Keychain extends AiohaProviderBase {
     return this.txResult(await this.provider.rmAuth('Key', this.getUser()!, publicKey, roleMap[role]))
   }
 
+  /*
   async vscTransfer(to: string, amount: number, currency: Asset, memo?: string): Promise<SignOperationResult> {
     this.emitSignTx()
     return this.txResult(await this.provider.vscFer('Transfer', this.getUser()!, to, amount, currency, memo))
@@ -339,4 +340,5 @@ export class Keychain extends AiohaProviderBase {
         )
     }
   }
+  */
 }

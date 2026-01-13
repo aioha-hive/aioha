@@ -41,10 +41,6 @@ export enum KT {
  * Stripped version of keychain-sdk.
  */
 export class KeychainMini {
-  static isInstalledSync(): boolean {
-    return !!window.hive_keychain
-  }
-
   async encode(
     wifKeys: boolean,
     user: string,
@@ -307,6 +303,7 @@ export class KeychainMini {
     })
   }
 
+  /*
   async vscFer(
     method: 'Transfer' | 'Withdrawal' | 'Staking',
     user: string,
@@ -335,4 +332,5 @@ export class KeychainMini {
       }
     })
   }
+  */
 }
