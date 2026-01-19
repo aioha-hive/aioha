@@ -337,7 +337,8 @@ export class MetaMaskSnap extends AiohaProviderBase {
       this.emitSignTx()
       const response = (await this.invokeSnap('hive_signTransaction', {
         transaction: JSON.stringify(tx),
-        keys: [{ role: keyType, accountIndex: this.accountIdx }]
+        keys: [{ role: keyType, accountIndex: this.accountIdx }],
+        chainId: this.rpc.chainId
       })) as SnapResponseSign
       const result = structuredClone(tx) as HF26SignedTransaction
       result.signatures = response.signatures
