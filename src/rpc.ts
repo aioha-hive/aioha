@@ -14,6 +14,27 @@ export const FALLBACK_APIS = [
   'https://anyx.io',
   'https://hiveapi.actifit.io'
 ]
+export const MAINNET_CHAIN_ID = 'beeab0de00000000000000000000000000000000000000000000000000000000'
+
+export class AiohaClient {
+  api: string
+  fallbackApis: string[]
+  chainId: string
+
+  constructor(api: string = DEFAULT_API, fallbackApis: string[] = FALLBACK_APIS, chainId: string = MAINNET_CHAIN_ID) {
+    this.api = api
+    this.fallbackApis = fallbackApis
+    this.chainId = chainId
+  }
+
+  call = (method: string, params: any): Promise<any> => {
+    return call(method, params, this.api, [...this.fallbackApis])
+  }
+
+  callRest = <T>(method: string): Promise<T> => {
+    return callRest(method, this.api, [...this.fallbackApis])
+  }
+}
 
 export const call = async (
   method: string,
@@ -60,38 +81,39 @@ export const callRest = async <T>(
   return resp
 }
 
-export const getAccounts = (accounts: string[], api: string = DEFAULT_API) => {
-  return call('condenser_api.get_accounts', [accounts], api)
+export const getAccounts = (accounts: string[], api: string = DEFAULT_API, fallbackApis: string[] = FALLBACK_APIS) => {
+  return call('condenser_api.get_accounts', [accounts], api, fallbackApis)
 }
 
 export const getAccountsErrored = (rpcResponse: any): boolean => {
   return !!rpcResponse.error || !Array.isArray(rpcResponse.result) || rpcResponse.result.length === 0
 }
 
-export const getDgp = (api: string = DEFAULT_API) => {
-  return call('condenser_api.get_dynamic_global_properties', [], api)
+export const getDgp = (api: string = DEFAULT_API, fallbackApis: string[] = FALLBACK_APIS) => {
+  return call('condenser_api.get_dynamic_global_properties', [], api, fallbackApis)
 }
 
-export const getKeyRefs = (keys: string[], api: string = DEFAULT_API) => {
+export const getKeyRefs = (keys: string[], api: string = DEFAULT_API, fallbackApis: string[] = FALLBACK_APIS) => {
   return call(
     'account_by_key_api.get_key_references',
     {
       keys: keys
     },
-    api
+    api,
+    fallbackApis
   )
 }
 
-export const hivePerVests = async (api: string = DEFAULT_API) => {
-  const dgpResp = await getDgp(api)
+export const hivePerVests = async (api: string = DEFAULT_API, fallbackApis: string[] = FALLBACK_APIS) => {
+  const dgpResp = await getDgp(api, fallbackApis)
   if (dgpResp.error) throw new Error(dgpResp.error)
   return parseFloat(dgpResp.result.total_vesting_fund_hive) / parseFloat(dgpResp.result.total_vesting_shares)
 }
 
-export const broadcastTx = (tx: SignedTransaction, api: string = DEFAULT_API) => {
-  return call('condenser_api.broadcast_transaction', [tx], api)
+export const broadcastTx = (tx: SignedTransaction, api: string = DEFAULT_API, fallbackApis: string[] = FALLBACK_APIS) => {
+  return call('condenser_api.broadcast_transaction', [tx], api, fallbackApis)
 }
 
-export const broadcastTxHF26 = (trx: HF26Transaction, api: string = DEFAULT_API) => {
-  return call('network_broadcast_api.broadcast_transaction', { trx, max_block_age: -1 }, api)
+export const broadcastTxHF26 = (trx: HF26Transaction, api: string = DEFAULT_API, fallbackApis: string[] = FALLBACK_APIS) => {
+  return call('network_broadcast_api.broadcast_transaction', { trx, max_block_age: -1 }, api, fallbackApis)
 }
