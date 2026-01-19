@@ -18,7 +18,7 @@ import {
   VscTxIntent
 } from '../types.js'
 import { createVote, createComment, createUnstakeHive, createUnstakeHiveByVests } from '../opbuilder.js'
-import { hivePerVests, getAccounts, getAccountsErrored } from '../rpc.js'
+import { AiohaClient, hivePerVests, getAccounts, getAccountsErrored } from '../rpc.js'
 import { RequestArguments, AiohaRpcError } from '../jsonrpc/eip1193-types.js'
 import { SimpleEventEmitter } from '../lib/event-emitter.js'
 import { HF26Operation, HF26Transaction } from '../lib/hf26-types.js'
@@ -29,14 +29,22 @@ export const DEFAULT_VSC_NET_ID = 'vsc-mainnet'
 const HF26_UNSUPPORTED_ERR = error(4200, 'HF26 serialized tx signing is not supported for this provider')
 
 export abstract class AiohaProviderBase implements AiohaOperations {
-  protected api: string
+  /**
+   * @deprecated Superseded by AiohaClient
+   */
+  protected api: string = ''
+
+  protected rpc: AiohaClient
   protected eventEmitter: SimpleEventEmitter
 
-  constructor(api: string, emitter?: SimpleEventEmitter) {
-    this.api = api
+  constructor(rpc: AiohaClient | string, emitter?: SimpleEventEmitter) {
+    this.rpc = typeof rpc === 'string' ? new AiohaClient(rpc) : rpc
     this.eventEmitter = emitter || new SimpleEventEmitter()
   }
 
+  /**
+   * @deprecated Superseded by AiohaClient
+   */
   setApi(api: string) {
     this.api = api
   }
@@ -167,7 +175,7 @@ export abstract class AiohaProviderBase implements AiohaOperations {
   async delegateStakedHive(to: string, amount: number): Promise<SignOperationResult> {
     let hpv: number
     try {
-      hpv = await hivePerVests(this.api)
+      hpv = await hivePerVests(this.rpc.api, [...this.rpc.fallbackApis])
     } catch {
       return error(-32603, 'Failed to retrieve HIVE per VESTS')
     }
@@ -226,7 +234,7 @@ export abstract class AiohaProviderBase implements AiohaOperations {
     else if (action === 'add' && weight <= 0) return error(-32003, 'weight must be greater than 0')
     else if (type === 'account' && this.getUser()! === theAuth) return error(5201, `cannot ${action} itself as account auth`)
     try {
-      const acc = await getAccounts([this.getUser()!], this.api)
+      const acc = await getAccounts([this.getUser()!], this.rpc.api, [...this.rpc.fallbackApis])
       if (getAccountsErrored(acc)) return error(-32603, `Failed to fetch current ${type} auths`)
       const currentAuths = acc.result[0][role]
       const authExists = currentAuths[`${type}_auths`].findIndex((a: [string, number]) => a[0] === theAuth)

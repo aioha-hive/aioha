@@ -13,6 +13,7 @@ import {
   SignOperationResult,
   SignOperationResultObj
 } from '../types.js'
+import type { AiohaClient } from '../rpc.js'
 import { SimpleEventEmitter } from '../lib/event-emitter.js'
 import { error, loginError } from '../lib/errors.js'
 
@@ -38,8 +39,8 @@ const NO_MEMO = 'Memo operations are unavailable in HiveAuth'
 export class HiveAuth extends AiohaProviderBase {
   private provider: Auth
 
-  constructor(api: string, emitter: SimpleEventEmitter, options: AppMetaType) {
-    super(api, emitter)
+  constructor(rpc: AiohaClient, emitter: SimpleEventEmitter, options: AppMetaType) {
+    super(rpc, emitter)
     this.provider = new Auth(options)
   }
 

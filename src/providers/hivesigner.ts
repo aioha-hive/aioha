@@ -3,6 +3,7 @@ import { encodeOps } from '../lib/hive-uri.js'
 import { Operation, Transaction } from '@hiveio/dhive'
 import { HiveSignerError, ClientConfig } from '../lib/hivesigner-types.js'
 import { AiohaProviderBase } from './provider.js'
+import type { AiohaClient } from '../rpc.js'
 import {
   KeyTypes,
   LoginOptions,
@@ -43,8 +44,8 @@ export class HiveSigner extends AiohaProviderBase {
   private provider: Client
   private username?: string
 
-  constructor(api: string, emitter: SimpleEventEmitter, options: ClientConfig) {
-    super(api, emitter)
+  constructor(rpc: AiohaClient, emitter: SimpleEventEmitter, options: ClientConfig) {
+    super(rpc, emitter)
     if (!options.callbackURL?.startsWith(window.location.origin))
       throw new Error('callback URL must be in the same domain or subdomain as the current page')
     this.provider = new Client(options)

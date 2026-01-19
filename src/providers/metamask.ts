@@ -22,7 +22,7 @@ import { getSnapsProvider } from '../lib/metamask.js'
 import { SimpleEventEmitter } from '../lib/event-emitter.js'
 import { HF26Operation, HF26SignedTransaction, HF26Transaction } from '../lib/hf26-types.js'
 import { AiohaRpcError } from '../jsonrpc/eip1193-types.js'
-import { broadcastTxHF26, callRest, getKeyRefs } from '../rpc.js'
+import { type AiohaClient, broadcastTxHF26, callRest, getKeyRefs } from '../rpc.js'
 import { oldToHF26Operation, oldToHF26Tx } from '../lib/hf26-adapter.js'
 import { constructTxHeader } from '../opbuilder.js'
 import { error, loginError } from '../lib/errors.js'
@@ -60,8 +60,8 @@ export class MetaMaskSnap extends AiohaProviderBase {
   private accountIdx?: number
   private username?: string
 
-  constructor(api: string, emitter: SimpleEventEmitter) {
-    super(api, emitter)
+  constructor(rpc: AiohaClient, emitter: SimpleEventEmitter) {
+    super(rpc, emitter)
   }
 
   /**
@@ -201,7 +201,8 @@ export class MetaMaskSnap extends AiohaProviderBase {
       })) as SnapResponsePublicKeys
       const accounts = await getKeyRefs(
         response.publicKeys.map((k) => k.publicKey),
-        this.api
+        this.rpc.api,
+        [...this.rpc.fallbackApis]
       )
       if (!accounts.error && accounts.result && Array.isArray(accounts.result.accounts)) {
         for (let i in response.publicKeys) {
@@ -351,12 +352,12 @@ export class MetaMaskSnap extends AiohaProviderBase {
 
   async signAndBroadcastTxHF26(tx: HF26Operation[], keyType: KeyTypes): Promise<SignOperationResult> {
     try {
-      const unsignedTx = (await constructTxHeader(tx, this.api)) as HF26Transaction
+      const unsignedTx = (await constructTxHeader(tx, this.rpc.api)) as HF26Transaction
       const signedTx = await this.signTxHF26(unsignedTx, keyType)
       if (!signedTx.success) return signedTx
       const { transactionDigest } = await import(/* webpackChunkName: 'tx-digest' */ '@aioha/tx-digest')
       const txId = (await transactionDigest(unsignedTx)).txId
-      const broadcasted = await broadcastTxHF26(signedTx.result, this.api)
+      const broadcasted = await broadcastTxHF26(signedTx.result, this.rpc.api, [...this.rpc.fallbackApis])
       if (broadcasted.error)
         return error(
           broadcasted.error.code ?? -32603,

@@ -16,7 +16,7 @@ import {
   SignOperationResultObj,
   DiscoverOptions
 } from '../types.js'
-import { broadcastTx, getKeyRefs } from '../rpc.js'
+import { type AiohaClient, broadcastTx, getKeyRefs } from '../rpc.js'
 import { constructTxHeader } from '../opbuilder.js'
 import { sha256 } from '../lib/sha256-browser.js'
 import { SimpleEventEmitter } from '../lib/event-emitter.js'
@@ -169,8 +169,8 @@ export class Ledger extends AiohaProviderBase {
   private provider?: LedgerApp
   sha256 = sha256
 
-  constructor(api: string, emitter: SimpleEventEmitter) {
-    super(api, emitter)
+  constructor(rpc: AiohaClient, emitter: SimpleEventEmitter) {
+    super(rpc, emitter)
   }
 
   private async getLib(): Promise<typeof LedgerApp> {
@@ -213,8 +213,8 @@ export class Ledger extends AiohaProviderBase {
       try {
         const pathSpecified = Array.isArray(options.paths) && options.paths.length > 0
         const userFound = pathSpecified
-          ? await searchAccountsByPathsForUser(this.provider!, username, options.paths!, this.api)
-          : await searchAccountsAllRolesForUser(this.provider!, username, this.api)
+          ? await searchAccountsByPathsForUser(this.provider!, username, options.paths!, this.rpc.api)
+          : await searchAccountsAllRolesForUser(this.provider!, username, this.rpc.api)
         if (!userFound) {
           await this.closeConnection()
           return loginError(
@@ -244,7 +244,7 @@ export class Ledger extends AiohaProviderBase {
           const statusCode: number = e.statusCode
           return loginError(
             errorCodes[statusCode] ? errorCodes[statusCode].code : 5903,
-            errorCodes[statusCode] ? errorCodes[statusCode].msg : e.message ?? e.toString(),
+            errorCodes[statusCode] ? errorCodes[statusCode].msg : (e.message ?? e.toString()),
             Providers.Ledger
           )
         }
@@ -285,7 +285,7 @@ export class Ledger extends AiohaProviderBase {
     try {
       for (let r in roles)
         if (!options || !Array.isArray(options.roles) || options.roles.length === 0 || options.roles.includes(r as KeyTypes)) {
-          const discoveredAccounts = await searchAccounts(roles[r], this.provider!, undefined, this.api, session)
+          const discoveredAccounts = await searchAccounts(roles[r], this.provider!, undefined, this.rpc.api, session)
           for (let a in discoveredAccounts) {
             const auth: DiscUserAuth = {
               pubkey: discoveredAccounts[a].pubkey,
@@ -359,7 +359,7 @@ export class Ledger extends AiohaProviderBase {
       const statusCode: number = e.statusCode
       return error(
         errorCodes[statusCode] ? errorCodes[statusCode].code : 5903,
-        errorCodes[statusCode] ? errorCodes[statusCode].msg : e.message ?? e.toString()
+        errorCodes[statusCode] ? errorCodes[statusCode].msg : (e.message ?? e.toString())
       )
     }
   }
@@ -369,7 +369,7 @@ export class Ledger extends AiohaProviderBase {
     if (!this.path) throw new Error('no path?')
     try {
       this.emitSignTx()
-      const signedTx = await this.provider!.signTransaction(tx, this.path)
+      const signedTx = await this.provider!.signTransaction(tx, this.path, this.rpc.chainId)
       return {
         success: true,
         result: signedTx
@@ -378,19 +378,19 @@ export class Ledger extends AiohaProviderBase {
       const statusCode: number = e.statusCode
       return error(
         errorCodes[statusCode] ? errorCodes[statusCode].code : 5903,
-        errorCodes[statusCode] ? errorCodes[statusCode].msg : e.message ?? e.toString()
+        errorCodes[statusCode] ? errorCodes[statusCode].msg : (e.message ?? e.toString())
       )
     }
   }
 
   async signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult> {
     try {
-      const unsignedTx = (await constructTxHeader(tx, this.api)) as Transaction
+      const unsignedTx = (await constructTxHeader(tx, this.rpc.api)) as Transaction
       const signedTx = await this.signTx(unsignedTx, KeyTypes.Active)
       if (!signedTx.success) return signedTx
       const app = await this.getLib()
       const txId = app.getTxId(unsignedTx)
-      const broadcasted = await broadcastTx(signedTx.result, this.api)
+      const broadcasted = await broadcastTx(signedTx.result, this.rpc.api)
       if (broadcasted.error)
         return error(
           broadcasted.error.code ?? -32603,

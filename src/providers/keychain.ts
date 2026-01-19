@@ -13,6 +13,7 @@ import {
   VscStakeType,
   SignOperationResultObj
 } from '../types.js'
+import type { AiohaClient } from '../rpc.js'
 import { KeychainMini, KeychainRequestResponse, KT } from '../lib/keychain-mini.js'
 import { SimpleEventEmitter } from '../lib/event-emitter.js'
 import { error, loginError } from '../lib/errors.js'
@@ -34,8 +35,8 @@ export class Keychain extends AiohaProviderBase {
   private provider: KeychainMini
   private username: string
 
-  constructor(emitter: SimpleEventEmitter) {
-    super('', emitter) // api url isn't used here
+  constructor(rpc: AiohaClient, emitter: SimpleEventEmitter) {
+    super(rpc, emitter) // api url isn't used here
     this.provider = new KeychainMini()
     this.username = ''
   }

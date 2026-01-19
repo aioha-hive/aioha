@@ -11,6 +11,7 @@ import {
   SignOperationResult,
   SignOperationResultObj
 } from '../types.js'
+import type { AiohaClient } from '../rpc.js'
 import { VaultBroadcastResponse, VaultError, VaultResponse } from '../lib/peakvault-types.js'
 import { SimpleEventEmitter } from '../lib/event-emitter.js'
 import { error, loginError } from '../lib/errors.js'
@@ -18,8 +19,8 @@ import { error, loginError } from '../lib/errors.js'
 export class PeakVault extends AiohaProviderBase {
   private username?: string
 
-  constructor(emitter: SimpleEventEmitter) {
-    super('', emitter)
+  constructor(rpc: AiohaClient, emitter: SimpleEventEmitter) {
+    super(rpc, emitter)
   }
 
   async login(username: string, options: LoginOptions): Promise<LoginResult> {

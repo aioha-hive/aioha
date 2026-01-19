@@ -31,10 +31,10 @@ import { SimpleEventEmitter } from './lib/event-emitter.js'
 import { AppMetaType } from './lib/hiveauth-wrapper.js'
 import { decode, resolveTransaction, ResolveResult } from './lib/hive-uri.js'
 import { createVote } from './opbuilder.js'
-import { DEFAULT_API, FALLBACK_APIS, getAccounts, call } from './rpc.js'
+import { AiohaClient, getAccounts } from './rpc.js'
 import { AiohaOperations, AiohaProviderBase, DEFAULT_VSC_NET_ID } from './providers/provider.js'
 export { constructTxHeader } from './opbuilder.js'
-export { broadcastTx, call, hivePerVests } from './rpc.js'
+export { AiohaClient, broadcastTx, call, hivePerVests } from './rpc.js'
 export { Asset, KeyTypes, Providers, VscStakeType, PersistentLoginProvs } from './types.js'
 import { AiohaRpcError, RequestArguments } from './jsonrpc/eip1193-types.js'
 import { ViewOnly } from './providers/view-only.js'
@@ -73,14 +73,11 @@ export class Aioha implements AiohaOperations {
   private eventEmitter: SimpleEventEmitter
   protected publicKey?: string
   private vscNetId = DEFAULT_VSC_NET_ID
-  private api = DEFAULT_API
-  private fallbackApis = FALLBACK_APIS
+  private rpc: AiohaClient
 
-  constructor(api?: string, fallbackApis?: string[]) {
+  constructor(api?: string, fallbackApis?: string[], chainId?: string) {
     this.providers = {}
-    if (api) {
-      this.setApi(api, fallbackApis)
-    }
+    this.rpc = new AiohaClient(api, fallbackApis, chainId)
     this.otherLogins = {}
     this.eventEmitter = new SimpleEventEmitter()
   }
@@ -134,7 +131,7 @@ export class Aioha implements AiohaOperations {
    */
   registerKeychain() {
     if (!this.isBrowser()) throw new Error(NON_BROWSER_ERR)
-    this.providers.keychain = new Keychain(this.eventEmitter)
+    this.providers.keychain = new Keychain(this.rpc, this.eventEmitter)
   }
 
   /**
@@ -143,7 +140,7 @@ export class Aioha implements AiohaOperations {
    */
   registerHiveSigner(options: HiveSignerOptions) {
     if (!this.isBrowser()) throw new Error(NON_BROWSER_ERR)
-    this.providers.hivesigner = new HiveSigner(this.api, this.eventEmitter, options)
+    this.providers.hivesigner = new HiveSigner(this.rpc, this.eventEmitter, options)
   }
 
   /**
@@ -155,7 +152,7 @@ export class Aioha implements AiohaOperations {
    */
   registerHiveAuth(options: AppMetaType) {
     if (!this.isBrowser()) throw new Error(NON_BROWSER_ERR)
-    this.providers.hiveauth = new HiveAuth(this.api, this.eventEmitter, options)
+    this.providers.hiveauth = new HiveAuth(this.rpc, this.eventEmitter, options)
   }
 
   /**
@@ -164,7 +161,7 @@ export class Aioha implements AiohaOperations {
   registerLedger() {
     // the provider defined assumes browser env although we could make it work on nodejs
     if (!this.isBrowser()) throw new Error(NON_BROWSER_ERR)
-    this.providers.ledger = new Ledger(this.api, this.eventEmitter)
+    this.providers.ledger = new Ledger(this.rpc, this.eventEmitter)
   }
 
   /**
@@ -172,12 +169,12 @@ export class Aioha implements AiohaOperations {
    */
   registerPeakVault() {
     if (!this.isBrowser()) throw new Error(NON_BROWSER_ERR)
-    this.providers.peakvault = new PeakVault(this.eventEmitter)
+    this.providers.peakvault = new PeakVault(this.rpc, this.eventEmitter)
   }
 
   registerMetaMaskSnap() {
     if (!this.isBrowser()) throw new Error(NON_BROWSER_ERR)
-    this.providers.metamasksnap = new MetaMaskSnap(this.api, this.eventEmitter)
+    this.providers.metamasksnap = new MetaMaskSnap(this.rpc, this.eventEmitter)
     return this.providers.metamasksnap.initProvider()
   }
 
@@ -310,9 +307,8 @@ export class Aioha implements AiohaOperations {
    */
   setApi(api: string, fallbackApis?: string[]): void {
     if (!api.startsWith('http://') && !api.startsWith('https://')) throw new Error('api must start from http:// or https://')
-    this.api = api
-    if (fallbackApis) this.fallbackApis = fallbackApis
-    for (const p in this.providers) this.providers[p as Providers]?.setApi(api)
+    this.rpc.api = api
+    if (fallbackApis) this.rpc.fallbackApis = fallbackApis
   }
 
   /**
@@ -320,7 +316,23 @@ export class Aioha implements AiohaOperations {
    * @returns Array of API endpoints(s), where the first item is the main endpoint and the remaining are fallbacks.
    */
   getApi(): string[] {
-    return [this.api, ...this.fallbackApis]
+    return [this.rpc.api, ...this.rpc.fallbackApis]
+  }
+
+  /**
+   * Set chain ID for transactions
+   * @param chainId New chain ID
+   */
+  setChainId(chainId: string): void {
+    this.rpc.chainId = chainId
+  }
+
+  /**
+   * Get current chain ID
+   * @returns Chain ID
+   */
+  getChainId(): string {
+    return this.rpc.chainId
   }
 
   private setUserAndProvider(username: string, provider: Providers, newPubKey?: string) {
@@ -404,7 +416,7 @@ export class Aioha implements AiohaOperations {
     }
 
     // 4. Hive API call
-    const apiRequest = await call(args.method, args.params, this.api, this.fallbackApis)
+    const apiRequest = await this.rpc.call(args.method, args.params)
     if (apiRequest.error) throw new Error(apiRequest.error)
     else return apiRequest.result
   }
@@ -874,7 +886,7 @@ export class Aioha implements AiohaOperations {
    */
   async claimRewards(): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    const accResp = await getAccounts([this.getCurrentUser()!], this.api)
+    const accResp = await getAccounts([this.getCurrentUser()!], this.rpc.api, [...this.rpc.fallbackApis])
     if (accResp.error || !Array.isArray(accResp.result) || accResp.result.length === 0)
       return error(-32603, 'Failed to fetch pending account rewards') // should we return error from hived instead?
     else if (
