@@ -309,6 +309,7 @@ export class Aioha implements AiohaOperations {
     if (!api.startsWith('http://') && !api.startsWith('https://')) throw new Error('api must start from http:// or https://')
     this.rpc.api = api
     if (fallbackApis) this.rpc.fallbackApis = fallbackApis
+    for (let p in this.providers) this.providers[p as Providers]?.setApi(api, fallbackApis)
   }
 
   /**
@@ -325,6 +326,7 @@ export class Aioha implements AiohaOperations {
    */
   setChainId(chainId: string): void {
     this.rpc.chainId = chainId
+    for (let p in this.providers) this.providers[p as Providers]?.setChainId(chainId)
   }
 
   /**

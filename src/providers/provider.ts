@@ -43,11 +43,15 @@ export abstract class AiohaProviderBase implements AiohaOperations {
   }
 
   /**
-   * @deprecated Superseded by AiohaClient
+   * This is a hook that is called every time aioha.setApi() is called.
    */
-  setApi(api: string) {
-    this.api = api
-  }
+  setApi(api: string, fallbackApis?: string[]) {}
+
+  /**
+   * This is a hook that is called every time aioha.setChainId() is called.
+   * @param chainId New chain ID
+   */
+  setChainId(chainId: string) {}
 
   setEventEmitter(emitter: SimpleEventEmitter) {
     this.eventEmitter = emitter

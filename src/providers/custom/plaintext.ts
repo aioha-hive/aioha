@@ -88,9 +88,9 @@ export class PlaintextKeyProvider extends AiohaProviderBase {
     return this.loadAuth(username)
   }
 
-  setApi(api: string): void {
-    super.setApi(api)
-    this.provider.address = api
+  setApi(api: string, fallbackApis?: string[]): void {
+    if (!Array.isArray(fallbackApis)) fallbackApis = []
+    this.provider.address = [api, ...fallbackApis]
   }
 
   async encryptMemo(message: string, keyType: KeyTypes, recipient: string): Promise<OperationResult> {
