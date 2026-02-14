@@ -1,6 +1,6 @@
 import { Events } from '../types.js'
 
-export class SimpleEventEmitter {
+export class SimpleEventEmitter<E extends string = Events> {
   private events: {
     [eventName: string]: Function[]
   } = {}
@@ -11,7 +11,7 @@ export class SimpleEventEmitter {
 
   constructor() {}
 
-  on(eventName: Events, listener: Function) {
+  on(eventName: E, listener: Function) {
     if (!this.events[eventName]) {
       this.events[eventName] = [listener]
     } else {
@@ -19,7 +19,7 @@ export class SimpleEventEmitter {
     }
   }
 
-  once(eventName: Events, listener: Function) {
+  once(eventName: E, listener: Function) {
     if (!this.eventOnce[eventName]) {
       this.eventOnce[eventName] = [listener]
     } else {
@@ -27,7 +27,7 @@ export class SimpleEventEmitter {
     }
   }
 
-  off(eventName: Events, listener?: Function) {
+  off(eventName: E, listener?: Function) {
     if (!listener) {
       delete this.events[eventName]
     } else {
@@ -40,7 +40,7 @@ export class SimpleEventEmitter {
     }
   }
 
-  emit(eventName: Events, ...args: any[]) {
+  emit(eventName: E, ...args: any[]) {
     for (let l in this.eventOnce[eventName]) {
       this.eventOnce[eventName][l](...args)
     }
