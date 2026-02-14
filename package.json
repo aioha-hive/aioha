@@ -44,9 +44,9 @@
   },
   "dependencies": {
     "@aioha/ledger-app-hive": "^0.0.2",
-    "@aioha/tx-digest": "^2.0.1",
+    "@aioha/tx-digest": "^2.0.2",
     "@hiveio/dhive": "^1.3.2",
-    "@hiveio/wax": "1.28.4-rc0",
+    "@hiveio/wax": "^2.0.1",
     "@ledgerhq/hw-transport-webusb": "^6.29.7",
     "@metamask/providers": "^22.1.1",
     "js-md5": "^0.8.3"

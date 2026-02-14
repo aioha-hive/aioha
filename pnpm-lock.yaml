@@ -12,14 +12,14 @@ importers:
         specifier: ^0.0.2
         version: 0.0.2
       '@aioha/tx-digest':
-        specifier: ^2.0.1
-        version: 2.0.1
+        specifier: ^2.0.2
+        version: 2.0.2
       '@hiveio/dhive':
         specifier: ^1.3.2
         version: 1.3.2
       '@hiveio/wax':
-        specifier: 1.28.4-rc0
-        version: 1.28.4-rc0
+        specifier: ^2.0.1
+        version: 2.0.1
       '@ledgerhq/hw-transport-webusb':
         specifier: ^6.29.7
         version: 6.29.7
@@ -55,8 +55,8 @@ packages:
     resolution: {integrity: sha512-+ZUe9Iyv00WA5TDfi7TsCHKl5b22prR06JAG9u/9m9jePbGB83dtUMS65e/q3oXiMX78M4/YaDI8DYdIJmnk1A==}
     engines: {node: '>=18.0.0'}
 
-  '@aioha/tx-digest@2.0.1':
-    resolution: {integrity: sha512-fl2xm58YB/ZvzN9Pb6hJfhXlknpoq3EYXHD8QJ5Xn6O6w8arkxOUWuYEGD82lZnFFsZsMfQvniExrrvnpvgI1A==}
+  '@aioha/tx-digest@2.0.2':
+    resolution: {integrity: sha512-sY4fLevN7MjggVO4lG+H8iibw6k22ChXmE4mYVU5GitL3mLvoj+VU/zA3KQVxcsszziF1Y/5+TYnnd99vGtx5g==}
 
   '@discoveryjs/json-ext@0.5.7':
     resolution: {integrity: sha512-dBVuXR082gk3jsFp7Rd/JI4kytwGHecnCoTtXFb7DB6CNHp4rg5k1bhg0nWdLGLnOV71lmDzGQaLMy8iPLY0pw==}
@@ -85,8 +85,8 @@ packages:
   '@hiveio/dhive@1.3.2':
     resolution: {integrity: sha512-kJjp3TbpIlODxjJX4BWwvOf+cMxT8CFH/mNQ40RRjR2LP0a4baSWae1G+U/q/NtgjsIQz6Ja40tvnw6KF12I+g==}
 
-  '@hiveio/wax@1.28.4-rc0':
-    resolution: {integrity: sha512-CjYfSa4abzkASNgZtA2D50+6T7rmsw/hZIUGDOec+Haz1yuk5gbCgBi91nHUtP2mXlzXuv6VGESlYpKsd+V+kw==}
+  '@hiveio/wax@2.0.1':
+    resolution: {integrity: sha512-1T+VLbj98ykHynKAJkBDAK72PVPrahFL1gKhn2FpnrEFmjINf7Gkog+6qHM9TedYjj8qiCVjuxzv7UhJ+Xf4mA==}
     engines: {node: ^20.11 || >= 21.2}
 
   '@jridgewell/gen-mapping@0.3.8':
@@ -1028,7 +1028,7 @@ snapshots:
       inherits: 2.0.4
       varint: 6.0.0
 
-  '@aioha/tx-digest@2.0.1':
+  '@aioha/tx-digest@2.0.2':
     dependencies:
       bs58: 6.0.0
 
@@ -1076,7 +1076,7 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
-  '@hiveio/wax@1.28.4-rc0':
+  '@hiveio/wax@2.0.1':
     dependencies:
       events: 3.3.0
 

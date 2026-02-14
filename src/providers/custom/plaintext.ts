@@ -18,6 +18,7 @@ import {
 /**
  * Plaintext private key provider for backend usage only.
  * DO NOT USE IN BROWSER CONTEXTS.
+ * @deprecated Use beekeeper provider instead
  */
 export class PlaintextKeyProvider extends AiohaProviderBase {
   private provider: Client
