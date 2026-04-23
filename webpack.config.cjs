@@ -1,5 +1,5 @@
 const path = require('path')
-const { DefinePlugin, ProvidePlugin } = require('webpack')
+const { DefinePlugin } = require('webpack')
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
 
 module.exports = {
@@ -24,8 +24,7 @@ module.exports = {
   },
   resolve: {
     fallback: {
-      url: false,
-      buffer: require.resolve('buffer/')
+      url: false
     },
     extensions: ['.js', '.ts'],
     extensionAlias: {
@@ -37,9 +36,6 @@ module.exports = {
   plugins: [
     new DefinePlugin({
       'process.env.NODE_DEBUG': false
-    }),
-    new ProvidePlugin({
-      Buffer: ['buffer', 'Buffer']
     }),
     new BundleAnalyzerPlugin({
       generateStatsFile: true,

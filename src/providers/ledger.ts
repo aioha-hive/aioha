@@ -187,7 +187,7 @@ export class Ledger extends AiohaProviderBase {
   private async checkConnection(): Promise<boolean> {
     try {
       if (!this.provider) {
-        const TransportWebUSB = (await import(/* webpackChunkName: 'ledger' */ '@ledgerhq/hw-transport-webusb')).default
+        const TransportWebUSB = (await import(/* webpackChunkName: 'ledger' */ '@aioha/ledger-app-hive/lib/transport/web-usb.js')).default
         const app = await this.getLib()
         const t = await TransportWebUSB.create()
         this.provider = new app(t)

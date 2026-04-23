@@ -1104,6 +1104,7 @@ export class Aioha implements AiohaOperations {
   /**
    * Set the Magi network ID for Magi related functions.
    * @param net_id Magi network ID to use.
+   * @deprecated Use [`@aioha/magi`](https://aioha.dev/docs/magi/usage) instead
    */
   vscSetNetId(net_id: string) {
     this.vscNetId = net_id
@@ -1118,6 +1119,7 @@ export class Aioha implements AiohaOperations {
    * @param intents List of intents to be made available to the contract (i.e. token allowances)
    * @param keyType Key type to authenticate with. Valid values are `posting` and `active`.
    * @returns Transaction result
+   * @deprecated Use [`@aioha/magi`](https://aioha.dev/docs/magi/usage) instead
    */
   async vscCallContract(
     contractId: string,
@@ -1139,6 +1141,7 @@ export class Aioha implements AiohaOperations {
    * @param currency HIVE or HBD
    * @param memo Transfer memo
    * @returns Transaction result
+   * @deprecated Use [`@aioha/magi`](https://aioha.dev/docs/magi/usage) instead
    */
   async vscTransfer(to: string, amount: number, currency: Asset, memo?: string): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
@@ -1152,6 +1155,7 @@ export class Aioha implements AiohaOperations {
    * @param currency HIVE or HBD
    * @param memo Withdraw memo
    * @returns Transaction result
+   * @deprecated Use [`@aioha/magi`](https://aioha.dev/docs/magi/usage) instead
    */
   async vscWithdraw(to: string, amount: number, currency: Asset, memo?: string): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
@@ -1165,6 +1169,7 @@ export class Aioha implements AiohaOperations {
    * @param to Destination address (default: logged in user)
    * @param memo Stake memo
    * @returns Transaction result
+   * @deprecated Use [`@aioha/magi`](https://aioha.dev/docs/magi/usage) instead
    */
   async vscStake(stakeType: VscStakeType, amount: number, to?: string, memo?: string): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
@@ -1178,6 +1183,7 @@ export class Aioha implements AiohaOperations {
    * @param to Destination address (default: logged in user)
    * @param memo Unstake memo
    * @returns Transaction result
+   * @deprecated Use [`@aioha/magi`](https://aioha.dev/docs/magi/usage) instead
    */
   async vscUnstake(stakeType: VscStakeType, amount: number, to?: string, memo?: string): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
