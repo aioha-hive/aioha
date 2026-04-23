@@ -1,4 +1,4 @@
-import { md5 } from 'js-md5'
+import { md5 } from '@noble/hashes/legacy.js'
 
 const HEAD_SIZE_DWORD = 2
 const SALT_SIZE_DWORD = 2
@@ -76,17 +76,15 @@ async function dangerouslyDeriveParameters(
 
 function dangerousEVPKDF(passwordUint8Array: Uint8Array, saltUint8Array: Uint8Array, keySizeDWORD: number, iterations: number) {
   let derivedKey = new Uint8Array()
-  let b1: ArrayBuffer
   let block = new Uint8Array()
 
   while (derivedKey.byteLength < keySizeDWORD * 4) {
-    b1 = md5.arrayBuffer(concatUint8Arrays(block, passwordUint8Array, saltUint8Array))
+    block = md5(concatUint8Arrays(block, passwordUint8Array, saltUint8Array))
 
     for (let i = 1; i < iterations; i++) {
-      b1 = md5.arrayBuffer(block)
+      block = md5(block)
     }
 
-    block = new Uint8Array(b1)
     derivedKey = concatUint8Arrays(derivedKey, block)
   }
 

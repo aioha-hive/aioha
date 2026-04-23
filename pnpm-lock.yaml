@@ -23,16 +23,13 @@ importers:
       '@metamask/providers':
         specifier: ^22.1.1
         version: 22.1.1(webextension-polyfill@0.12.0)
-      js-md5:
-        specifier: ^0.8.3
-        version: 0.8.3
+      '@noble/hashes':
+        specifier: ^2.0.1
+        version: 2.0.1
     devDependencies:
       '@hiveio/beekeeper':
         specifier: 1.28.7-rc0
         version: 1.28.7-rc0
-      '@noble/hashes':
-        specifier: ^2.0.1
-        version: 2.0.1
       ts-loader:
         specifier: ^9.5.2
         version: 9.5.2(typescript@5.8.3)(webpack@5.99.6)
@@ -815,9 +812,6 @@ packages:
   jest-worker@27.5.1:
     resolution: {integrity: sha512-7vuh85V5cdDofPyxn58nrPjBktZo0u9x1g8WtjQol+jZDaE+fhN+cIvTj11GndBnMnyfrUOG1sZQxCdjKh+DKg==}
     engines: {node: '>= 10.13.0'}
-
-  js-md5@0.8.3:
-    resolution: {integrity: sha512-qR0HB5uP6wCuRMrWPTrkMaev7MJZwJuuw4fnwAzRgP4J4/F8RwtodOKpGp4XpqsLBFzzgqIO42efFAyz2Et6KQ==}
 
   jsbi@3.2.5:
     resolution: {integrity: sha512-aBE4n43IPvjaddScbvWRA2YlTzKEynHzu7MqOyTipdHucf/VxS63ViCjxYRg86M8Rxwbt/GfzHl1kKERkt45fQ==}
@@ -2181,8 +2175,6 @@ snapshots:
       '@types/node': 22.14.1
       merge-stream: 2.0.0
       supports-color: 8.1.1
-
-  js-md5@0.8.3: {}
 
   jsbi@3.2.5: {}
 
