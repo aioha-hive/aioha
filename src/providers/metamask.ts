@@ -50,7 +50,7 @@ interface SnapResponseSign {
 }
 
 const SNAP_ORIGIN = `npm:@hiveio/metamask-snap`
-const SNAP_VERSION = '1.6.0'
+const SNAP_VERSION = '1.7.0'
 
 const SNAP_NOT_CONNECTED_ERR = error(4900, 'Snap is not connected')
 
@@ -310,7 +310,21 @@ export class MetaMaskSnap extends AiohaProviderBase {
   }
 
   async signMessage(message: string, keyType: KeyTypes): Promise<OperationResult> {
-    return error(4200, 'message signing is unsupported in the MetaMask snap')
+    if (!(await this.initSnap())) return SNAP_NOT_CONNECTED_ERR
+    this.eventEmitter.emit('sign_msg_request')
+    try {
+      const bytes = Array.from(new TextEncoder().encode(message))
+      const response = (await this.invokeSnap('hive_encrypt', {
+        buffer: bytes,
+        firstKey: { role: keyType, accountIndex: this.accountIdx }
+      })) as SnapResponseMemo
+      return {
+        success: true,
+        result: response.buffer
+      }
+    } catch (e: any) {
+      return error(e.code, e.message)
+    }
   }
 
   async signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResultObj> {
