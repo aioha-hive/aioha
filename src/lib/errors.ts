@@ -1,4 +1,4 @@
-import { LoginResultError, OperationError, Providers } from '../types.js'
+import { LoginProvider, LoginResultError, OperationError } from '../types.js'
 
 export const error = (code: number, message: string): OperationError => {
   return {
@@ -8,7 +8,7 @@ export const error = (code: number, message: string): OperationError => {
   }
 }
 
-export const loginError = (code: number, message: string, provider?: Providers): LoginResultError => {
+export const loginError = (code: number, message: string, provider?: LoginProvider): LoginResultError => {
   return {
     provider,
     success: false,

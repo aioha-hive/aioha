@@ -11,6 +11,7 @@ import {
   KeyTypes,
   LoginOptions,
   LoginResult,
+  LoginProvider,
   OperationResult,
   SignOperationResult,
   SignOperationResultObj,
@@ -35,7 +36,7 @@ import { AiohaClient, getAccounts } from './rpc.js'
 import { AiohaOperations, AiohaProviderBase, DEFAULT_VSC_NET_ID } from './providers/provider.js'
 export { constructTxHeader } from './opbuilder.js'
 export { AiohaClient, broadcastTx, call, hivePerVests } from './rpc.js'
-export { Asset, KeyTypes, Providers, VscStakeType, PersistentLoginProvs } from './types.js'
+export { Asset, KeyTypes, Providers, VscStakeType, PersistentLoginProvs, LoginProvider } from './types.js'
 import { AiohaRpcError, RequestArguments } from './jsonrpc/eip1193-types.js'
 import { ViewOnly } from './providers/view-only.js'
 import { MetaMaskSnap } from './providers/metamask.js'
@@ -58,17 +59,12 @@ const NON_BROWSER_ERR = 'Provider only available in browser env'
  * Main Aioha class.
  */
 export class Aioha implements AiohaOperations {
-  private providers: {
-    keychain?: Keychain
-    hivesigner?: HiveSigner
-    hiveauth?: HiveAuth
-    ledger?: Ledger
-    peakvault?: PeakVault
-    metamasksnap?: MetaMaskSnap
-    viewonly?: ViewOnly
-    custom?: AiohaProviderBase
-  }
-  private currentProvider?: Providers
+  private static readonly BUILTIN_NAMES: ReadonlySet<string> = new Set(
+    Object.values(Providers).filter((v) => v !== Providers.Custom)
+  )
+
+  private providers: Record<string, AiohaProviderBase>
+  private currentProvider?: LoginProvider
   private otherLogins: PersistentLogins
   private eventEmitter: SimpleEventEmitter
   protected publicKey?: string
@@ -80,6 +76,14 @@ export class Aioha implements AiohaOperations {
     this.rpc = new AiohaClient(api, fallbackApis, chainId)
     this.otherLogins = {}
     this.eventEmitter = new SimpleEventEmitter()
+  }
+
+  private isBuiltinProvider(p: LoginProvider): boolean {
+    return Aioha.BUILTIN_NAMES.has(p)
+  }
+
+  private isCustomProvider(p: LoginProvider): boolean {
+    return !this.isBuiltinProvider(p)
   }
 
   private isBrowser(): boolean {
@@ -174,8 +178,9 @@ export class Aioha implements AiohaOperations {
 
   registerMetaMaskSnap() {
     if (!this.isBrowser()) throw new Error(NON_BROWSER_ERR)
-    this.providers.metamasksnap = new MetaMaskSnap(this.rpc, this.eventEmitter)
-    return this.providers.metamasksnap.initProvider()
+    const snap = new MetaMaskSnap(this.rpc, this.eventEmitter)
+    this.providers.metamasksnap = snap
+    return snap.initProvider()
   }
 
   /**
@@ -187,11 +192,39 @@ export class Aioha implements AiohaOperations {
 
   /**
    * Register a custom provider for use in Aioha.
-   * @param {AiohaProviderBase} providerImpl An instance of the provider class that implements [AiohaProviderBase](https://github.com/aioha-hive/aioha/blob/main/src/providers/provider.ts).
+   *
+   * Two forms are supported:
+   * - `registerCustomProvider(impl)` — legacy single-custom form. Registers the provider under the name `Providers.Custom` (`'custom'`).
+   * - `registerCustomProvider(name, impl)` — named form. Registers the provider under `name`. Multiple custom providers can be registered concurrently, each under a unique name. Use the same `name` when calling `login(name, ...)`.
+   *
+   * Validation for the named form:
+   * - `name` must be a non-empty string.
+   * - `name` must not collide with a built-in provider name (e.g. `'keychain'`). The literal `'custom'` is allowed (it's the legacy slot).
+   * - The name must not already be registered. Call `deregisterProvider(name)` first to replace.
+   *
+   * Custom providers should set the `provider` field returned by `getLoginInfo()` to the registered name so `switchUser` round-trips correctly.
+   *
+   * @param {string|AiohaProviderBase} nameOrImpl Either the registered name (named form), or the provider implementation (legacy single-custom form).
+   * @param {AiohaProviderBase} [providerImpl] The provider implementation when using the named form.
    */
-  registerCustomProvider(providerImpl: AiohaProviderBase) {
-    this.providers.custom = providerImpl
-    this.providers.custom.setEventEmitter(this.eventEmitter)
+  registerCustomProvider(providerImpl: AiohaProviderBase): void
+  registerCustomProvider(name: string, providerImpl: AiohaProviderBase): void
+  registerCustomProvider(nameOrImpl: string | AiohaProviderBase, providerImpl?: AiohaProviderBase): void {
+    let name: string
+    let impl: AiohaProviderBase
+    if (typeof nameOrImpl === 'string') {
+      if (!providerImpl) throw new Error('providerImpl is required when registering a named custom provider')
+      name = nameOrImpl
+      impl = providerImpl
+      if (name.length === 0) throw new Error('custom provider name must be a non-empty string')
+      if (this.isBuiltinProvider(name)) throw new Error(`'${name}' is reserved for a built-in provider`)
+      if (this.providers[name]) throw new Error(`custom provider '${name}' is already registered`)
+    } else {
+      name = Providers.Custom
+      impl = nameOrImpl
+    }
+    this.providers[name] = impl
+    impl.setEventEmitter(this.eventEmitter)
   }
 
   /**
@@ -199,7 +232,7 @@ export class Aioha implements AiohaOperations {
    * @param provider Provider to deregister
    * @returns Boolean of whether the provider has been successfully deregistered
    */
-  deregisterProvider(provider: Providers) {
+  deregisterProvider(provider: LoginProvider) {
     if (!this.providers[provider] || this.isLoggedIn()) return false
     delete this.providers[provider]
     return true
@@ -207,36 +240,36 @@ export class Aioha implements AiohaOperations {
 
   /**
    * Checks if a provider is registered
-   * @param provider A Providers enum value
+   * @param provider A Providers enum value or registered custom provider name
    * @returns boolean of whether the specified provider is registered
    */
-  isProviderRegistered(provider: Providers): boolean {
+  isProviderRegistered(provider: LoginProvider): boolean {
     return !!this.providers[provider]
   }
 
   /**
    * Checks if a provider is registered and ready to use (i.e. Keychain provider is registered and browser extension installed by user)
-   * @param provider A Providers enum value
+   * @param provider A Providers enum value or registered custom provider name
    * @returns boolean of whether the specified provider is ready to use by the user
    */
-  isProviderEnabled(provider: Providers): boolean {
+  isProviderEnabled(provider: LoginProvider): boolean {
     switch (provider) {
       case Providers.Keychain:
         return !!this.providers.keychain && Keychain.isInstalled()
       case Providers.PeakVault:
         return !!this.providers.peakvault && PeakVault.isInstalled()
       case Providers.MetaMaskSnap:
-        return !!this.providers.metamasksnap && this.providers.metamasksnap.isInstalled()
+        return !!this.providers.metamasksnap && (this.providers.metamasksnap as MetaMaskSnap).isInstalled()
       default:
         return !!this.providers[provider]
     }
   }
 
   /**
-   * Get list of registered providers
+   * Get list of registered providers, including built-in and custom names.
    * @returns string[]
    */
-  getProviders() {
+  getProviders(): LoginProvider[] {
     return Object.keys(this.providers)
   }
 
@@ -309,7 +342,7 @@ export class Aioha implements AiohaOperations {
     if (!api.startsWith('http://') && !api.startsWith('https://')) throw new Error('api must start from http:// or https://')
     this.rpc.api = api
     if (fallbackApis) this.rpc.fallbackApis = fallbackApis
-    for (let p in this.providers) this.providers[p as Providers]?.setApi(api, fallbackApis)
+    for (let p in this.providers) this.providers[p]?.setApi(api, fallbackApis)
   }
 
   /**
@@ -326,7 +359,7 @@ export class Aioha implements AiohaOperations {
    */
   setChainId(chainId: string): void {
     this.rpc.chainId = chainId
-    for (let p in this.providers) this.providers[p as Providers]?.setChainId(chainId)
+    for (let p in this.providers) this.providers[p]?.setChainId(chainId)
   }
 
   /**
@@ -337,7 +370,7 @@ export class Aioha implements AiohaOperations {
     return this.rpc.chainId
   }
 
-  private setUserAndProvider(username: string, provider: Providers, newPubKey?: string) {
+  private setUserAndProvider(username: string, provider: LoginProvider, newPubKey?: string) {
     const previouslyConnected = this.isLoggedIn()
     this.currentProvider = provider
     if (this.isBrowser()) {
@@ -368,7 +401,7 @@ export class Aioha implements AiohaOperations {
     return popped
   }
 
-  private loginCheck(provider: Providers, username: string, options: LoginOptions | LoginOptionsNI): LoginResult {
+  private loginCheck(provider: LoginProvider, username: string, options: LoginOptions | LoginOptionsNI): LoginResult {
     if (this.getCurrentUser() === username || this.otherLogins[username]) return loginError(4901, 'Already logged in')
     if (!this.providers[provider]) return loginError(4201, provider + ' provider is not registered')
     if (!username && provider !== Providers.HiveSigner) return loginError(5002, 'username is required')
@@ -378,11 +411,11 @@ export class Aioha implements AiohaOperations {
       provider !== Providers.HiveSigner &&
       provider !== Providers.Ledger &&
       provider !== Providers.ViewOnly &&
-      provider !== Providers.Custom
+      !this.isCustomProvider(provider)
     )
       return loginError(5003, 'keyType options are required', provider)
     return {
-      provider: Providers.Custom,
+      provider,
       success: true,
       result: '',
       username
@@ -430,7 +463,7 @@ export class Aioha implements AiohaOperations {
    * @returns Object mapping available account username -> details. The details type may be dependent on the selected provider.
    */
   async discoverAccounts(
-    provider: Providers,
+    provider: LoginProvider,
     stream?: AccountDiscStream,
     options?: DiscoverOptions
   ): Promise<OperationResultObj> {
@@ -482,7 +515,7 @@ export class Aioha implements AiohaOperations {
    * @param {LoginOptions} options Login options including message to sign and provider specific options.
    * @returns The login result.
    */
-  async login(provider: Providers, username: string, options: LoginOptions): Promise<LoginResult> {
+  async login(provider: LoginProvider, username: string, options: LoginOptions): Promise<LoginResult> {
     const check = this.loginCheck(provider, username, options)
     if (!check.success) return check
     let prevLogin: PersistentLogin | undefined, prevUser: string | undefined
@@ -505,7 +538,7 @@ export class Aioha implements AiohaOperations {
    * @param {LoginOptions} options Login options including memo to decrypt.
    * @returns The login result.
    */
-  async loginAndDecryptMemo(provider: Providers, username: string, options: LoginOptions): Promise<LoginResult> {
+  async loginAndDecryptMemo(provider: LoginProvider, username: string, options: LoginOptions): Promise<LoginResult> {
     const check = this.loginCheck(provider, username, options)
     if (!check.success) return check
     if (!options || typeof options.msg !== 'string' || !options.msg.startsWith('#'))
@@ -530,7 +563,7 @@ export class Aioha implements AiohaOperations {
    * @param options Non-interactive login options
    * @returns The login result with result being an empty-string.
    */
-  loginNonInteractive(provider: Providers, username: string, options: LoginOptionsNI): LoginResult {
+  loginNonInteractive(provider: LoginProvider, username: string, options: LoginOptionsNI): LoginResult {
     if (this.isLoggedIn()) throw new Error('already logged in')
     const check = this.loginCheck(provider, username, options)
     if (!check.success) return check
@@ -599,7 +632,7 @@ export class Aioha implements AiohaOperations {
         }
       } catch {}
       const user = localStorage.getItem('aiohaUsername')
-      const provider = localStorage.getItem('aiohaProvider') as Providers | null
+      const provider = localStorage.getItem('aiohaProvider') as LoginProvider | null
       const publicKey = localStorage.getItem('aiohaPubKey')
       if (!provider || !user || !this.providers[provider] || !this.providers[provider]!.loadAuth(user)) return false
       if (publicKey) this.setPublicKey(publicKey)

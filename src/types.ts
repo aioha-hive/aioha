@@ -13,6 +13,14 @@ export enum Providers {
   Custom = 'custom'
 }
 
+/**
+ * Provider identifier accepted by login/registration APIs. Accepts any built-in
+ * `Providers` enum value, or any string used as the name of a registered custom provider.
+ * The `(string & {})` form preserves enum-value autocomplete in TypeScript while still
+ * allowing arbitrary strings.
+ */
+export type LoginProvider = Providers | (string & {})
+
 export enum KeyTypes {
   Posting = 'posting',
   Active = 'active',
@@ -55,7 +63,7 @@ interface BaseResult {
 
 export interface LoginResultSuccess extends BaseResult {
   success: true
-  provider: Providers
+  provider: LoginProvider
   result: string
   username: string
   publicKey?: string
@@ -63,7 +71,7 @@ export interface LoginResultSuccess extends BaseResult {
 
 export interface LoginResultError extends BaseResult {
   success: false
-  provider?: Providers
+  provider?: LoginProvider
   error: string
   errorCode: number
 }
@@ -138,7 +146,7 @@ export type Events =
   | 'sign_tx_request'
 
 export interface PersistentLoginBase {
-  provider: Providers
+  provider: LoginProvider
   pubKey?: string
   exp?: number
 }
@@ -173,7 +181,7 @@ export type PersistentLogin =
   | PersistentLoginHiveSigner
   | PersistentLoginMetamaskSnap
 export type PersistentLogins = { [username: string]: PersistentLogin }
-export type PersistentLoginProvs = { [username: string]: Providers }
+export type PersistentLoginProvs = { [username: string]: LoginProvider }
 
 export type VscFer = 'transfer' | 'withdraw' | 'consensus_stake' | 'consensus_unstake' | 'stake_hbd' | 'unstake_hbd'
 export enum VscStakeType {
