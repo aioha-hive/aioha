@@ -12,8 +12,8 @@ importers:
         specifier: ^0.0.3
         version: 0.0.3
       '@aioha/tx-digest':
-        specifier: ^2.0.2
-        version: 2.0.2
+        specifier: ^2.1.1
+        version: 2.1.1
       '@hiveio/dhive':
         specifier: ^1.3.2
         version: 1.3.2
@@ -55,8 +55,8 @@ packages:
     resolution: {integrity: sha512-4OohtL0SCM8gDdYBOyEYEBSz1v0Ke3EKTBOKRDLmdJFN9X3bKohSlFIwGWjie7wIa4DVrmMaL5lIV1AvMQVYSA==}
     engines: {node: '>=18.0.0'}
 
-  '@aioha/tx-digest@2.0.2':
-    resolution: {integrity: sha512-sY4fLevN7MjggVO4lG+H8iibw6k22ChXmE4mYVU5GitL3mLvoj+VU/zA3KQVxcsszziF1Y/5+TYnnd99vGtx5g==}
+  '@aioha/tx-digest@2.1.1':
+    resolution: {integrity: sha512-MH2cg6tSjaxOBSCetNbeeGT3LN8YDei5tbG7KmaMLNfr+bSFLWVXz77+Nvwej3I3QjSuAaEHt8ZJxH7qEA7Cpg==}
 
   '@discoveryjs/json-ext@0.5.7':
     resolution: {integrity: sha512-dBVuXR082gk3jsFp7Rd/JI4kytwGHecnCoTtXFb7DB6CNHp4rg5k1bhg0nWdLGLnOV71lmDzGQaLMy8iPLY0pw==}
@@ -475,9 +475,6 @@ packages:
   base-x@4.0.1:
     resolution: {integrity: sha512-uAZ8x6r6S3aUM9rbHGVOIsR15U/ZSc82b3ymnCPsT45Gk1DDvhDPdIgB5MrhirZWt+5K0EEPQH985kNqZgNPFw==}
 
-  base-x@5.0.1:
-    resolution: {integrity: sha512-M7uio8Zt++eg3jPj+rHMfCC+IuygQHHCOU+IYsVtik6FWjuYpVt/+MRKcgsAMHh8mMFAwnB+Bs+mTrFiXjMzKg==}
-
   bigi@1.4.2:
     resolution: {integrity: sha512-ddkU+dFIuEIW8lE7ZwdIAf2UPoM90eaprg5m3YXAVVTmKlqV/9BX4A2M8BOK2yOq6/VgZFVhK6QAxJebhlbhzw==}
 
@@ -513,9 +510,6 @@ packages:
 
   bs58@5.0.0:
     resolution: {integrity: sha512-r+ihvQJvahgYT50JD05dyJNKlmmSlMoOGwn1lCcEzanPglg7TxYjioQUYehQ9mAR/+hOSd2jRc/Z2y5UxBymvQ==}
-
-  bs58@6.0.0:
-    resolution: {integrity: sha512-PD0wEnEYg6ijszw/u8s+iI3H17cTymlrwkKhDhPZq+Sokl3AU4htyBFTjAeNAlCCmg0f53g6ih3jATyCKftTfw==}
 
   buffer-from@1.1.2:
     resolution: {integrity: sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==}
@@ -1403,9 +1397,7 @@ snapshots:
       bs58: 5.0.0
       varint: 6.0.0
 
-  '@aioha/tx-digest@2.0.2':
-    dependencies:
-      bs58: 6.0.0
+  '@aioha/tx-digest@2.1.1': {}
 
   '@discoveryjs/json-ext@0.5.7': {}
 
@@ -1863,8 +1855,6 @@ snapshots:
 
   base-x@4.0.1: {}
 
-  base-x@5.0.1: {}
-
   bigi@1.4.2: {}
 
   bindings@1.5.0:
@@ -1908,10 +1898,6 @@ snapshots:
   bs58@5.0.0:
     dependencies:
       base-x: 4.0.1
-
-  bs58@6.0.0:
-    dependencies:
-      base-x: 5.0.1
 
   buffer-from@1.1.2: {}
 

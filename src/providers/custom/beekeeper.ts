@@ -22,7 +22,7 @@ import {
   SignOperationResultObjHF26
 } from '../../types.js'
 
-export type Sha256Function = (message: Uint8Array<ArrayBuffer>) => Promise<Uint8Array> | Uint8Array
+export type Sha256Function = (message: Uint8Array) => Promise<Uint8Array> | Uint8Array
 
 export interface BeekeeperWallet {
   signDigest(publicKey: string, sigDigest: string): string
@@ -35,7 +35,7 @@ export interface PersistentLoginBeekeeper extends PersistentLoginBase {
   keys: Partial<Record<KeyTypes, string>>
 }
 
-const toHex = (bytes: Uint8Array): string =>
+export const toHex = (bytes: Uint8Array): string =>
   Array.from(bytes)
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('')
