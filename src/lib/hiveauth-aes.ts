@@ -79,10 +79,10 @@ function dangerousEVPKDF(passwordUint8Array: Uint8Array, saltUint8Array: Uint8Ar
   let block = new Uint8Array()
 
   while (derivedKey.byteLength < keySizeDWORD * 4) {
-    block = md5(concatUint8Arrays(block, passwordUint8Array, saltUint8Array))
+    block = md5(concatUint8Arrays(block, passwordUint8Array, saltUint8Array)) as Uint8Array<ArrayBuffer>
 
     for (let i = 1; i < iterations; i++) {
-      block = md5(block)
+      block = md5(block) as Uint8Array<ArrayBuffer>
     }
 
     derivedKey = concatUint8Arrays(derivedKey, block)
