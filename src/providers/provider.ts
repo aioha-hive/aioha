@@ -53,6 +53,23 @@ export abstract class AiohaProviderBase implements AiohaOperations {
    */
   setChainId(chainId: string) {}
 
+  /**
+   * Injects a private key WIF for the given key type at runtime.
+   * Providers supporting runtime key loading (e.g. BeekeeperProvider) may override this.
+   * @param keyType Key type the key is used for
+   * @param wif Private key WIF
+   * @returns The public key of the injected key
+   */
+  setKey(_keyType: KeyTypes, _wif: string): Promise<string> | string {
+    throw new Error('runtime key loading is not supported for this provider')
+  }
+
+  /**
+   * This is a hook that is called when the provider is registered under a custom name with Aioha.
+   * @param name The registered provider name
+   */
+  setProviderName(_name: string) {}
+
   setEventEmitter(emitter: SimpleEventEmitter) {
     this.eventEmitter = emitter
   }

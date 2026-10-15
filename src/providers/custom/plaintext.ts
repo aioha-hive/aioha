@@ -24,11 +24,37 @@ export class PlaintextKeyProvider extends AiohaProviderBase {
   private provider: Client
   private user?: string
   private wif: PrivateKey
+  private keys: Partial<Record<KeyTypes, string>> = {}
 
   constructor(wif: string, api: string = DEFAULT_API) {
     super(api)
     this.provider = new Client(api)
     this.wif = PrivateKey.from(wif)
+  }
+
+  setKey(keyType: KeyTypes, wif: string): string {
+    this.wif = PrivateKey.from(wif)
+    this.keys[keyType] = this.wif.createPublic().toString()
+    return this.keys[keyType]!
+  }
+
+  getPublicKey(wif: string): string {
+    return PrivateKey.from(wif).createPublic().toString()
+  }
+
+  /**
+   * Encrypts data with the given key (encrypted to itself), using the dhive Memo implementation.
+   */
+  encryptData(content: string, key: string): string {
+    const k = PrivateKey.from(key)
+    return Memo.encode(k, k.createPublic().toString(), '#' + content)
+  }
+
+  /**
+   * Decrypts data encrypted with the given key, using the dhive Memo implementation.
+   */
+  decryptData(content: string, key: string): string {
+    return Memo.decode(PrivateKey.from(key), content).slice(1)
   }
 
   async login(username: string, options: LoginOptions): Promise<LoginResult> {

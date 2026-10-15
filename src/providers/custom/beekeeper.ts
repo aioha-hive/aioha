@@ -25,6 +25,7 @@ import {
 export type Sha256Function = (message: Uint8Array) => Promise<Uint8Array> | Uint8Array
 
 export interface BeekeeperWallet {
+  importKey(wif: string): Promise<string> | string
   signDigest(publicKey: string, sigDigest: string): string
   encryptData(content: string, key: string, anotherKey?: string, nonce?: number): string
   decryptData(content: string, key: string, anotherKey?: string): string
@@ -63,6 +64,34 @@ export class BeekeeperProvider extends AiohaProviderBase {
     const key = this.keys[keyType]
     if (!key) throw new Error(`no ${keyType} key available`)
     return key
+  }
+
+  async setKey(keyType: KeyTypes, wif: string): Promise<string> {
+    const publicKey = await this.wallet.importKey(wif)
+    this.keys[keyType] = publicKey
+    return publicKey
+  }
+
+  async getPublicKey(wif: string): Promise<string> {
+    return await this.wallet.importKey(wif)
+  }
+
+  /**
+   * Encrypts data with the given key (encrypted to itself), using the beekeeper wallet.
+   * Compatible with the encrypted wallet file format of @hiveio/wax-signers-external.
+   */
+  async encryptData(content: string, key: string): Promise<string> {
+    const publicKey = await this.wallet.importKey(key)
+    return await this.wallet.encryptData(content, publicKey, publicKey)
+  }
+
+  /**
+   * Decrypts data encrypted with the given key, using the beekeeper wallet.
+   * Compatible with the encrypted wallet file format of @hiveio/wax-signers-external.
+   */
+  async decryptData(content: string, key: string): Promise<string> {
+    const publicKey = await this.wallet.importKey(key)
+    return await this.wallet.decryptData(content, publicKey)
   }
 
   async login(username: string, options: LoginOptions): Promise<LoginResult> {
