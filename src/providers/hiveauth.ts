@@ -1,4 +1,4 @@
-import { Operation } from '@hiveio/dhive'
+import type { LegacyOperation } from '@aioha/types/dist/hive/legacy.js'
 import HaWrapper, { Auth, AppMetaType } from '../lib/hiveauth-wrapper.js'
 import { AiohaProviderBase } from './provider.js'
 import {
@@ -167,7 +167,7 @@ export class HiveAuth extends AiohaProviderBase {
     return error(4200, 'Not implemented')
   }
 
-  async signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult> {
+  async signAndBroadcastTx(tx: LegacyOperation[], keyType: KeyTypes): Promise<SignOperationResult> {
     try {
       this.emitSignTx()
       const broadcasted = await HaWrapper.signTx(this.provider, keyType, tx, true, (payload, evt, cancel) => {

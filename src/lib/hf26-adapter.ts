@@ -1,7 +1,13 @@
-import type { CommentOptionsOperation, Operation, Asset as OldAsset, PriceType as OldPriceType, Transaction } from '@hiveio/dhive'
-import type { HF26Operation, Asset, PriceType, HF26Transaction } from './hf26-types.js'
+import type {
+  CommentOptionsOperation,
+  LegacyOperation,
+  LegacyTransaction,
+  LegacyAsset,
+  LegacyPriceType
+} from '@aioha/types/dist/hive/legacy.js'
+import type { HF26Operation, Asset, PriceType, HF26Transaction } from '@aioha/types/dist/hive/hf26.js'
 
-const toNai = (asset: string | OldAsset): Asset => {
+const toNai = (asset: string | LegacyAsset): Asset => {
   asset = asset.toString()
   const [amt, symb] = asset.split(' ')
   const mamt = parseFloat(amt)
@@ -31,7 +37,7 @@ const toNai = (asset: string | OldAsset): Asset => {
   }
 }
 
-const toNewPrice = (oldPrice: OldPriceType): PriceType => {
+const toNewPrice = (oldPrice: LegacyPriceType): PriceType => {
   return {
     base: toNai(oldPrice.base),
     quote: toNai(oldPrice.quote)
@@ -43,10 +49,10 @@ const toNewPrice = (oldPrice: OldPriceType): PriceType => {
  * @param oldOperation Old operation
  * @returns HF26 operation
  */
-export const oldToHF26Operation = (oldOperation: Operation): HF26Operation => {
+export const oldToHF26Operation = (oldOperation: LegacyOperation): HF26Operation => {
   const oldName = oldOperation[0]
   const newName = (oldName + '_operation') as HF26Operation['type']
-  const newBody = structuredClone(oldOperation[1])
+  const newBody = structuredClone(oldOperation[1]) as any
 
   switch (oldName) {
     case 'account_create':
@@ -125,14 +131,14 @@ export const oldToHF26Operation = (oldOperation: Operation): HF26Operation => {
       break
   }
 
+  //@ts-ignore
   return {
     type: newName,
-    //@ts-ignore
     value: newBody
   }
 }
 
-export const oldToHF26Tx = (oldTx: Transaction): HF26Transaction => {
+export const oldToHF26Tx = (oldTx: LegacyTransaction): HF26Transaction => {
   return {
     ref_block_num: oldTx.ref_block_num,
     ref_block_prefix: oldTx.ref_block_prefix,

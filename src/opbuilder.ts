@@ -1,11 +1,11 @@
-import {
+import type {
   CommentOperation,
   CommentOptionsOperation,
   VoteOperation,
   WithdrawVestingOperation,
-  Transaction
-} from '@hiveio/dhive'
-import { HF26Transaction } from './lib/hf26-types.js'
+  LegacyTransaction
+} from '@aioha/types/dist/hive/legacy.js'
+import type { HF26Transaction } from '@aioha/types/dist/hive/hf26.js'
 import { DEFAULT_API, getAccounts, getDgp, hivePerVests } from './rpc.js'
 
 const VESTS_DECIMALS = 6
@@ -66,7 +66,7 @@ export const getPrefix = (head_block_id: string) => {
   return result
 }
 
-export const constructTxHeader = async (ops: any[], api: string = DEFAULT_API, expiry: number = 600000, tries = 0): Promise<Transaction | HF26Transaction> => {
+export const constructTxHeader = async (ops: any[], api: string = DEFAULT_API, expiry: number = 600000, tries = 0): Promise<LegacyTransaction | HF26Transaction> => {
   if (tries > CONSTRUCT_TX_HEADER_MAX_TRIES)
     throw new Error('Failed to get dgp despite '+CONSTRUCT_TX_HEADER_MAX_TRIES+' tries')
   const propsResp = await getDgp(api)

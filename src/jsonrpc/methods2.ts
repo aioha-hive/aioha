@@ -1,4 +1,4 @@
-import type { Transaction } from '@hiveio/dhive'
+import type { LegacyTransaction } from '@aioha/types/dist/hive/legacy.js'
 import type { AiohaProviderBase } from '../providers/provider.js'
 import type { KeyTypes, OperationResult, OperationResultObj, SignOperationResult, SignOperationResultObj } from '../types.js'
 import { AiohaRpcError } from './eip1193-types.js'
@@ -9,7 +9,7 @@ interface KeyTypeRole {
 }
 
 interface SignTxParams {
-  transaction: Transaction
+  transaction: LegacyTransaction
   keys: KeyTypeRole[]
 }
 

@@ -1,5 +1,5 @@
 import { Asset } from '../types.js'
-import { Operation, SignedTransaction, Transaction } from '@hiveio/dhive'
+import type { LegacyOperation, LegacySignedTransaction, LegacyTransaction } from '@aioha/types/dist/hive/legacy.js'
 
 // https://github.com/hive-keychain/keychain-sdk/blob/master/src/interfaces/keychain.interface.ts
 interface KeychainTransactionResult {
@@ -27,7 +27,7 @@ export interface KeychainRequestResponse {
 }
 
 export interface KeychainSignTxRequestResponse extends Omit<KeychainRequestResponse, 'result'> {
-  result: SignedTransaction
+  result: LegacySignedTransaction
 }
 
 export enum KT {
@@ -110,7 +110,7 @@ export class KeychainMini {
     })
   }
 
-  async broadcast(user: string, ops: Operation[], method: KT): Promise<KeychainRequestResponse> {
+  async broadcast(user: string, ops: LegacyOperation[], method: KT): Promise<KeychainRequestResponse> {
     return new Promise(async (resolve) => {
       try {
         window.hive_keychain.requestBroadcast(user, ops, method, (response: KeychainRequestResponse) => {
@@ -122,7 +122,7 @@ export class KeychainMini {
     })
   }
 
-  async signTx(user: string, tx: Transaction, method: KT): Promise<KeychainSignTxRequestResponse> {
+  async signTx(user: string, tx: LegacyTransaction, method: KT): Promise<KeychainSignTxRequestResponse> {
     return new Promise(async (resolve) => {
       try {
         window.hive_keychain.requestSignTx(user, tx, method, (response: KeychainSignTxRequestResponse) => {

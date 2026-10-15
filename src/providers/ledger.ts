@@ -1,6 +1,6 @@
 import type LedgerApp from '@aioha/ledger-app-hive'
 import { AiohaProviderBase } from './provider.js'
-import { Transaction, Operation } from '@hiveio/dhive'
+import type { LegacyOperation, LegacyTransaction } from '@aioha/types/dist/hive/legacy.js'
 import {
   LoginOptions,
   LoginResult,
@@ -364,7 +364,7 @@ export class Ledger extends AiohaProviderBase {
     }
   }
 
-  async signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResultObj> {
+  async signTx(tx: LegacyTransaction, keyType: KeyTypes): Promise<SignOperationResultObj> {
     if (!(await this.checkConnection())) return connectionFailedError
     if (!this.path) throw new Error('no path?')
     try {
@@ -383,9 +383,9 @@ export class Ledger extends AiohaProviderBase {
     }
   }
 
-  async signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult> {
+  async signAndBroadcastTx(tx: LegacyOperation[], keyType: KeyTypes): Promise<SignOperationResult> {
     try {
-      const unsignedTx = (await constructTxHeader(tx, this.rpc.api)) as Transaction
+      const unsignedTx = (await constructTxHeader(tx, this.rpc.api)) as LegacyTransaction
       const signedTx = await this.signTx(unsignedTx, KeyTypes.Active)
       if (!signedTx.success) return signedTx
       const app = await this.getLib()

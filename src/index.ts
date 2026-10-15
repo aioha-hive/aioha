@@ -1,4 +1,4 @@
-import { CommentOptionsOperation, Operation, Transaction, VoteOperation } from '@hiveio/dhive'
+import type { CommentOptionsOperation, LegacyOperation, LegacyTransaction, VoteOperation } from '@aioha/types/dist/hive/legacy.js'
 import { HiveAuth } from './providers/hiveauth.js'
 import { HiveSigner } from './providers/hivesigner.js'
 import { Keychain } from './providers/keychain.js'
@@ -40,7 +40,7 @@ export { Asset, KeyTypes, Providers, VscStakeType, PersistentLoginProvs, LoginPr
 import { AiohaRpcError, RequestArguments } from './jsonrpc/eip1193-types.js'
 import { ViewOnly } from './providers/view-only.js'
 import { MetaMaskSnap } from './providers/metamask.js'
-import { HF26Operation, HF26Transaction } from './lib/hf26-types.js'
+import type { HF26Operation, HF26Transaction } from '@aioha/types/dist/hive/hf26.js'
 import { error, loginError } from './lib/errors.js'
 export { WaxAiohaSigner } from './lib/wax-signer.js'
 
@@ -701,7 +701,7 @@ export class Aioha implements AiohaOperations {
    * @param keyType Key type to be used to sign the transaction.
    * @returns Transaction signing result
    */
-  async signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResultObj> {
+  async signTx(tx: LegacyTransaction, keyType: KeyTypes): Promise<SignOperationResultObj> {
     if (!this.isLoggedIn()) return notLoggedInResult
     else if (keyType === KeyTypes.Memo) return noMemoAllowResult
     return await this.getPI().signTx(tx, keyType)
@@ -713,7 +713,7 @@ export class Aioha implements AiohaOperations {
    * @param keyType Key type to be used to sign the transaction.
    * @returns Transaction result
    */
-  async signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<OperationResult> {
+  async signAndBroadcastTx(tx: LegacyOperation[], keyType: KeyTypes): Promise<OperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
     else if (keyType === KeyTypes.Memo) return noMemoAllowResult
     return await this.getPI().signAndBroadcastTx(tx, keyType)
@@ -935,7 +935,7 @@ export class Aioha implements AiohaOperations {
         [
           'claim_reward_balance',
           {
-            account: this.getCurrentUser(),
+            account: this.getCurrentUser()!,
             reward_hive: accResp.result[0].reward_hive_balance,
             reward_hbd: accResp.result[0].reward_hbd_balance,
             reward_vests: accResp.result[0].reward_vesting_balance

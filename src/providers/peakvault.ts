@@ -1,4 +1,4 @@
-import { Operation, SignedTransaction, Transaction } from '@hiveio/dhive'
+import type { LegacyOperation, LegacySignedTransaction, LegacyTransaction } from '@aioha/types/dist/hive/legacy.js'
 import { AiohaProviderBase } from './provider.js'
 import {
   KeyTypes,
@@ -153,10 +153,10 @@ export class PeakVault extends AiohaProviderBase {
     }
   }
 
-  async signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResultObj> {
+  async signTx(tx: LegacyTransaction, keyType: KeyTypes): Promise<SignOperationResultObj> {
     try {
       this.emitSignTx()
-      const res: VaultResponse<SignedTransaction> = await window.peakvault.requestSignTx(this.getUser()!, tx, keyType)
+      const res: VaultResponse<LegacySignedTransaction> = await window.peakvault.requestSignTx(this.getUser()!, tx, keyType)
       return {
         success: true,
         result: res.result!
@@ -166,7 +166,7 @@ export class PeakVault extends AiohaProviderBase {
     }
   }
 
-  async signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult> {
+  async signAndBroadcastTx(tx: LegacyOperation[], keyType: KeyTypes): Promise<SignOperationResult> {
     try {
       this.emitSignTx()
       const res: VaultBroadcastResponse = await window.peakvault.requestBroadcast(this.getUser()!, tx, keyType)

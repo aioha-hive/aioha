@@ -1,5 +1,5 @@
 import type { Providers, KeyTypes } from '../types.js'
-import type { Operation, Transaction } from '@hiveio/dhive'
+import type { LegacyOperation, LegacyTransaction } from '@aioha/types/dist/hive/legacy.js'
 
 export interface IsProviderRegistered {
   provider: Providers
@@ -15,9 +15,9 @@ export interface MessageKeyType extends KeyType {
 }
 
 export interface SignTx extends KeyType {
-  tx: Transaction
+  tx: LegacyTransaction
 }
 
 export interface SignBroadcastTx extends KeyType {
-  ops: Operation[]
+  ops: LegacyOperation[]
 }

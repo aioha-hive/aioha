@@ -1,4 +1,4 @@
-import { Operation, Transaction, CommentOptionsOperation } from '@hiveio/dhive'
+import type { CommentOptionsOperation, LegacyOperation, LegacyTransaction } from '@aioha/types/dist/hive/legacy.js'
 import { AiohaProviderBase } from './provider.js'
 import {
   Asset,
@@ -147,7 +147,7 @@ export class Keychain extends AiohaProviderBase {
     }
   }
 
-  async signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResultObj> {
+  async signTx(tx: LegacyTransaction, keyType: KeyTypes): Promise<SignOperationResultObj> {
     this.emitSignTx()
     const signedTx = await this.provider.signTx(this.username, tx, roleMap[keyType])
     if (!signedTx.success) return error(getErrorCode(signedTx), signedTx.error)
@@ -157,7 +157,7 @@ export class Keychain extends AiohaProviderBase {
     }
   }
 
-  async signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult> {
+  async signAndBroadcastTx(tx: LegacyOperation[], keyType: KeyTypes): Promise<SignOperationResult> {
     try {
       this.emitSignTx()
       const broadcastedTx = await this.provider.broadcast(this.username, tx, roleMap[keyType])

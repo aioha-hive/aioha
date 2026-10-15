@@ -1,5 +1,5 @@
 import { CallbackFunction, ClientConfig, SendResponse } from './hivesigner-types.js'
-import { Operation } from '@hiveio/dhive'
+import type { LegacyOperation } from '@aioha/types/dist/hive/legacy.js'
 
 const API_URL = 'https://hivesigner.com'
 const BASE_URL = 'https://hivesigner.com'
@@ -103,7 +103,7 @@ export class Client {
     }
   }
 
-  public broadcast(operations: Operation[], cb?: CallbackFunction): Promise<SendResponse> {
+  public broadcast(operations: LegacyOperation[], cb?: CallbackFunction): Promise<SendResponse> {
     return this.send('broadcast', 'POST', { operations }, cb)
   }
 

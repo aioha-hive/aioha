@@ -1,4 +1,10 @@
-import { AuthorityType, CommentOptionsOperation, Operation, Transaction, WithdrawVestingOperation } from '@hiveio/dhive'
+import type { AuthorityType } from '@aioha/types/dist/hive/common.js'
+import type {
+  CommentOptionsOperation,
+  LegacyOperation,
+  LegacyTransaction,
+  WithdrawVestingOperation
+} from '@aioha/types/dist/hive/legacy.js'
 import {
   AccountDiscStream,
   Asset,
@@ -21,7 +27,7 @@ import { createVote, createComment, createUnstakeHive, createUnstakeHiveByVests 
 import { AiohaClient, hivePerVests, getAccounts, getAccountsErrored } from '../rpc.js'
 import { RequestArguments, AiohaRpcError } from '../jsonrpc/eip1193-types.js'
 import { SimpleEventEmitter } from '../lib/event-emitter.js'
-import { HF26Operation, HF26Transaction } from '../lib/hf26-types.js'
+import type { HF26Operation, HF26Transaction } from '@aioha/types/dist/hive/hf26.js'
 import { error } from '../lib/errors.js'
 
 export const DEFAULT_VSC_NET_ID = 'vsc-mainnet'
@@ -68,8 +74,8 @@ export abstract class AiohaProviderBase implements AiohaOperations {
   abstract encryptMemoWithKeys(message: string, keyType: KeyTypes, recipientKeys: string[]): Promise<OperationResultObj>
   abstract decryptMemo(memo: string, keyType: KeyTypes): Promise<OperationResult>
   abstract signMessage(message: string, keyType: KeyTypes): Promise<OperationResult>
-  abstract signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResultObj>
-  abstract signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult>
+  abstract signTx(tx: LegacyTransaction, keyType: KeyTypes): Promise<SignOperationResultObj>
+  abstract signAndBroadcastTx(tx: LegacyOperation[], keyType: KeyTypes): Promise<SignOperationResult>
 
   async signTxHF26(tx: HF26Transaction, keyType: KeyTypes): Promise<SignOperationResultObjHF26> {
     return HF26_UNSUPPORTED_ERR
@@ -105,7 +111,7 @@ export abstract class AiohaProviderBase implements AiohaOperations {
     options?: CommentOptionsOperation[1] | undefined
   ): Promise<SignOperationResult> {
     return await this.signAndBroadcastTx(
-      createComment(pa, pp, this.getUser()!, permlink, title, body, json, options) as Operation[],
+      createComment(pa, pp, this.getUser()!, permlink, title, body, json, options) as LegacyOperation[],
       KeyTypes.Posting
     )
   }
@@ -402,8 +408,8 @@ export interface AiohaOperations {
   signMessage(message: string, keyType: KeyTypes): Promise<OperationResult>
 
   // sign and optionally broadcast generic transaction
-  signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResultObj>
-  signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult>
+  signTx(tx: LegacyTransaction, keyType: KeyTypes): Promise<SignOperationResultObj>
+  signAndBroadcastTx(tx: LegacyOperation[], keyType: KeyTypes): Promise<SignOperationResult>
 
   // HF26 serialized transactions
   signTxHF26(tx: HF26Transaction, keyType: KeyTypes): Promise<SignOperationResultObjHF26>

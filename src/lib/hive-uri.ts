@@ -1,6 +1,6 @@
 // Hive-URI for browser only
 // Only used for typings, no code is pulled in.
-import { Operation, Transaction } from '@hiveio/dhive'
+import type { LegacyOperation, LegacyTransaction } from '@aioha/types/dist/hive/legacy.js'
 
 /// URL-safe Base64 encoding and decoding.
 const B64U_LOOKUP: { [c: string]: string } = { '/': '_', _: '/', '+': '-', '-': '+', '=': '.', '.': '=' }
@@ -22,7 +22,7 @@ export interface Parameters {
 /**
  * A transactions that may contain placeholders.
  */
-export interface UnresolvedTransaction extends Transaction {
+export interface UnresolvedTransaction extends LegacyTransaction {
   ref_block_num: any
   ref_block_prefix: any
   expiration: any
@@ -123,7 +123,7 @@ export interface ResolveOptions {
  */
 export interface ResolveResult {
   /** The resolved transaction ready to be signed. */
-  tx: Transaction
+  tx: LegacyTransaction
   /** The account that should sign the transaction. */
   signer: string
 }
@@ -172,7 +172,7 @@ export function resolveTransaction(utx: UnresolvedTransaction, params: Parameter
         return val
     }
   }
-  let tx = walk(utx) as Transaction
+  let tx = walk(utx) as LegacyTransaction
   return { signer, tx }
 }
 
@@ -211,6 +211,6 @@ function encodeJson(data: any) {
 // }
 
 /** Encodes several Hive operations to a hive: URI. */
-export function encodeOps(ops: Operation[], params: Parameters = {}) {
+export function encodeOps(ops: LegacyOperation[], params: Parameters = {}) {
   return `hive://sign/ops/${encodeJson(ops)}${encodeParameters(params)}`
 }

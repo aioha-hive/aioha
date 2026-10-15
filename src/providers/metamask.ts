@@ -1,4 +1,4 @@
-import type { Transaction, Operation, SignedTransaction } from '@hiveio/dhive'
+import type { LegacyOperation, LegacySignedTransaction, LegacyTransaction } from '@aioha/types/dist/hive/legacy.js'
 import {
   LoginOptions,
   LoginResult,
@@ -20,7 +20,7 @@ import { AiohaProviderBase } from './provider.js'
 import type { MetaMaskInpageProvider, RequestArguments } from '@metamask/providers'
 import { getSnapsProvider } from '../lib/metamask.js'
 import { SimpleEventEmitter } from '../lib/event-emitter.js'
-import { HF26Operation, HF26SignedTransaction, HF26Transaction } from '../lib/hf26-types.js'
+import type { HF26Operation, HF26SignedTransaction, HF26Transaction } from '@aioha/types/dist/hive/hf26.js'
 import { AiohaRpcError } from '../jsonrpc/eip1193-types.js'
 import { type AiohaClient, broadcastTxHF26, callRest, getKeyRefs } from '../rpc.js'
 import { oldToHF26Operation, oldToHF26Tx } from '../lib/hf26-adapter.js'
@@ -327,18 +327,20 @@ export class MetaMaskSnap extends AiohaProviderBase {
     }
   }
 
-  async signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResultObj> {
+  async signTx(tx: LegacyTransaction, keyType: KeyTypes): Promise<SignOperationResultObj> {
     const signed = await this.signTxHF26(oldToHF26Tx(tx), keyType)
     if (!signed.success) return signed
-    const result = structuredClone(tx) as SignedTransaction
-    result.signatures = signed.result.signatures
+    const result: LegacySignedTransaction = {
+      ...structuredClone(tx),
+      signatures: signed.result.signatures
+    }
     return {
       success: true,
       result
     }
   }
 
-  async signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult> {
+  async signAndBroadcastTx(tx: LegacyOperation[], keyType: KeyTypes): Promise<SignOperationResult> {
     return await this.signAndBroadcastTxHF26(
       tx.map((t) => oldToHF26Operation(t)),
       keyType

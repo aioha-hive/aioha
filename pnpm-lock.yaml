@@ -14,9 +14,9 @@ importers:
       '@aioha/tx-digest':
         specifier: ^2.1.1
         version: 2.1.1
-      '@hiveio/dhive':
-        specifier: ^1.3.6
-        version: 1.3.6
+      '@aioha/types':
+        specifier: ^1.0.0
+        version: 1.0.0
       '@noble/hashes':
         specifier: ^2.2.0
         version: 2.2.0
@@ -24,6 +24,9 @@ importers:
       '@hiveio/beekeeper':
         specifier: 1.28.7-rc0
         version: 1.28.7-rc0
+      '@hiveio/dhive':
+        specifier: ^1.3.6
+        version: 1.3.6
       '@hiveio/wax':
         specifier: ^2.0.2
         version: 2.0.2
@@ -57,6 +60,9 @@ packages:
 
   '@aioha/tx-digest@2.1.1':
     resolution: {integrity: sha512-MH2cg6tSjaxOBSCetNbeeGT3LN8YDei5tbG7KmaMLNfr+bSFLWVXz77+Nvwej3I3QjSuAaEHt8ZJxH7qEA7Cpg==}
+
+  '@aioha/types@1.0.0':
+    resolution: {integrity: sha512-odKrRDBA3WESBB9cIXmxAWbkyku+jcRWZMvtENHjhZd2JQyXNDLR94frw+oOpebWoamC0zfaF4vaIekt78xy2A==}
 
   '@discoveryjs/json-ext@0.5.7':
     resolution: {integrity: sha512-dBVuXR082gk3jsFp7Rd/JI4kytwGHecnCoTtXFb7DB6CNHp4rg5k1bhg0nWdLGLnOV71lmDzGQaLMy8iPLY0pw==}
@@ -1564,6 +1570,8 @@ snapshots:
       varint: 6.0.0
 
   '@aioha/tx-digest@2.1.1': {}
+
+  '@aioha/types@1.0.0': {}
 
   '@discoveryjs/json-ext@0.5.7': {}
 

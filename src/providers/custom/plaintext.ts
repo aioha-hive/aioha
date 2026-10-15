@@ -1,4 +1,5 @@
-import { Client, Operation, Transaction, Memo, PrivateKey, cryptoUtils } from '@hiveio/dhive'
+import { Client, Memo, PrivateKey, cryptoUtils } from '@hiveio/dhive'
+import type { LegacyOperation, LegacyTransaction } from '@aioha/types/dist/hive/legacy.js'
 import { AiohaProviderBase } from '../provider.js'
 import { DEFAULT_API, callRest } from '../../rpc.js'
 import {
@@ -163,7 +164,7 @@ export class PlaintextKeyProvider extends AiohaProviderBase {
     }
   }
 
-  async signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResultObj> {
+  async signTx(tx: LegacyTransaction, keyType: KeyTypes): Promise<SignOperationResultObj> {
     try {
       const signedTx = cryptoUtils.signTransaction(tx, this.wif)
       return {
@@ -179,7 +180,7 @@ export class PlaintextKeyProvider extends AiohaProviderBase {
     }
   }
 
-  async signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult> {
+  async signAndBroadcastTx(tx: LegacyOperation[], keyType: KeyTypes): Promise<SignOperationResult> {
     try {
       const op = await this.provider.broadcast.sendOperations(tx, this.wif)
       return {

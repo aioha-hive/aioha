@@ -1,6 +1,6 @@
 import { Client } from '../lib/hivesigner.js'
 import { encodeOps } from '../lib/hive-uri.js'
-import { Operation, Transaction } from '@hiveio/dhive'
+import type { LegacyOperation, LegacyTransaction } from '@aioha/types/dist/hive/legacy.js'
 import { HiveSignerError, ClientConfig } from '../lib/hivesigner-types.js'
 import { AiohaProviderBase } from './provider.js'
 import type { AiohaClient } from '../rpc.js'
@@ -185,11 +185,11 @@ export class HiveSigner extends AiohaProviderBase {
     return error(4200, 'message signing is unsupported in HiveSigner')
   }
 
-  async signTx(tx: Transaction, keyType: KeyTypes): Promise<SignOperationResultObj> {
+  async signTx(tx: LegacyTransaction, keyType: KeyTypes): Promise<SignOperationResultObj> {
     return error(4200, 'tx signing without broadcast is unsupported in HiveSigner')
   }
 
-  async signAndBroadcastTx(tx: Operation[], keyType: KeyTypes): Promise<SignOperationResult> {
+  async signAndBroadcastTx(tx: LegacyOperation[], keyType: KeyTypes): Promise<SignOperationResult> {
     for (let i in tx) if (!authorizedOps.includes(tx[i][0])) return await this.signTxInWindow(tx)
     try {
       const broadcasted = await this.provider.broadcast(tx)
@@ -207,7 +207,7 @@ export class HiveSigner extends AiohaProviderBase {
     }
   }
 
-  private async signTxInWindow(ops: Operation[]): Promise<SignOperationResult> {
+  private async signTxInWindow(ops: LegacyOperation[]): Promise<SignOperationResult> {
     return new Promise<SignOperationResult>((rs) => {
       this.emitSignTx()
       const signUrl =

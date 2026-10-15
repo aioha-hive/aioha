@@ -1,6 +1,6 @@
-import { SignedTransaction } from '@hiveio/dhive'
+import type { LegacySignedTransaction } from '@aioha/types/dist/hive/legacy.js'
 import { AiohaRpcError } from './jsonrpc/eip1193-types.js'
-import { HF26Transaction } from './lib/hf26-types.js'
+import type { HF26Transaction } from '@aioha/types/dist/hive/hf26.js'
 
 export const DEFAULT_API = 'https://techcoderx.com'
 export const FALLBACK_APIS = [
@@ -110,7 +110,7 @@ export const hivePerVests = async (api: string = DEFAULT_API, fallbackApis: stri
   return parseFloat(dgpResp.result.total_vesting_fund_hive) / parseFloat(dgpResp.result.total_vesting_shares)
 }
 
-export const broadcastTx = (tx: SignedTransaction, api: string = DEFAULT_API, fallbackApis: string[] = FALLBACK_APIS) => {
+export const broadcastTx = (tx: LegacySignedTransaction, api: string = DEFAULT_API, fallbackApis: string[] = FALLBACK_APIS) => {
   return call('condenser_api.broadcast_transaction', [tx], api, fallbackApis)
 }
 

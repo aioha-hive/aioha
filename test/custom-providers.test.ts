@@ -12,7 +12,7 @@ import type {
   SignOperationResult,
   SignOperationResultObj
 } from '../src/types.js'
-import type { Operation, Transaction } from '@hiveio/dhive'
+import type { legacy } from '@aioha/types'
 
 class FakeProvider extends AiohaProviderBase {
   readonly name: string
@@ -69,10 +69,10 @@ class FakeProvider extends AiohaProviderBase {
   async signMessage(): Promise<OperationResult> {
     return { success: true, result: 'sig' }
   }
-  async signTx(tx: Transaction, _keyType: KeyTypes): Promise<SignOperationResultObj> {
+  async signTx(tx: legacy.LegacyTransaction, _keyType: KeyTypes): Promise<SignOperationResultObj> {
     return { success: true, result: { ...tx, signatures: ['sig'] } as any }
   }
-  async signAndBroadcastTx(_tx: Operation[], _keyType: KeyTypes): Promise<SignOperationResult> {
+  async signAndBroadcastTx(_tx: legacy.LegacyOperation[], _keyType: KeyTypes): Promise<SignOperationResult> {
     return { success: true, result: 'tx-id' }
   }
 }

@@ -1,6 +1,6 @@
-import type { SignedTransaction } from '@hiveio/dhive'
+import type { LegacySignedTransaction } from '@aioha/types/dist/hive/legacy.js'
 import type { MessageType as HaMsgType } from './lib/hiveauth-wrapper.js'
-import type { HF26SignedTransaction } from './lib/hf26-types.js'
+import type { HF26SignedTransaction } from '@aioha/types/dist/hive/hf26.js'
 
 export enum Providers {
   Keychain = 'keychain',
@@ -119,7 +119,7 @@ interface SignOperationSuccess<T = string> extends BaseResult {
 }
 
 export type SignOperationResult = SignOperationSuccess | OperationError
-export type SignOperationResultObj = SignOperationSuccess<SignedTransaction> | OperationError
+export type SignOperationResultObj = SignOperationSuccess<LegacySignedTransaction> | OperationError
 export type SignOperationResultObjHF26 = SignOperationSuccess<HF26SignedTransaction> | OperationError
 
 export interface VoteParams {
