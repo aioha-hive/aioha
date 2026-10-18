@@ -10,11 +10,10 @@ import {
   Providers,
   SignOperationResult,
   PersistentLoginBase,
-  VscStakeType,
   SignOperationResultObj
 } from '../types.js'
 import type { AiohaClient } from '../rpc.js'
-import { KeychainMini, KeychainRequestResponse, KT } from '../lib/keychain-mini.js'
+import { KeychainMini, KeychainResponse, KeychainSignTxResponse, KT, p, wk } from '../lib/keychain-mini.js'
 import { SimpleEventEmitter } from '../lib/event-emitter.js'
 import { error, loginError } from '../lib/errors.js'
 
@@ -149,7 +148,9 @@ export class Keychain extends AiohaProviderBase {
 
   async signTx(tx: LegacyTransaction, keyType: KeyTypes): Promise<SignOperationResultObj> {
     this.emitSignTx()
-    const signedTx = await this.provider.signTx(this.username, tx, roleMap[keyType])
+    const signedTx = await p<KeychainSignTxResponse>((r) =>
+      wk().requestSignTx(this.username, tx, roleMap[keyType], (res: KeychainSignTxResponse) => r(res))
+    )
     if (!signedTx.success) return error(getErrorCode(signedTx), signedTx.error)
     return {
       success: signedTx.success,
@@ -160,14 +161,16 @@ export class Keychain extends AiohaProviderBase {
   async signAndBroadcastTx(tx: LegacyOperation[], keyType: KeyTypes): Promise<SignOperationResult> {
     try {
       this.emitSignTx()
-      const broadcastedTx = await this.provider.broadcast(this.username, tx, roleMap[keyType])
+      const broadcastedTx = await p((r) => {
+        wk().requestBroadcast(this.username, tx, roleMap[keyType], (res: KeychainResponse) => r(res))
+      })
       return this.txResult(broadcastedTx)
     } catch (e) {
-      return error(getErrorCode(e), (e as KeychainRequestResponse).message)
+      return error(getErrorCode(e), (e as KeychainResponse).message)
     }
   }
 
-  txResult(tx: KeychainRequestResponse): SignOperationResult {
+  txResult(tx: KeychainResponse): SignOperationResult {
     if (!tx.success) return error(getErrorCode(tx), tx.message)
     return {
       success: tx.success,
@@ -177,7 +180,7 @@ export class Keychain extends AiohaProviderBase {
 
   async vote(author: string, permlink: string, weight: number): Promise<SignOperationResult> {
     this.emitSignTx()
-    const tx = await this.provider.vote(this.username, author, permlink, weight)
+    const tx = await p((r) => wk().requestVote(this.username, permlink, author, weight, (res: KeychainResponse) => r(res)))
     return this.txResult(tx)
   }
 
@@ -193,27 +196,45 @@ export class Keychain extends AiohaProviderBase {
     // remove when and if keychain fixes this issue
     if (pa && pp) return await super.comment(pa, pp, permlink, title, body, json, options)
     this.emitSignTx()
-    const tx = await this.provider.post(
-      this.username,
-      title,
-      body,
-      pp ?? '',
-      pa ?? '',
-      json,
-      permlink,
-      options ? JSON.stringify(options) : ''
-    )
+    const tx = await p((r) => {
+      wk().requestPost(
+        this.username,
+        title,
+        body,
+        pp,
+        pa,
+        json,
+        permlink,
+        options ? JSON.stringify(options) : '',
+        (res: KeychainResponse) => r(res)
+      )
+    })
     return this.txResult(tx)
   }
 
   async customJSON(keyType: KeyTypes, id: string, json: string, displayTitle?: string): Promise<SignOperationResult> {
     this.emitSignTx()
-    return this.txResult(await this.provider.custom(this.username, roleMap[keyType], id, json, displayTitle ?? 'Custom JSON'))
+    return this.txResult(
+      await p((r) => {
+        wk().requestCustomJson(
+          this.username,
+          id,
+          roleMap[keyType],
+          json,
+          displayTitle ?? 'Custom JSON',
+          (res: KeychainResponse) => r(res)
+        )
+      })
+    )
   }
 
   async transfer(to: string, amount: number, currency: Asset, memo?: string): Promise<SignOperationResult> {
     this.emitSignTx()
-    return this.txResult(await this.provider.transfer(this.username, to, amount.toFixed(3), currency, memo ?? ''))
+    return this.txResult(
+      await p((r) => {
+        wk().requestTransfer(this.username, to, amount.toFixed(3), memo ?? '', currency, (res: KeychainResponse) => r(res), true)
+      })
+    )
   }
 
   async recurrentTransfer(
@@ -227,27 +248,37 @@ export class Keychain extends AiohaProviderBase {
   ): Promise<SignOperationResult> {
     this.emitSignTx()
     return this.txResult(
-      await this.provider.recurrentTransfer(
-        this.username,
-        to,
-        amount.toFixed(3),
-        currency,
-        memo ?? '',
-        recurrence,
-        executions,
-        pair_id
-      )
+      await p((r) => {
+        wk().requestRecurrentTransfer(
+          this.username,
+          to,
+          amount.toFixed(3),
+          currency,
+          memo ?? '',
+          recurrence,
+          executions,
+          (res: KeychainResponse) => r(res),
+          undefined,
+          pair_id
+        )
+      })
     )
   }
 
   async stakeHive(amount: number, to?: string): Promise<SignOperationResult> {
     this.emitSignTx()
-    return this.txResult(await this.provider.powerUp(this.username, to ?? this.username, amount.toFixed(3)))
+    return this.txResult(
+      await p((r) => {
+        wk().requestPowerUp(this.username, to ?? this.username, amount.toFixed(3), (res: KeychainResponse) => r(res))
+      })
+    )
   }
 
   async unstakeHive(amount: number): Promise<SignOperationResult> {
     this.emitSignTx()
-    return this.txResult(await this.provider.powerDown(this.username, amount.toFixed(3)))
+    return this.txResult(
+      await p((r) => wk().requestPowerDown(this.username, amount.toFixed(3), (res: KeychainResponse) => r(res)))
+    )
   }
 
   async delegateStakedHive(to: string, amount: number): Promise<SignOperationResult> {
@@ -262,17 +293,25 @@ export class Keychain extends AiohaProviderBase {
 
   async voteWitness(witness: string, approve: boolean): Promise<SignOperationResult> {
     this.emitSignTx()
-    return this.txResult(await this.provider.witnessVote(this.username, witness, approve))
+    return this.txResult(
+      await p((r) => {
+        wk().requestWitnessVote(this.username, witness, approve, (res: KeychainResponse) => r(res))
+      })
+    )
   }
 
   async voteProposals(proposals: number[], approve: boolean): Promise<SignOperationResult> {
     this.emitSignTx()
-    return this.txResult(await this.provider.updateProposalVote(this.username, proposals, approve))
+    return this.txResult(
+      await p((r) => {
+        wk().requestUpdateProposalVote(this.username, proposals, approve, [], (res: KeychainResponse) => r(res))
+      })
+    )
   }
 
   async setProxy(proxy: string): Promise<SignOperationResult> {
     this.emitSignTx()
-    return this.txResult(await this.provider.proxy(this.username, proxy))
+    return this.txResult(await p((r) => wk().requestProxy(this.username, proxy, (res: KeychainResponse) => r(res))))
   }
 
   async addAccountAuthority(username: string, role: KeyTypes, weight: number): Promise<SignOperationResult> {
