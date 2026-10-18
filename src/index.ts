@@ -27,7 +27,9 @@ import {
   VscTxIntent,
   SignOperationResultObjHF26,
   DiscoverOptions,
-  VscFer
+  VscFer,
+  AuthAction,
+  AuthType
 } from './types.js'
 import { SimpleEventEmitter } from './lib/event-emitter.js'
 import { AppMetaType } from './lib/hiveauth-wrapper.js'
@@ -1098,7 +1100,7 @@ export class Aioha implements AiohaOperations {
    */
   async addAccountAuthority(username: string, role: KeyTypes, weight: number): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.getPI().addAccountAuthority(username, role, weight)
+    return await this.modifyAuth(AuthAction.Add, AuthType.Account, username, role, weight)
   }
 
   /**
@@ -1109,7 +1111,7 @@ export class Aioha implements AiohaOperations {
    */
   async removeAccountAuthority(username: string, role: KeyTypes): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.getPI().removeAccountAuthority(username, role)
+    return await this.modifyAuth(AuthAction.Remove, AuthType.Account, username, role, 0)
   }
 
   /**
@@ -1121,7 +1123,7 @@ export class Aioha implements AiohaOperations {
    */
   async addKeyAuthority(publicKey: string, role: KeyTypes, weight: number): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.getPI().addKeyAuthority(publicKey, role, weight)
+    return await this.modifyAuth(AuthAction.Add, AuthType.Key, publicKey, role, weight)
   }
 
   /**
@@ -1133,7 +1135,18 @@ export class Aioha implements AiohaOperations {
    */
   async removeKeyAuthority(publicKey: string, role: KeyTypes): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.getPI().removeKeyAuthority(publicKey, role)
+    return await this.modifyAuth(AuthAction.Remove, AuthType.Key, publicKey, role, 0)
+  }
+
+  async modifyAuth(
+    action: AuthAction,
+    type: AuthType,
+    theAuth: string,
+    role: KeyTypes,
+    weight: number
+  ): Promise<SignOperationResult> {
+    if (!this.isLoggedIn()) return notLoggedInResult
+    return await this.getPI().modifyAuth(action, type, theAuth, role, weight)
   }
 
   /**

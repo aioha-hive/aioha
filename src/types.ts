@@ -206,3 +206,13 @@ export interface AccountAuths {
   memo: string
   witness_signing: string
 }
+
+export enum AuthAction {
+  Add = 'add',
+  Remove = 'remove'
+}
+
+export enum AuthType {
+  Account = 'account',
+  Key = 'key'
+}

@@ -8,6 +8,8 @@ import type {
 import {
   AccountDiscStream,
   Asset,
+  AuthAction,
+  AuthType,
   DiscoverOptions,
   KeyTypes,
   LoginOptions,
@@ -215,25 +217,9 @@ export abstract class AiohaProviderBase implements AiohaOperations {
     return await this.signAndBroadcastTx([['account_witness_proxy', { account: this.getUser()!, proxy }]], KeyTypes.Active)
   }
 
-  addAccountAuthority(username: string, role: KeyTypes, weight: number): Promise<SignOperationResult> {
-    return this.modifyAuth('add', 'account', username, role, weight)
-  }
-
-  removeAccountAuthority(username: string, role: KeyTypes): Promise<SignOperationResult> {
-    return this.modifyAuth('remove', 'account', username, role, 0)
-  }
-
-  addKeyAuthority(publicKey: string, role: KeyTypes, weight: number): Promise<SignOperationResult> {
-    return this.modifyAuth('add', 'key', publicKey, role, weight)
-  }
-
-  removeKeyAuthority(publicKey: string, role: KeyTypes): Promise<SignOperationResult> {
-    return this.modifyAuth('remove', 'key', publicKey, role, 0)
-  }
-
   async modifyAuth(
-    action: 'add' | 'remove',
-    type: 'account' | 'key',
+    action: AuthAction,
+    type: AuthType,
     theAuth: string,
     role: KeyTypes,
     weight: number
@@ -353,8 +339,5 @@ export interface AiohaOperations {
   voteWitness(witness: string, approve: boolean): Promise<SignOperationResult>
   voteProposals(proposals: number[], approve: boolean): Promise<SignOperationResult>
   setProxy(proxy: string): Promise<SignOperationResult>
-  addAccountAuthority(username: string, role: KeyTypes, weight: number): Promise<SignOperationResult>
-  removeAccountAuthority(username: string, role: KeyTypes): Promise<SignOperationResult>
-  addKeyAuthority(publicKey: string, role: KeyTypes, weight: number): Promise<SignOperationResult>
-  removeKeyAuthority(publicKey: string, role: KeyTypes): Promise<SignOperationResult>
+  modifyAuth(action: AuthAction, type: AuthType, theAuth: string, role: KeyTypes, weight: number): Promise<SignOperationResult>
 }

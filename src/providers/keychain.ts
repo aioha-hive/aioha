@@ -10,7 +10,9 @@ import {
   Providers,
   SignOperationResult,
   PersistentLoginBase,
-  SignOperationResultObj
+  SignOperationResultObj,
+  AuthAction,
+  AuthType
 } from '../types.js'
 import type { AiohaClient } from '../rpc.js'
 import { KeychainMini, KeychainResponse, KeychainSignTxResponse, KT, p, wk } from '../lib/keychain-mini.js'
@@ -22,6 +24,8 @@ const getErrorCode = (resp: any): number => {
   else if (typeof resp.error === 'object' && typeof resp.error.code === 'number') return resp.error.code
   else return 5000
 }
+
+const NOT_INSTALLED_ERR = 'Keychain extension is not installed'
 
 const roleMap: Record<KeyTypes, KT> = {
   owner: KT.owner,
@@ -41,7 +45,7 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async login(username: string, options: LoginOptions): Promise<LoginResult> {
-    if (!Keychain.isInstalled()) return loginError(5001, 'Keychain extension is not installed', Providers.Keychain)
+    if (!Keychain.isInstalled()) return loginError(5001, NOT_INSTALLED_ERR, Providers.Keychain)
     this.emitLoginReq()
     const login: any = await this.provider.challenge(
       false,
@@ -62,7 +66,7 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async loginAndDecryptMemo(username: string, options: LoginOptions): Promise<LoginResult> {
-    if (!Keychain.isInstalled()) return loginError(5001, 'Keychain extension is not installed', Providers.Keychain)
+    if (!Keychain.isInstalled()) return loginError(5001, NOT_INSTALLED_ERR, Providers.Keychain)
     this.emitLoginReq()
     const login = await this.provider.challenge(true, username, options.msg!, roleMap[options.keyType!])
     if (login.success) this.username = username
@@ -294,18 +298,14 @@ export class Keychain extends AiohaProviderBase {
   async voteWitness(witness: string, approve: boolean): Promise<SignOperationResult> {
     this.emitSignTx()
     return this.txResult(
-      await p((r) => {
-        wk().requestWitnessVote(this.username, witness, approve, (res: KeychainResponse) => r(res))
-      })
+      await p((r) => wk().requestWitnessVote(this.username, witness, approve, (res: KeychainResponse) => r(res)))
     )
   }
 
   async voteProposals(proposals: number[], approve: boolean): Promise<SignOperationResult> {
     this.emitSignTx()
     return this.txResult(
-      await p((r) => {
-        wk().requestUpdateProposalVote(this.username, proposals, approve, [], (res: KeychainResponse) => r(res))
-      })
+      await p((r) => wk().requestUpdateProposalVote(this.username, proposals, approve, [], (res: KeychainResponse) => r(res)))
     )
   }
 
@@ -314,71 +314,20 @@ export class Keychain extends AiohaProviderBase {
     return this.txResult(await p((r) => wk().requestProxy(this.username, proxy, (res: KeychainResponse) => r(res))))
   }
 
-  async addAccountAuthority(username: string, role: KeyTypes, weight: number): Promise<SignOperationResult> {
-    this.emitSignTx()
-    return this.txResult(await this.provider.addAuth('Account', this.getUser()!, username, roleMap[role], weight))
-  }
-
-  async removeAccountAuthority(username: string, role: KeyTypes): Promise<SignOperationResult> {
-    this.emitSignTx()
-    return this.txResult(await this.provider.rmAuth('Account', this.getUser()!, username, roleMap[role]))
-  }
-
-  async addKeyAuthority(publicKey: string, role: KeyTypes, weight: number): Promise<SignOperationResult> {
-    this.emitSignTx()
-    return this.txResult(await this.provider.addAuth('Key', this.getUser()!, publicKey, roleMap[role], weight))
-  }
-
-  async removeKeyAuthority(publicKey: string, role: KeyTypes): Promise<SignOperationResult> {
-    this.emitSignTx()
-    return this.txResult(await this.provider.rmAuth('Key', this.getUser()!, publicKey, roleMap[role]))
-  }
-
-  /*
-  async vscTransfer(to: string, amount: number, currency: Asset, memo?: string): Promise<SignOperationResult> {
-    this.emitSignTx()
-    return this.txResult(await this.provider.vscFer('Transfer', this.getUser()!, to, amount, currency, memo))
-  }
-
-  async vscWithdraw(to: string, amount: number, currency: Asset, memo?: string): Promise<SignOperationResult> {
-    this.emitSignTx()
-    return this.txResult(await this.provider.vscFer('Withdrawal', this.getUser()!, to, amount, currency, memo))
-  }
-
-  async vscStake(
-    stakeType: VscStakeType,
-    amount: number,
-    to?: string,
-    memo?: string,
-    net_id?: string
+  async modifyAuth(
+    action: AuthAction,
+    type: AuthType,
+    theAuth: string,
+    role: KeyTypes,
+    weight: number
   ): Promise<SignOperationResult> {
-    switch (stakeType) {
-      case VscStakeType.Consensus:
-        return super.vscStake(stakeType, amount, to, memo, net_id)
-      case VscStakeType.HBD:
-        this.emitSignTx()
-        return this.txResult(
-          await this.provider.vscFer('Staking', this.getUser()!, to ?? this.getUser()!, amount, Asset.HBD, 'STAKING')
-        )
+    this.emitSignTx()
+    const t = type === AuthType.Account ? 'Account' : 'Key'
+    switch (action) {
+      case AuthAction.Add:
+        return this.txResult(await this.provider.addAuth(t, this.getUser()!, theAuth, roleMap[role], weight))
+      case AuthAction.Remove:
+        return this.txResult(await this.provider.rmAuth(t, this.getUser()!, theAuth, roleMap[role]))
     }
   }
-
-  async vscUnstake(
-    stakeType: VscStakeType,
-    amount: number,
-    to?: string,
-    memo?: string,
-    net_id?: string
-  ): Promise<SignOperationResult> {
-    switch (stakeType) {
-      case VscStakeType.Consensus:
-        return super.vscUnstake(stakeType, amount, to, memo, net_id)
-      case VscStakeType.HBD:
-        this.emitSignTx()
-        return this.txResult(
-          await this.provider.vscFer('Staking', this.getUser()!, to ?? this.getUser()!, amount, Asset.HBD, 'UNSTAKING')
-        )
-    }
-  }
-  */
 }
