@@ -26,14 +26,15 @@ import {
   AccountDiscStream,
   VscTxIntent,
   SignOperationResultObjHF26,
-  DiscoverOptions
+  DiscoverOptions,
+  VscFer
 } from './types.js'
 import { SimpleEventEmitter } from './lib/event-emitter.js'
 import { AppMetaType } from './lib/hiveauth-wrapper.js'
 import { decode, resolveTransaction, ResolveResult } from './lib/hive-uri.js'
 import { createVote } from './opbuilder.js'
 import { AiohaClient, getAccounts } from './rpc.js'
-import { AiohaOperations, AiohaProviderBase, DEFAULT_VSC_NET_ID } from './providers/provider.js'
+import { AiohaOperations, AiohaProviderBase } from './providers/provider.js'
 export { constructTxHeader } from './opbuilder.js'
 export { AiohaClient, broadcastTx, call, hivePerVests } from './rpc.js'
 export { Asset, KeyTypes, Providers, VscStakeType, PersistentLoginProvs, LoginProvider } from './types.js'
@@ -54,6 +55,7 @@ const notLoggedInResult = error(4900, 'Not logged in')
 const noMemoAllowResult = error(5005, 'key type cannot be memo')
 
 const NON_BROWSER_ERR = 'Provider only available in browser env'
+const DEFAULT_VSC_NET_ID = 'vsc-mainnet'
 
 /**
  * Main Aioha class.
@@ -1155,7 +1157,7 @@ export class Aioha implements AiohaOperations {
    * @deprecated Use [`@aioha/magi`](https://aioha.dev/docs/magi/usage) instead
    */
   async vscCallContract(
-    contractId: string,
+    contract_id: string,
     action: string,
     payload: any,
     rc_limit: number,
@@ -1164,7 +1166,18 @@ export class Aioha implements AiohaOperations {
   ): Promise<SignOperationResult> {
     if (keyType === 'memo') return noMemoAllowResult
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.getPI().vscCallContract(contractId, action, payload, rc_limit, intents, keyType, this.vscNetId)
+    return await this.customJSON(
+      keyType,
+      'vsc.call',
+      JSON.stringify({
+        net_id: this.vscNetId,
+        contract_id,
+        action,
+        payload,
+        rc_limit,
+        intents
+      })
+    )
   }
 
   /**
@@ -1178,7 +1191,7 @@ export class Aioha implements AiohaOperations {
    */
   async vscTransfer(to: string, amount: number, currency: Asset, memo?: string): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.getPI().vscTransfer(to, amount, currency, memo, this.vscNetId)
+    return await this.vscFer('transfer', to, amount, currency, memo)
   }
 
   /**
@@ -1192,7 +1205,7 @@ export class Aioha implements AiohaOperations {
    */
   async vscWithdraw(to: string, amount: number, currency: Asset, memo?: string): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.getPI().vscWithdraw(to, amount, currency, memo, this.vscNetId)
+    return await this.vscFer('withdraw', to, amount, currency, memo)
   }
 
   /**
@@ -1206,7 +1219,12 @@ export class Aioha implements AiohaOperations {
    */
   async vscStake(stakeType: VscStakeType, amount: number, to?: string, memo?: string): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.getPI().vscStake(stakeType, amount, to, memo, this.vscNetId)
+    switch (stakeType) {
+      case VscStakeType.Consensus:
+        return this.vscFer('consensus_stake', to ?? this.getCurrentUser()!, amount, Asset.HIVE, memo)
+      case VscStakeType.HBD:
+        return this.vscFer('stake_hbd', to ?? this.getCurrentUser()!, amount, Asset.HBD, memo)
+    }
   }
 
   /**
@@ -1220,7 +1238,36 @@ export class Aioha implements AiohaOperations {
    */
   async vscUnstake(stakeType: VscStakeType, amount: number, to?: string, memo?: string): Promise<SignOperationResult> {
     if (!this.isLoggedIn()) return notLoggedInResult
-    return await this.getPI().vscUnstake(stakeType, amount, to, memo, this.vscNetId)
+    switch (stakeType) {
+      case VscStakeType.Consensus:
+        return this.vscFer('consensus_unstake', to ?? this.getCurrentUser()!, amount, Asset.HIVE, memo)
+      case VscStakeType.HBD:
+        return this.vscFer('unstake_hbd', to ?? this.getCurrentUser()!, amount, Asset.HBD, memo)
+    }
+  }
+
+  /**
+   * Legacy Magi transfer custom JSON helper.
+   * @param type Type of transfer
+   * @param to Destination account
+   * @param amount Amount
+   * @param currency Asset
+   * @param memo Memo
+   * @returns {SignOperationResult} Transaction result
+   */
+  private vscFer(type: VscFer, to: string, amount: number, currency: Asset, memo?: string): Promise<SignOperationResult> {
+    return this.customJSON(
+      KeyTypes.Active,
+      `vsc.${type}`,
+      JSON.stringify({
+        to: to.startsWith('did:') || to.startsWith('hive:') ? to : `hive:${to}`,
+        from: `hive:${this.getCurrentUser()}`,
+        amount: amount.toFixed(3),
+        asset: currency.toLowerCase(),
+        memo,
+        net_id: this.vscNetId
+      })
+    )
   }
 
   /**

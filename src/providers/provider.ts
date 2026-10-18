@@ -30,8 +30,6 @@ import { SimpleEventEmitter } from '../lib/event-emitter.js'
 import type { HF26Operation, HF26Transaction } from '@aioha/types/dist/hive/hf26.js'
 import { error } from '../lib/errors.js'
 
-export const DEFAULT_VSC_NET_ID = 'vsc-mainnet'
-
 const HF26_UNSUPPORTED_ERR = error(4200, 'HF26 serialized tx signing is not supported for this provider')
 
 export abstract class AiohaProviderBase implements AiohaOperations {
@@ -286,101 +284,6 @@ export abstract class AiohaProviderBase implements AiohaOperations {
     }
   }
 
-  async vscCallContract(
-    contractId: string,
-    action: string,
-    payload: any,
-    rc_limit: number,
-    intents: VscTxIntent[],
-    keyType: KeyTypes,
-    net_id: string = DEFAULT_VSC_NET_ID
-  ): Promise<SignOperationResult> {
-    return await this.customJSON(
-      keyType,
-      'vsc.call',
-      JSON.stringify({
-        net_id: net_id,
-        contract_id: contractId,
-        action: action,
-        payload: payload,
-        rc_limit,
-        intents
-      })
-    )
-  }
-
-  vscTransfer(
-    to: string,
-    amount: number,
-    currency: Asset,
-    memo?: string,
-    net_id: string = DEFAULT_VSC_NET_ID
-  ): Promise<SignOperationResult> {
-    return this.vscFer('transfer', net_id, to, amount, currency, memo)
-  }
-
-  vscWithdraw(
-    to: string,
-    amount: number,
-    currency: Asset,
-    memo?: string,
-    net_id: string = DEFAULT_VSC_NET_ID
-  ): Promise<SignOperationResult> {
-    return this.vscFer('withdraw', net_id, to, amount, currency, memo)
-  }
-
-  vscStake(
-    stakeType: VscStakeType,
-    amount: number,
-    to?: string,
-    memo?: string,
-    net_id: string = DEFAULT_VSC_NET_ID
-  ): Promise<SignOperationResult> {
-    switch (stakeType) {
-      case VscStakeType.Consensus:
-        return this.vscFer('consensus_stake', net_id, to ?? this.getUser()!, amount, Asset.HIVE, memo)
-      case VscStakeType.HBD:
-        return this.vscFer('stake_hbd', net_id, to ?? this.getUser()!, amount, Asset.HBD, memo)
-    }
-  }
-
-  vscUnstake(
-    stakeType: VscStakeType,
-    amount: number,
-    to?: string,
-    memo?: string,
-    net_id: string = DEFAULT_VSC_NET_ID
-  ): Promise<SignOperationResult> {
-    switch (stakeType) {
-      case VscStakeType.Consensus:
-        return this.vscFer('consensus_unstake', net_id, to ?? this.getUser()!, amount, Asset.HIVE, memo)
-      case VscStakeType.HBD:
-        return this.vscFer('unstake_hbd', net_id, to ?? this.getUser()!, amount, Asset.HBD, memo)
-    }
-  }
-
-  async vscFer(
-    type: VscFer,
-    net_id: string,
-    to: string,
-    amount: number,
-    currency: Asset,
-    memo?: string
-  ): Promise<SignOperationResult> {
-    return await this.customJSON(
-      KeyTypes.Active,
-      `vsc.${type}`,
-      JSON.stringify({
-        to: to.startsWith('did:') || to.startsWith('hive:') ? to : `hive:${to}`,
-        from: `hive:${this.getUser()}`,
-        amount: amount.toFixed(3),
-        asset: currency.toLowerCase(),
-        memo,
-        net_id: net_id
-      })
-    )
-  }
-
   protected emitSignTx() {
     this.eventEmitter.emit('sign_tx_request')
   }
@@ -454,19 +357,4 @@ export interface AiohaOperations {
   removeAccountAuthority(username: string, role: KeyTypes): Promise<SignOperationResult>
   addKeyAuthority(publicKey: string, role: KeyTypes, weight: number): Promise<SignOperationResult>
   removeKeyAuthority(publicKey: string, role: KeyTypes): Promise<SignOperationResult>
-
-  // vsc operations
-  vscCallContract(
-    contractId: string,
-    action: string,
-    payload: any,
-    rc_limit: number,
-    intents: VscTxIntent[],
-    keyType: KeyTypes,
-    net_id?: string
-  ): Promise<SignOperationResult>
-  vscTransfer(to: string, amount: number, currency: Asset, memo?: string, net_id?: string): Promise<SignOperationResult>
-  vscWithdraw(to: string, amount: number, currency: Asset, memo?: string, net_id?: string): Promise<SignOperationResult>
-  vscStake(stakeType: VscStakeType, amount: number, to?: string, memo?: string, net_id?: string): Promise<SignOperationResult>
-  vscUnstake(stakeType: VscStakeType, amount: number, to?: string, memo?: string, net_id?: string): Promise<SignOperationResult>
 }

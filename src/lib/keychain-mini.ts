@@ -77,35 +77,4 @@ export class KeychainMini {
       wk().requestDelegation(delegator, delegatee, amount, unit, (response: KeychainResponse) => r(response))
     })
   }
-
-  /*
-  async vscFer(
-    method: 'Transfer' | 'Withdrawal' | 'Staking',
-    user: string,
-    to: string,
-    amount: number,
-    asset: string,
-    memo?: string,
-    net_id?: string
-  ): Promise<KeychainResponse> {
-    return new Promise(async (rs) => {
-      const toUser = to.startsWith('did:') || to.startsWith('hive:') ? to : `hive:${to}`
-      try {
-        wk()[`requestVsc${method}`](
-          user,
-          toUser,
-          amount.toFixed(3),
-          asset,
-          memo ?? '',
-          (response: KeychainResponse) => {
-            rs(response)
-          },
-          net_id
-        )
-      } catch (error) {
-        throw error
-      }
-    })
-  }
-  */
 }
