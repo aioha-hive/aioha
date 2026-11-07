@@ -36,6 +36,10 @@ const HiveAuthErrorCode = (e: any): number => {
 
 const NO_MEMO = 'Memo operations are unavailable in HiveAuth'
 
+const LS_TOKEN = 'hiveauthToken'
+const LS_KEY = 'hiveauthKey'
+const LS_EXP = 'hiveauthExp'
+
 export class HiveAuth extends AiohaProviderBase {
   private provider: Auth
 
@@ -59,9 +63,9 @@ export class HiveAuth extends AiohaProviderBase {
           if (options.hiveauth && typeof options.hiveauth.cbWait === 'function') options.hiveauth.cbWait(payload, evt, cancel)
         }
       )
-      if (this.provider.token) localStorage.setItem('hiveauthToken', this.provider.token)
-      localStorage.setItem('hiveauthKey', this.provider.key!)
-      localStorage.setItem('hiveauthExp', this.provider.expire!.toString())
+      if (this.provider.token) localStorage.setItem(LS_TOKEN, this.provider.token)
+      localStorage.setItem(LS_KEY, this.provider.key!)
+      localStorage.setItem(LS_EXP, this.provider.expire!.toString())
       return {
         provider: Providers.HiveAuth,
         success: true,
@@ -84,13 +88,11 @@ export class HiveAuth extends AiohaProviderBase {
 
   async logout(): Promise<void> {
     this.provider.logout()
-    this.rmItems(['hiveauthToken', 'hiveauthKey', 'hiveauthExp'])
+    this.rmItems([LS_TOKEN, LS_KEY, LS_EXP])
   }
 
   loadAuth(username: string): boolean {
-    const token = localStorage.getItem('hiveauthToken')
-    const key = localStorage.getItem('hiveauthKey')
-    const exp = localStorage.getItem('hiveauthExp')
+    const [token, key, exp] = this.getItems(LS_TOKEN, LS_KEY, LS_EXP)
     if (!key || !exp) return false
     const expMs = parseInt(exp)
     if (isNaN(expMs) || new Date().getTime() >= expMs) return false
@@ -118,9 +120,9 @@ export class HiveAuth extends AiohaProviderBase {
   loadLogin(username: string, info: PersistentLogin): boolean {
     if (info.provider !== Providers.HiveAuth) return false
     const info2 = info as PersistentLoginHiveAuth
-    if (info2.token) localStorage.setItem('hiveauthToken', info2.token)
-    localStorage.setItem('hiveauthKey', info2.key)
-    localStorage.setItem('hiveauthExp', info2.exp.toString())
+    if (info2.token) localStorage.setItem(LS_TOKEN, info2.token)
+    localStorage.setItem(LS_KEY, info2.key)
+    localStorage.setItem(LS_EXP, info2.exp.toString())
     return this.loadAuth(username)
   }
 

@@ -40,6 +40,11 @@ const isExpired = (tsSec: number): boolean => {
   return isNaN(tsSec) || new Date().getTime() / 1000 >= tsSec
 }
 
+const LS_TOKEN = 'hivesignerToken'
+const LS_EXP = 'hivesignerExpiry'
+const LS_USER = 'hivesignerUsername'
+const LS_TXID = 'hivesignerTxId'
+
 export class HiveSigner extends AiohaProviderBase {
   private provider: Client
   private username?: string
@@ -54,14 +59,12 @@ export class HiveSigner extends AiohaProviderBase {
   async login(username: string, options: LoginOptions): Promise<LoginResult> {
     return new Promise((rs) => {
       this.emitLoginReq()
-      let loggedInUser: string | null, token: string | null
       const loginURL = this.getLoginURL(options, username ?? undefined)
       const hsWindow = window.open(loginURL)
       let hsInterval = setInterval(() => {
         if (hsWindow && hsWindow.closed) {
           clearInterval(hsInterval)
-          token = localStorage.getItem('hivesignerToken')
-          loggedInUser = localStorage.getItem('hivesignerUsername')
+          const [token, loggedInUser] = this.getItems(LS_TOKEN, LS_USER)
           if (token && loggedInUser) {
             this.provider.setAccessToken(token)
             this.username = loggedInUser
@@ -102,9 +105,9 @@ export class HiveSigner extends AiohaProviderBase {
     else if (isExpired(options.hivesigner.expiry)) return loginError(5003, 'already expired', Providers.HiveSigner)
     this.provider.setAccessToken(options.hivesigner.accessToken)
     this.username = username
-    localStorage.setItem('hivesignerToken', options.hivesigner.accessToken)
-    localStorage.setItem('hivesignerExpiry', options.hivesigner.expiry.toString())
-    localStorage.setItem('hivesignerUsername', username)
+    localStorage.setItem(LS_TOKEN, options.hivesigner.accessToken)
+    localStorage.setItem(LS_EXP, options.hivesigner.expiry.toString())
+    localStorage.setItem(LS_USER, username)
     return {
       provider: Providers.HiveSigner,
       success: true,
@@ -116,7 +119,7 @@ export class HiveSigner extends AiohaProviderBase {
   async logout(): Promise<void> {
     try {
       await this.provider.revokeToken()
-      this.rmItems(['hivesignerToken', 'hivesignerExpiry', 'hivesignerUsername'])
+      this.rmItems([LS_TOKEN, LS_EXP, LS_USER])
       this.provider.removeAccessToken()
       delete this.username
     } catch {}
@@ -127,9 +130,7 @@ export class HiveSigner extends AiohaProviderBase {
   }
 
   loadAuth(username: string): boolean {
-    const token = localStorage.getItem('hivesignerToken')
-    const exp = localStorage.getItem('hivesignerExpiry')
-    const loggedInUser = localStorage.getItem('hivesignerUsername')
+    const [token, exp, loggedInUser] = this.getItems(LS_TOKEN, LS_EXP, LS_USER)
     if (!token || !exp || !loggedInUser || loggedInUser !== username) return false
     const expSeconds = parseInt(exp)
     if (isExpired(expSeconds)) return false
@@ -147,7 +148,7 @@ export class HiveSigner extends AiohaProviderBase {
       return {
         provider: Providers.HiveSigner,
         token: this.provider.accessToken!,
-        exp: parseInt(localStorage.getItem('hivesignerExpiry')!) * 1000
+        exp: parseInt(this.getItems(LS_EXP)[0]!) * 1000
       }
   }
 
@@ -213,12 +214,12 @@ export class HiveSigner extends AiohaProviderBase {
       const signUrl =
         encodeOps(ops).replace('hive://', 'https://hivesigner.com/') +
         `?redirect_uri=${encodeURIComponent(this.provider.callbackURL)}`
-      const oldTxid = localStorage.getItem('hivesignerTxId')
+      const [oldTxid] = this.getItems(LS_TXID)
       const hsWindow = window.open(signUrl)
       let hsInterval = setInterval(() => {
         if (hsWindow && hsWindow.closed) {
           clearInterval(hsInterval)
-          const txid = localStorage.getItem('hivesignerTxId')
+          const [txid] = this.getItems(LS_TXID)
           if (txid && txid !== oldTxid) {
             rs({
               success: true,

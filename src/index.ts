@@ -994,8 +994,8 @@ export class Aioha implements AiohaOperations {
    * @param memo Memo to be attached in the cancellation
    * @returns Transaction result
    */
-  cancelRecurrentTransfer(to: string, currency: Asset, memo?: string): Promise<SignOperationResult> {
-    return this.recurrentTransfer(to, 0, currency, 24, 2, memo)
+  cancelRecurrentTransfer(to: string, currency: Asset, memo?: string, pair_id?: number): Promise<SignOperationResult> {
+    return this.recurrentTransfer(to, 0, currency, 24, 2, memo, pair_id)
   }
 
   /**

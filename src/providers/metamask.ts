@@ -231,7 +231,7 @@ export class MetaMaskSnap extends AiohaProviderBase {
   }
 
   loadAuth(username: string): boolean {
-    const idx = parseInt(localStorage.getItem('mmHiveSnapAccIdx') || '')
+    const idx = parseInt(this.getItems('mmHiveSnapAccIdx')[0] || '')
     if (isNaN(idx)) return false
     this.accountIdx = idx
     this.username = username

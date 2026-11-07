@@ -187,7 +187,8 @@ export class Ledger extends AiohaProviderBase {
   private async checkConnection(): Promise<boolean> {
     try {
       if (!this.provider) {
-        const TransportWebUSB = (await import(/* webpackChunkName: 'ledger' */ '@aioha/ledger-app-hive/lib/transport/web-usb.js')).default
+        const TransportWebUSB = (await import(/* webpackChunkName: 'ledger' */ '@aioha/ledger-app-hive/lib/transport/web-usb.js'))
+          .default
         const app = await this.getLib()
         const t = await TransportWebUSB.create()
         this.provider = new app(t)
@@ -306,7 +307,7 @@ export class Ledger extends AiohaProviderBase {
   }
 
   loadAuth(username: string): boolean {
-    const path = localStorage.getItem('ledgerPath')
+    const [path] = this.getItems('ledgerPath')
     if (!path) return false
     this.username = username
     this.path = path

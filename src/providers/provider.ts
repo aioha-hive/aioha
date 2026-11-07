@@ -20,10 +20,7 @@ import {
   PersistentLogin,
   SignOperationResult,
   SignOperationResultObj,
-  SignOperationResultObjHF26,
-  VscFer,
-  VscStakeType,
-  VscTxIntent
+  SignOperationResultObjHF26
 } from '../types.js'
 import { createVote, createComment, createUnstakeHive, createUnstakeHiveByVests } from '../opbuilder.js'
 import { AiohaClient, hivePerVests, getAccounts, getAccountsErrored } from '../rpc.js'
@@ -284,6 +281,12 @@ export abstract class AiohaProviderBase implements AiohaOperations {
 
   protected rmItems(itms: string[]) {
     for (let i in itms) localStorage.removeItem(itms[i])
+  }
+
+  protected getItems(...itms: string[]): (string | null)[] {
+    const result: (string | null)[] = []
+    for (let i in itms) result.push(localStorage.getItem(itms[i]))
+    return result
   }
 }
 
