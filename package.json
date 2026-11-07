@@ -63,6 +63,6 @@
     "@aioha/ledger-app-hive": "^0.0.3",
     "@aioha/tx-digest": "^2.1.1",
     "@aioha/types": "^1.0.0",
-    "@noble/hashes": "^2.2.0"
+    "@noble/hashes": "^2.4.0"
   }
 }

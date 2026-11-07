@@ -18,8 +18,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       '@noble/hashes':
-        specifier: ^2.2.0
-        version: 2.2.0
+        specifier: ^2.4.0
+        version: 2.4.0
     devDependencies:
       '@hiveio/beekeeper':
         specifier: 1.28.7-rc0
@@ -182,8 +182,8 @@ packages:
     resolution: {integrity: sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A==}
     engines: {node: ^14.21.3 || >=16}
 
-  '@noble/hashes@2.2.0':
-    resolution: {integrity: sha512-IYqDGiTXab6FniAgnSdZwgWbomxpy9FtYvLKs7wCUs2a8RkITG+DFGO1DM9cr+E3/RgADRpFjrKVaJ1z6sjtEg==}
+  '@noble/hashes@2.4.0':
+    resolution: {integrity: sha512-X5XaVWZIBCT7HHZGm5I7ZQXDwLG+bGXuSrMQAW+7Zvl87h1kmc1ZB1VSRJcpUfoUrGQp4Fkoxm5kZ+Ms+aW+eA==}
     engines: {node: '>= 20.19.0'}
 
   '@oxc-project/types@0.122.0':
@@ -1754,7 +1754,7 @@ snapshots:
 
   '@noble/hashes@1.8.0': {}
 
-  '@noble/hashes@2.2.0': {}
+  '@noble/hashes@2.4.0': {}
 
   '@oxc-project/types@0.122.0': {}
 
