@@ -6,11 +6,12 @@ import { SimpleEventEmitter } from '../src/lib/event-emitter.js'
 import { AiohaClient } from '../src/rpc.js'
 import { KeyTypes, Providers } from '../src/types.js'
 import type { PersistentLoginBeekeeper } from '../src/providers/custom/beekeeper.js'
-import type { hf26, legacy } from '@aioha/types'
+import type { HF26Transaction } from '@aioha/types/dist/hive/hf26.js'
+import type { LegacyTransaction } from '@aioha/types/dist/hive/legacy.js'
 
 const TEST_WIF = '5JkFnXrLM2ap9t3AmAxBJvQHF7xSKtnTrCTginQCkhzU5S7ecPT'
 
-const voteTxHF26: hf26.HF26Transaction = {
+const voteTxHF26: HF26Transaction = {
   ref_block_num: 23679,
   ref_block_prefix: 291568045,
   expiration: '2025-11-20T07:59:08',
@@ -28,7 +29,7 @@ const voteTxHF26: hf26.HF26Transaction = {
   extensions: []
 }
 
-const voteTxLegacy: legacy.LegacyTransaction = {
+const voteTxLegacy: LegacyTransaction = {
   ref_block_num: 23679,
   ref_block_prefix: 291568045,
   expiration: '2025-11-20T07:59:08',
