@@ -16,3 +16,6 @@ export const loginError = (code: number, message: string, provider?: LoginProvid
     error: message
   }
 }
+
+export const UNK_BC_ERROR = 'Failed to broadcast transaction due to unknown error'
+export const UNK_SBC_ERROR = 'Failed to sign or broadcast tx due to unknown error'

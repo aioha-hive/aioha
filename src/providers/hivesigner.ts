@@ -18,7 +18,7 @@ import {
   SignOperationResultObj
 } from '../types.js'
 import { SimpleEventEmitter } from '../lib/event-emitter.js'
-import { error, loginError } from '../lib/errors.js'
+import { error, loginError, UNK_BC_ERROR } from '../lib/errors.js'
 
 // https://github.com/ecency/hivesigner-api/blob/9fa9f51f319b5d9f9d86a4a028fcdf71b10b7836/config.json
 const authorizedOps = [
@@ -203,7 +203,7 @@ export class HiveSigner extends AiohaProviderBase {
       if (err.error === 'invalid_scope') return await this.signTxInWindow(tx)
       return error(
         err.error_description ? getErrorCode(err.error) : 5000,
-        err.error_description ?? 'Failed to broadcast tx due to unknown error'
+        err.error_description ?? UNK_BC_ERROR
       )
     }
   }
@@ -225,7 +225,7 @@ export class HiveSigner extends AiohaProviderBase {
               success: true,
               result: txid
             })
-          } else rs(error(5000, 'Failed to broadcast transaction.'))
+          } else rs(error(5000, UNK_BC_ERROR))
         }
       }, 1000)
     })

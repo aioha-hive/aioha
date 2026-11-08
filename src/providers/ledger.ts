@@ -20,7 +20,7 @@ import { type AiohaClient, broadcastTx, getKeyRefs } from '../rpc.js'
 import { constructTxHeader } from '../opbuilder.js'
 import { sha256 } from '../lib/sha256-browser.js'
 import { SimpleEventEmitter } from '../lib/event-emitter.js'
-import { error, loginError } from '../lib/errors.js'
+import { error, loginError, UNK_BC_ERROR, UNK_SBC_ERROR } from '../lib/errors.js'
 
 const CONN_ERROR = 'Failed to establish connection to the device'
 const MEMO_ERROR = 'Memo cryptography is not supported in Ledger provider'
@@ -395,7 +395,7 @@ export class Ledger extends AiohaProviderBase {
       if (broadcasted.error)
         return error(
           broadcasted.error.code ?? -32603,
-          broadcasted.error.message ?? 'Failed to broadcast transaction due to unknown error'
+          broadcasted.error.message ?? UNK_BC_ERROR
         )
       else
         return {
@@ -403,7 +403,7 @@ export class Ledger extends AiohaProviderBase {
           result: txId
         }
     } catch (e) {
-      return error(5000, 'Failed to sign or broadcast tx due to unknown error')
+      return error(5000, UNK_SBC_ERROR)
     }
   }
 }

@@ -6,7 +6,7 @@ import { oldToHF26Operation, oldToHF26Tx } from '../../lib/hf26-adapter.js'
 import type { HF26Operation, HF26SignedTransaction, HF26Transaction } from '@aioha/types/dist/hive/hf26.js'
 import { SimpleEventEmitter } from '../../lib/event-emitter.js'
 import { sha256Bytes } from '../../lib/sha256-browser.js'
-import { error } from '../../lib/errors.js'
+import { error, UNK_BC_ERROR } from '../../lib/errors.js'
 import {
   AccountAuths,
   KeyTypes,
@@ -202,7 +202,7 @@ export class BeekeeperProvider extends AiohaProviderBase {
       if (broadcasted.error)
         return error(
           broadcasted.error.code ?? -32603,
-          broadcasted.error.message ?? 'Failed to broadcast transaction due to unknown error'
+          broadcasted.error.message ?? UNK_BC_ERROR
         )
       return { success: true, result: txId }
     } catch {

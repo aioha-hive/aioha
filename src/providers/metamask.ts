@@ -25,7 +25,7 @@ import { AiohaRpcError } from '../jsonrpc/eip1193-types.js'
 import { type AiohaClient, broadcastTxHF26, callRest, getKeyRefs } from '../rpc.js'
 import { oldToHF26Operation, oldToHF26Tx } from '../lib/hf26-adapter.js'
 import { constructTxHeader } from '../opbuilder.js'
-import { error, loginError } from '../lib/errors.js'
+import { error, loginError, UNK_BC_ERROR, UNK_SBC_ERROR } from '../lib/errors.js'
 
 type SnapData = {
   permissionName: string
@@ -53,6 +53,8 @@ const SNAP_ORIGIN = `npm:@hiveio/metamask-snap`
 const SNAP_VERSION = '1.7.0'
 
 const SNAP_NOT_CONNECTED_ERR = error(4900, 'Snap is not connected')
+
+const LS_ACC_IDX = 'mmHiveSnapAccIdx'
 
 export class MetaMaskSnap extends AiohaProviderBase {
   private snap?: SnapData
@@ -152,7 +154,7 @@ export class MetaMaskSnap extends AiohaProviderBase {
     }
     this.accountIdx = accIdx
     this.username = username
-    localStorage.setItem('mmHiveSnapAccIdx', accIdx.toString())
+    localStorage.setItem(LS_ACC_IDX, accIdx.toString())
     return {
       provider: Providers.MetaMaskSnap,
       success: true,
@@ -173,7 +175,7 @@ export class MetaMaskSnap extends AiohaProviderBase {
     if (!decoded.success) return decoded
     this.accountIdx = accIdx
     this.username = username
-    localStorage.setItem('mmHiveSnapAccIdx', accIdx.toString())
+    localStorage.setItem(LS_ACC_IDX, accIdx.toString())
     return {
       provider: Providers.MetaMaskSnap,
       success: true,
@@ -185,7 +187,7 @@ export class MetaMaskSnap extends AiohaProviderBase {
   async logout(): Promise<void> {
     delete this.accountIdx
     delete this.username
-    this.rmItems(['mmHiveSnapAccIdx'])
+    this.rmItems([LS_ACC_IDX])
   }
 
   async discoverAccounts(stream?: AccountDiscStream, options?: DiscoverOptions): Promise<OperationResultObj> {
@@ -231,7 +233,7 @@ export class MetaMaskSnap extends AiohaProviderBase {
   }
 
   loadAuth(username: string): boolean {
-    const idx = parseInt(this.getItems('mmHiveSnapAccIdx')[0] || '')
+    const idx = parseInt(this.getItems(LS_ACC_IDX)[0] || '')
     if (isNaN(idx)) return false
     this.accountIdx = idx
     this.username = username
@@ -251,7 +253,7 @@ export class MetaMaskSnap extends AiohaProviderBase {
 
   loadLogin(username: string, info: PersistentLogin): boolean {
     const idx = (info as PersistentLoginMetamaskSnap).accIdx
-    localStorage.setItem('mmHiveSnapAccIdx', idx.toString())
+    localStorage.setItem(LS_ACC_IDX, idx.toString())
     return this.loadAuth(username)
   }
 
@@ -378,7 +380,7 @@ export class MetaMaskSnap extends AiohaProviderBase {
       if (broadcasted.error)
         return error(
           broadcasted.error.code ?? -32603,
-          broadcasted.error.message ?? 'Failed to broadcast transaction due to unknown error'
+          broadcasted.error.message ?? UNK_BC_ERROR
         )
       else
         return {
@@ -386,7 +388,7 @@ export class MetaMaskSnap extends AiohaProviderBase {
           result: txId
         }
     } catch (e: any) {
-      return error(5000, 'Failed to sign or broadcast tx due to unknown error')
+      return error(5000, UNK_SBC_ERROR)
     }
   }
 }
