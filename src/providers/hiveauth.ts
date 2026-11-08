@@ -140,7 +140,7 @@ export class HiveAuth extends AiohaProviderBase {
 
   async signMessage(message: string, keyType: KeyTypes): Promise<OperationResult> {
     try {
-      this.eventEmitter.emit('sign_msg_request')
+      this.emitSignMsg()
       const signed = await HaWrapper.challenge(
         this.provider,
         {

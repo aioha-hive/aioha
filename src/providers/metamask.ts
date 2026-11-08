@@ -313,7 +313,7 @@ export class MetaMaskSnap extends AiohaProviderBase {
 
   async signMessage(message: string, keyType: KeyTypes): Promise<OperationResult> {
     if (!(await this.initSnap())) return SNAP_NOT_CONNECTED_ERR
-    this.eventEmitter.emit('sign_msg_request')
+    this.emitSignMsg()
     try {
       const bytes = Array.from(new TextEncoder().encode(message))
       const response = (await this.invokeSnap('hive_encrypt', {

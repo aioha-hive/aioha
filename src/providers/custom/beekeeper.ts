@@ -6,7 +6,7 @@ import { oldToHF26Operation, oldToHF26Tx } from '../../lib/hf26-adapter.js'
 import type { HF26Operation, HF26SignedTransaction, HF26Transaction } from '@aioha/types/dist/hive/hf26.js'
 import { SimpleEventEmitter } from '../../lib/event-emitter.js'
 import { sha256Bytes } from '../../lib/sha256-browser.js'
-import { error, UNK_BC_ERROR } from '../../lib/errors.js'
+import { error, UNK_BC_ERROR, UNK_SBC_ERROR } from '../../lib/errors.js'
 import {
   AccountAuths,
   KeyTypes,
@@ -149,7 +149,7 @@ export class BeekeeperProvider extends AiohaProviderBase {
   }
 
   async signMessage(message: string, keyType: KeyTypes): Promise<OperationResult> {
-    this.eventEmitter.emit('sign_msg_request')
+    this.emitSignMsg()
     try {
       const key = this.getKey(keyType)
       const digest = await this.sha256Fn(new TextEncoder().encode(message))
@@ -206,7 +206,7 @@ export class BeekeeperProvider extends AiohaProviderBase {
         )
       return { success: true, result: txId }
     } catch {
-      return error(5000, 'failed to sign and/or broadcast transaction')
+      return error(5000, UNK_SBC_ERROR)
     }
   }
 }

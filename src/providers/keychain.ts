@@ -140,7 +140,7 @@ export class Keychain extends AiohaProviderBase {
   }
 
   async signMessage(message: string, keyType: KeyTypes): Promise<OperationResult> {
-    this.eventEmitter.emit('sign_msg_request')
+    this.emitSignMsg()
     const signBuf = await this.provider.challenge(false, this.getUser()!, message, roleMap[keyType])
     if (!signBuf.success) return error(getErrorCode(signBuf), signBuf.error)
     return {

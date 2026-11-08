@@ -267,6 +267,10 @@ export abstract class AiohaProviderBase implements AiohaOperations {
     }
   }
 
+  protected emitSignMsg() {
+    this.eventEmitter.emit('sign_msg_request')
+  }
+
   protected emitSignTx() {
     this.eventEmitter.emit('sign_tx_request')
   }
