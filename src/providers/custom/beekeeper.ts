@@ -1,7 +1,7 @@
 import type { LegacyOperation, LegacySignedTransaction, LegacyTransaction } from '@aioha/types/dist/hive/legacy.js'
 import { AiohaProviderBase } from '../provider.js'
 import { constructTxHeader } from '../../opbuilder.js'
-import { type AiohaClient, broadcastTxHF26, callRest } from '../../rpc.js'
+import { type AiohaClient, broadcastTxHF26 } from '../../rpc.js'
 import { oldToHF26Operation, oldToHF26Tx } from '../../lib/hf26-adapter.js'
 import type { HF26Operation, HF26SignedTransaction, HF26Transaction } from '@aioha/types/dist/hive/hf26.js'
 import { SimpleEventEmitter } from '../../lib/event-emitter.js'
@@ -114,7 +114,7 @@ export class BeekeeperProvider extends AiohaProviderBase {
   async encryptMemo(message: string, keyType: KeyTypes, recipient: string): Promise<OperationResult> {
     this.emitMemoReq()
     try {
-      const keys = await callRest<AccountAuths>(`/hafbe-api/accounts/${recipient}/authority`)
+      const keys = await this.rpc.callRest<AccountAuths>(`/hafbe-api/accounts/${recipient}/authority`)
       if (!keys[keyType]) throw ''
       const recipientKey = keyType === KeyTypes.Memo ? keys.memo : keys[keyType].key_auths[0][0]
       const ownKey = this.getKey(keyType)

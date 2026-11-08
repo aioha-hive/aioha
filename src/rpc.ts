@@ -67,7 +67,7 @@ export const call = async (
   }
 }
 
-export const callRest = async <T>(
+const callRest = async <T>(
   method: string,
   api: string = DEFAULT_API,
   fallbackApis: string[] = FALLBACK_APIS

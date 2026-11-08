@@ -1,7 +1,7 @@
 import { Client, Memo, PrivateKey, cryptoUtils } from '@hiveio/dhive'
 import type { LegacyOperation, LegacyTransaction } from '@aioha/types/dist/hive/legacy.js'
 import { AiohaProviderBase } from '../provider.js'
-import { DEFAULT_API, callRest } from '../../rpc.js'
+import { DEFAULT_API } from '../../rpc.js'
 import {
   AccountAuths,
   LoginOptions,
@@ -97,7 +97,7 @@ export class PlaintextKeyProvider extends AiohaProviderBase {
 
   async encryptMemo(message: string, keyType: KeyTypes, recipient: string): Promise<OperationResult> {
     try {
-      const keys = await callRest<AccountAuths>(`/hafbe-api/accounts/${recipient}/authority`)
+      const keys = await this.rpc.callRest<AccountAuths>(`/hafbe-api/accounts/${recipient}/authority`)
       if (!keys[keyType]) throw ''
       const key = keyType === KeyTypes.Memo ? keys.memo : keys[keyType].key_auths[0][0]
       const encoded = Memo.encode(this.wif, key, message)

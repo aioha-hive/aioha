@@ -22,7 +22,7 @@ import { getSnapsProvider } from '../lib/metamask.js'
 import { SimpleEventEmitter } from '../lib/event-emitter.js'
 import type { HF26Operation, HF26SignedTransaction, HF26Transaction } from '@aioha/types/dist/hive/hf26.js'
 import { AiohaRpcError } from '../jsonrpc/eip1193-types.js'
-import { type AiohaClient, broadcastTxHF26, callRest, getKeyRefs } from '../rpc.js'
+import { type AiohaClient, broadcastTxHF26, getKeyRefs } from '../rpc.js'
 import { oldToHF26Operation, oldToHF26Tx } from '../lib/hf26-adapter.js'
 import { constructTxHeader } from '../opbuilder.js'
 import { error, loginError, UNK_BC_ERROR, UNK_SBC_ERROR } from '../lib/errors.js'
@@ -259,7 +259,7 @@ export class MetaMaskSnap extends AiohaProviderBase {
 
   async encryptMemo(message: string, keyType: KeyTypes, recipient: string): Promise<OperationResult> {
     try {
-      const auths = await callRest<AccountAuths>(`/hafbe-api/accounts/${recipient}/authority`)
+      const auths = await this.rpc.callRest<AccountAuths>(`/hafbe-api/accounts/${recipient}/authority`)
       if (!auths[keyType]) throw ''
       const key = keyType === KeyTypes.Memo ? auths.memo : auths[keyType].key_auths[0][0]
       const encoded = await this.encryptMemoWithKeys(message, keyType, [key])
