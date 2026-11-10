@@ -1,11 +1,12 @@
 import type { LegacyOperation, LegacySignedTransaction, LegacyTransaction } from '@aioha/types/dist/hive/legacy.js'
-import { AiohaProviderBase } from '../provider.js'
+import { AiohaProviderBase, type WalletKeyProvider } from '../provider.js'
 import { constructTxHeader } from '../../opbuilder.js'
 import { type AiohaClient, broadcastTxHF26 } from '../../rpc.js'
 import { oldToHF26Operation, oldToHF26Tx } from '../../lib/hf26-adapter.js'
 import type { HF26Operation, HF26SignedTransaction, HF26Transaction } from '@aioha/types/dist/hive/hf26.js'
 import { SimpleEventEmitter } from '../../lib/event-emitter.js'
 import { sha256Bytes } from '../../lib/sha256-browser.js'
+import { deriveWalletEncryptionKey as deriveWalletEncryptionKeyFromPassword } from '../../lib/crypto.js'
 import { error, UNK_BC_ERROR, UNK_SBC_ERROR } from '../../lib/errors.js'
 import {
   AccountAuths,
@@ -25,6 +26,7 @@ import {
 export type Sha256Function = (message: Uint8Array) => Promise<Uint8Array> | Uint8Array
 
 export interface BeekeeperWallet {
+  importKey(wif: string): Promise<string> | string
   signDigest(publicKey: string, sigDigest: string): string
   encryptData(content: string, key: string, anotherKey?: string, nonce?: number): string
   decryptData(content: string, key: string, anotherKey?: string): string
@@ -40,7 +42,7 @@ export const toHex = (bytes: Uint8Array): string =>
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('')
 
-export class BeekeeperProvider extends AiohaProviderBase {
+export class BeekeeperProvider extends AiohaProviderBase implements WalletKeyProvider {
   private wallet: BeekeeperWallet
   private keys: Partial<Record<KeyTypes, string>>
   private user?: string
@@ -63,6 +65,48 @@ export class BeekeeperProvider extends AiohaProviderBase {
     const key = this.keys[keyType]
     if (!key) throw new Error(`no ${keyType} key available`)
     return key
+  }
+
+  /**
+   * Injects a private key into the beekeeper wallet and associates it with a key type.
+   * @returns The public key of the injected key
+   */
+  async setKey(keyType: KeyTypes, wif: string): Promise<string> {
+    const publicKey = await this.wallet.importKey(wif)
+    this.keys[keyType] = publicKey
+    return publicKey
+  }
+
+  /** Derives the public key for a WIF private key. */
+  async getPublicKey(wif: string): Promise<string> {
+    return await this.wallet.importKey(wif)
+  }
+
+  /** Derives the wallet encryption key WIF from a password. */
+  deriveWalletEncryptionKey(password: string): string {
+    return deriveWalletEncryptionKeyFromPassword(password)
+  }
+
+  /** Encrypts wallet data with a wallet encryption key WIF. */
+  async encryptWalletData(content: string, encryptionKeyWif: string): Promise<string> {
+    const publicKey = await this.wallet.importKey(encryptionKeyWif)
+    return await this.wallet.encryptData(content, publicKey, publicKey)
+  }
+
+  /** Decrypts wallet data with a wallet encryption key WIF. */
+  async decryptWalletData(encrypted: string, encryptionKeyWif: string): Promise<string> {
+    const publicKey = await this.wallet.importKey(encryptionKeyWif)
+    return await this.wallet.decryptData(encrypted, publicKey)
+  }
+
+  /** Forgets the key type -> public key associations held by this provider. */
+  clearKeys(): void {
+    this.keys = {}
+  }
+
+  setApi(api: string, fallbackApis?: string[]): void {
+    this.rpc.api = api
+    if (Array.isArray(fallbackApis)) this.rpc.fallbackApis = fallbackApis
   }
 
   async login(username: string, options: LoginOptions): Promise<LoginResult> {

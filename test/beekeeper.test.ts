@@ -65,6 +65,18 @@ describe('BeekeeperProvider', () => {
     await bk.delete()
   })
 
+  describe('runtime key injection', () => {
+    it('derives public keys and injects keys at runtime', async () => {
+      const p = new BeekeeperProvider(wallet, {}, new AiohaClient(), new SimpleEventEmitter(), sha256)
+      expect(await p.getPublicKey(TEST_WIF)).toBe(pubKey)
+      expect(await p.setKey(KeyTypes.Posting, TEST_WIF)).toBe(pubKey)
+      expect((await p.signMessage('runtime key', KeyTypes.Posting)).success).toBe(true)
+
+      p.clearKeys()
+      expect((await p.signMessage('runtime key', KeyTypes.Posting)).success).toBe(false)
+    })
+  })
+
   describe('signTxHF26', () => {
     it('should sign an HF26 transaction and return a signature', async () => {
       const result = await provider.signTxHF26(voteTxHF26, KeyTypes.Posting)

@@ -17,6 +17,9 @@ importers:
       '@aioha/types':
         specifier: ^1.0.0
         version: 1.0.0
+      '@noble/curves':
+        specifier: ^1.4.2
+        version: 1.4.2
       '@noble/hashes':
         specifier: ^2.4.0
         version: 2.4.0

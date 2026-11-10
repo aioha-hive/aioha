@@ -32,11 +32,6 @@ import { error } from '../lib/errors.js'
 const HF26_UNSUPPORTED_ERR = error(4200, 'HF26 serialized tx signing is not supported for this provider')
 
 export abstract class AiohaProviderBase implements AiohaOperations {
-  /**
-   * @deprecated Superseded by AiohaClient
-   */
-  protected api: string = ''
-
   protected rpc: AiohaClient
   protected eventEmitter: SimpleEventEmitter
 
@@ -55,6 +50,13 @@ export abstract class AiohaProviderBase implements AiohaOperations {
    * @param chainId New chain ID
    */
   setChainId(chainId: string) {}
+
+  /**
+   * This is a hook that is called when the provider is registered under a name with Aioha.
+   * Custom providers can use this to return the correct `provider` field from getLoginInfo().
+   * @param name The registered provider name
+   */
+  setProviderName(name: string) {}
 
   setEventEmitter(emitter: SimpleEventEmitter) {
     this.eventEmitter = emitter
@@ -293,6 +295,56 @@ export abstract class AiohaProviderBase implements AiohaOperations {
     return result
   }
 }
+
+/**
+ * Common wallet key operations shared by key signer providers.
+ *
+ * Implementations derive wallet encryption keys from passwords, derive public keys
+ * from WIF private keys and encrypt/decrypt external wallet files with a wallet
+ * encryption key WIF. The wallet file format is compatible with
+ * @hiveio/wax-signers-external.
+ */
+export interface WalletKeyProvider {
+  /** Derives the public key for a private key WIF. */
+  getPublicKey(wif: string): Promise<string> | string
+  /**
+   * Derives the wallet encryption key WIF from a password.
+   * Matches wax's `getPrivateKeyFromPassword('dummyaccount', 'posting', password)`.
+   */
+  deriveWalletEncryptionKey(password: string): Promise<string> | string
+  /**
+   * Encrypts wallet data with a wallet encryption key WIF.
+   * @param content Plaintext wallet data
+   * @param encryptionKeyWif WIF of the key used to encrypt the wallet data
+   */
+  encryptWalletData(content: string, encryptionKeyWif: string): Promise<string> | string
+  /**
+   * Decrypts wallet data that was encrypted with a wallet encryption key WIF.
+   * @param encrypted Encrypted wallet data
+   * @param encryptionKeyWif WIF of the key used to encrypt the wallet data
+   */
+  decryptWalletData(encrypted: string, encryptionKeyWif: string): Promise<string> | string
+}
+
+/**
+ * An Aioha provider that can receive private keys at runtime, derive public keys
+ * from them and perform wallet data encryption/decryption. Providers implementing
+ * this can be used as key signers by providers that load keys from external storage
+ * (e.g. GoogleDriveProvider).
+ */
+export type KeySignerProvider = AiohaProviderBase &
+  WalletKeyProvider & {
+    /**
+     * Injects a private key WIF for the given key type.
+     * @returns The public key of the injected key
+     */
+    setKey(keyType: KeyTypes, wif: string): Promise<string> | string
+    /**
+     * Forgets all keys injected into the signer. Optional, used when a wrapper provider
+     * logs out or locks its key storage.
+     */
+    clearKeys?(): void
+  }
 
 export interface AiohaOperations {
   // memo

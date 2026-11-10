@@ -16,12 +16,17 @@ import type { legacy } from '@aioha/types'
 
 class FakeProvider extends AiohaProviderBase {
   readonly name: string
+  registeredName?: string
   private user?: string
   private info?: PersistentLogin
 
   constructor(name: string) {
     super('https://api.example.com')
     this.name = name
+  }
+
+  setProviderName(name: string) {
+    this.registeredName = name
   }
 
   async login(username: string, _options: LoginOptions): Promise<LoginResult> {
@@ -182,6 +187,17 @@ describe('Multiple custom providers', () => {
     const list = aioha.getProviders()
     expect(list).toContain('beekeeper')
     expect(list).toContain('hardware-x')
+  })
+
+  it('passes the registered name to the provider', () => {
+    const named = new FakeProvider('googledrive')
+    aioha.registerCustomProvider('googledrive', named)
+    expect(named.registeredName).toBe('googledrive')
+
+    const legacy = new FakeProvider(Providers.Custom)
+    const otherAioha = new Aioha()
+    otherAioha.registerCustomProvider(legacy)
+    expect(legacy.registeredName).toBe(Providers.Custom)
   })
 
   it('login on an unregistered name fails with 4201', async () => {

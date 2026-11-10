@@ -47,6 +47,7 @@ import { MetaMaskSnap } from './providers/metamask.js'
 import type { HF26Operation, HF26Transaction } from '@aioha/types/dist/hive/hf26.js'
 import { error, loginError } from './lib/errors.js'
 export { WaxAiohaSigner } from './lib/wax-signer.js'
+export {GoogleDriveProvider} from './providers/custom/google-drive.js'
 
 interface SetupOptions {
   hivesigner?: HiveSignerOptions
@@ -207,7 +208,7 @@ export class Aioha implements AiohaOperations {
    * - `name` must not collide with a built-in provider name (e.g. `'keychain'`). The literal `'custom'` is allowed (it's the legacy slot).
    * - The name must not already be registered. Call `deregisterProvider(name)` first to replace.
    *
-   * Custom providers should set the `provider` field returned by `getLoginInfo()` to the registered name so `switchUser` round-trips correctly.
+   * Custom providers should set the `provider` field returned by `getLoginInfo()` to the registered name so `switchUser` round-trips correctly. The registered name is passed to the provider through `setProviderName()`.
    *
    * @param {string|AiohaProviderBase} nameOrImpl Either the registered name (named form), or the provider implementation (legacy single-custom form).
    * @param {AiohaProviderBase} [providerImpl] The provider implementation when using the named form.
@@ -230,6 +231,7 @@ export class Aioha implements AiohaOperations {
     }
     this.providers[name] = impl
     impl.setEventEmitter(this.eventEmitter)
+    impl.setProviderName(name)
   }
 
   /**
