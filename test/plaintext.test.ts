@@ -60,7 +60,7 @@ describe('PlaintextKeyProvider', () => {
     const encrypted = await provider.encryptMemoWithKeys('secret memo', KeyTypes.Posting, [recipientPublicKey])
     expect(encrypted.success).toBe(true)
     if (!encrypted.success) return
-    expect(Memo.decode(RECIPIENT_WIF, encrypted.result[recipientPublicKey])).toBe('#secret memo')
+    expect(Memo.decode(RECIPIENT_WIF, (encrypted.result as Record<string, string>)[recipientPublicKey])).toBe('#secret memo')
 
     const decrypted = await provider.decryptMemo(Memo.encode(POSTING_WIF, recipientPublicKey, '#from dhive'), KeyTypes.Posting)
     expect(decrypted.success).toBe(true)
