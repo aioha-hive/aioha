@@ -231,6 +231,7 @@ export class Aioha implements AiohaOperations {
     }
     this.providers[name] = impl
     impl.setEventEmitter(this.eventEmitter)
+    impl.setRpcClient(this.rpc)
     impl.setProviderName(name)
   }
 

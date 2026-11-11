@@ -62,6 +62,10 @@ export abstract class AiohaProviderBase implements AiohaOperations {
     this.eventEmitter = emitter
   }
 
+  setRpcClient(rpc: AiohaClient) {
+    this.rpc = rpc
+  }
+
   abstract login(username: string, options: LoginOptions): Promise<LoginResult>
   abstract loginAndDecryptMemo(username: string, options: LoginOptions): Promise<LoginResult>
   abstract logout(): Promise<void>
