@@ -476,14 +476,3 @@ export { GoogleDriveError, GoogleDriveStorage, StorageFileNotFoundError }
 export type { GoogleTokenProvider, KeySignerProvider, WalletStorage }
 export type { WalletKeyProvider } from '../provider.js'
 export { createGoogleDriveTokenProvider, GOOGLE_DRIVE_APPDATA_SCOPE } from '../../lib/external-storage/google-oauth.js'
-export {
-  createGoogleDriveBridgeTokenProvider,
-  DEFAULT_HIVE_BRIDGE_URL,
-  GoogleDriveBridgeAuthError,
-  HIVE_BRIDGE_LOGIN_PATH,
-  HIVE_BRIDGE_TOKEN_PATH
-} from '../../lib/external-storage/hive-bridge.js'
-export type {
-  GoogleDriveBridgeTokenProvider,
-  GoogleDriveBridgeTokenProviderOptions
-} from '../../lib/external-storage/hive-bridge.js'

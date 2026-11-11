@@ -8,14 +8,16 @@ import { AiohaClient } from '../src/rpc.js'
 import { SimpleEventEmitter } from '../src/lib/event-emitter.js'
 import { KeyTypes } from '../src/types.js'
 import {
-  DEFAULT_HIVE_BRIDGE_URL,
   GOOGLE_DRIVE_PROVIDER_NAME,
-  GoogleDriveBridgeAuthError,
   GoogleDriveProvider,
-  createGoogleDriveBridgeTokenProvider,
   createGoogleDriveTokenProvider,
   type GoogleDriveProviderOptions
 } from '../src/providers/custom/google-drive.js'
+import {
+  DEFAULT_HIVE_BRIDGE_URL,
+  GoogleDriveBridgeAuthError,
+  createGoogleDriveBridgeTokenProvider
+} from '../src/lib/external-storage/hive-bridge.js'
 import {
   deriveWalletEncryptionKey,
   decryptWalletData,
