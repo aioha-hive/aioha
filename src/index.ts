@@ -47,7 +47,6 @@ import { MetaMaskSnap } from './providers/metamask.js'
 import type { HF26Operation, HF26Transaction } from '@aioha/types/dist/hive/hf26.js'
 import { error, loginError } from './lib/errors.js'
 export { WaxAiohaSigner } from './lib/wax-signer.js'
-export {GoogleDriveProvider} from './providers/custom/google-drive.js'
 
 interface SetupOptions {
   hivesigner?: HiveSignerOptions

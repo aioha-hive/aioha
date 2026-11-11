@@ -14,7 +14,6 @@ import {
   type GoogleDriveProviderOptions
 } from '../src/providers/custom/google-drive.js'
 import {
-  DEFAULT_HIVE_BRIDGE_URL,
   GoogleDriveBridgeAuthError,
   createGoogleDriveBridgeTokenProvider
 } from '../src/lib/external-storage/hive-bridge.js'
@@ -40,6 +39,7 @@ const PASSWORD = 'test-password'
 const ALICE_WIF = PrivateKey.fromLogin('alice', 'posting-password', 'posting').toString()
 const BOB_WIF = PrivateKey.fromLogin('bob', 'posting-password', 'posting').toString()
 const RECIPIENT_WIF = PrivateKey.fromLogin('recipient', 'posting-password', 'posting').toString()
+const BRIDGE_URL = 'https://bridge.example.com'
 
 const voteTxHF26: HF26Transaction = {
   ref_block_num: 23679,
@@ -751,53 +751,39 @@ describe('createGoogleDriveBridgeTokenProvider', () => {
         })
     )
 
-  it('requests a token from the default Hive Bridge backend', async () => {
-    const fetchMock = createFetch(200, { success: true, token: 'token-1' })
-    const tokenProvider = createGoogleDriveBridgeTokenProvider({ fetch: fetchMock as unknown as typeof fetch })
-
-    expect(tokenProvider.bridgeUrl).toBe(DEFAULT_HIVE_BRIDGE_URL)
-    expect(tokenProvider.loginUrl).toBe(`${DEFAULT_HIVE_BRIDGE_URL}/api/auth/google/login`)
-    expect(await tokenProvider()).toBe('token-1')
-    expect(fetchMock).toHaveBeenCalledTimes(1)
-    expect(fetchMock).toHaveBeenCalledWith(`${DEFAULT_HIVE_BRIDGE_URL}/api/google-drive/token`, {
-      method: 'GET',
-      credentials: 'include',
-      headers: { Accept: 'application/json' }
-    })
-  })
-
   it('supports a custom bridge URL and credentials mode', async () => {
     const fetchMock = createFetch(200, { success: true, token: 'token-2' })
     const tokenProvider = createGoogleDriveBridgeTokenProvider({
-      bridgeUrl: 'https://bridge.example.com/',
+      bridgeUrl: BRIDGE_URL,
       credentials: 'same-origin',
       fetch: fetchMock as unknown as typeof fetch
     })
 
-    expect(tokenProvider.bridgeUrl).toBe('https://bridge.example.com')
+    expect(tokenProvider.bridgeUrl).toBe(BRIDGE_URL)
     expect(await tokenProvider()).toBe('token-2')
+    expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      'https://bridge.example.com/api/google-drive/token',
+      `${BRIDGE_URL}/api/google-drive/token`,
       expect.objectContaining({ credentials: 'same-origin' })
     )
   })
 
   it('throws an auth error with the login URL when the bridge has no Google session', async () => {
     const fetchMock = createFetch(401, { message: 'Not authenticated with Google' })
-    const tokenProvider = createGoogleDriveBridgeTokenProvider({ fetch: fetchMock as unknown as typeof fetch })
+    const tokenProvider = createGoogleDriveBridgeTokenProvider({ fetch: fetchMock as unknown as typeof fetch, bridgeUrl: BRIDGE_URL })
     const request = tokenProvider()
 
     await expect(request).rejects.toBeInstanceOf(GoogleDriveBridgeAuthError)
     await expect(request).rejects.toMatchObject({
       statusCode: 401,
-      loginUrl: `${DEFAULT_HIVE_BRIDGE_URL}/api/auth/google/login`
+      loginUrl: `${BRIDGE_URL}/api/auth/google/login`
     })
-    await expect(request).rejects.toThrow(`Sign in at ${DEFAULT_HIVE_BRIDGE_URL}/api/auth/google/login`)
+    await expect(request).rejects.toThrow(`Sign in at ${BRIDGE_URL}/api/auth/google/login`)
   })
 
   it('reports other bridge errors', async () => {
     const fetchMock = createFetch(500, { message: 'Failed to get access token' })
-    const tokenProvider = createGoogleDriveBridgeTokenProvider({ fetch: fetchMock as unknown as typeof fetch })
+    const tokenProvider = createGoogleDriveBridgeTokenProvider({ fetch: fetchMock as unknown as typeof fetch, bridgeUrl: BRIDGE_URL })
     const request = tokenProvider()
 
     await expect(request).rejects.toBeInstanceOf(GoogleDriveError)
@@ -807,7 +793,7 @@ describe('createGoogleDriveBridgeTokenProvider', () => {
 
   it('rejects an empty token', async () => {
     const fetchMock = createFetch(200, { success: true })
-    const tokenProvider = createGoogleDriveBridgeTokenProvider({ fetch: fetchMock as unknown as typeof fetch })
+    const tokenProvider = createGoogleDriveBridgeTokenProvider({ fetch: fetchMock as unknown as typeof fetch, bridgeUrl: BRIDGE_URL })
     await expect(tokenProvider()).rejects.toThrow(/empty Google access token/)
   })
 })

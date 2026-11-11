@@ -1,8 +1,5 @@
 import { GoogleDriveError, type GoogleTokenProvider } from './google-drive-storage.js'
 
-/** Default Hive Bridge backend that brokers the Google OAuth flow. */
-export const DEFAULT_HIVE_BRIDGE_URL = 'https://auth.openhive.network'
-
 /** Hive Bridge endpoint returning the current Google access token. */
 export const HIVE_BRIDGE_TOKEN_PATH = '/api/google-drive/token'
 
@@ -10,8 +7,8 @@ export const HIVE_BRIDGE_TOKEN_PATH = '/api/google-drive/token'
 export const HIVE_BRIDGE_LOGIN_PATH = '/api/auth/google/login'
 
 export interface GoogleDriveBridgeTokenProviderOptions {
-  /** Hive Bridge backend URL. Defaults to {@link DEFAULT_HIVE_BRIDGE_URL}. */
-  bridgeUrl?: string
+  /** Hive Bridge backend URL. */
+  bridgeUrl: string
   /**
    * Request credentials mode used when calling the bridge.
    * The bridge keeps the Google session in cookies, so this defaults to `'include'`.
@@ -73,17 +70,15 @@ const getToken = (body: unknown): string => {
  * whose `loginUrl` points to the bridge's OAuth start endpoint.
  *
  * ```ts
- * const tokenProvider = createGoogleDriveBridgeTokenProvider()
- * // Defaults to https://auth.openhive.network
- * // const tokenProvider = createGoogleDriveBridgeTokenProvider({ bridgeUrl: 'https://auth.example.com' })
+ * const tokenProvider = createGoogleDriveBridgeTokenProvider({ bridgeUrl: 'https://auth.example.com' })
  *
  * const provider = new GoogleDriveProvider({ tokenProvider, passwordProvider, signer })
  * ```
  */
 export const createGoogleDriveBridgeTokenProvider = (
-  options: GoogleDriveBridgeTokenProviderOptions = {}
+  options: GoogleDriveBridgeTokenProviderOptions
 ): GoogleDriveBridgeTokenProvider => {
-  const bridgeUrl = (options.bridgeUrl ?? DEFAULT_HIVE_BRIDGE_URL).replace(/\/+$/, '')
+  const bridgeUrl = (options.bridgeUrl).replace(/\/+$/, '')
   const loginUrl = `${bridgeUrl}${HIVE_BRIDGE_LOGIN_PATH}`
   const credentials = options.credentials ?? 'include'
 
