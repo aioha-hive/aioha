@@ -12,7 +12,7 @@ import {
   GoogleDriveProvider,
   createGoogleDriveTokenProvider,
   type GoogleDriveProviderOptions
-} from '../src/providers/custom/google-drive.js'
+} from '../src/providers/google-drive.js'
 import {
   GoogleDriveBridgeAuthError,
   createGoogleDriveBridgeTokenProvider
