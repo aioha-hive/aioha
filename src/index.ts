@@ -44,6 +44,7 @@ export type { PersistentLoginProvs, LoginProvider } from './types.js'
 import { AiohaRpcError, RequestArguments } from './jsonrpc/eip1193-types.js'
 import { ViewOnly } from './providers/view-only.js'
 import { MetaMaskSnap } from './providers/metamask.js'
+import type { GoogleDriveProviderOptions } from './providers/google-drive.js'
 import type { HF26Operation, HF26Transaction } from '@aioha/types/dist/hive/hf26.js'
 import { error, loginError } from './lib/errors.js'
 export { WaxAiohaSigner } from './lib/wax-signer.js'
@@ -186,6 +187,11 @@ export class Aioha implements AiohaOperations {
     const snap = new MetaMaskSnap(this.rpc, this.eventEmitter)
     this.providers.metamasksnap = snap
     return snap.initProvider()
+  }
+
+  async registerGoogleDrive(options: GoogleDriveProviderOptions) {
+    const { GoogleDriveProvider } = await import(/* webpackChunkName: 'google-drive' */ './providers/google-drive.js')
+    this.providers.googledrive = new GoogleDriveProvider(options, this.rpc, this.eventEmitter)
   }
 
   /**

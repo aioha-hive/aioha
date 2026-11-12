@@ -1,11 +1,11 @@
 import type { LegacyOperation, LegacyTransaction } from '@aioha/types/dist/hive/legacy.js'
 import type { HF26Operation, HF26Transaction } from '@aioha/types/dist/hive/hf26.js'
-import { AiohaProviderBase, type KeySignerProvider } from '../provider.js'
-import { AiohaClient } from '../../rpc.js'
-import { SimpleEventEmitter } from '../../lib/event-emitter.js'
-import { error, loginError } from '../../lib/errors.js'
-import { GoogleDriveError, GoogleDriveStorage, type GoogleTokenProvider } from '../../lib/external-storage/google-drive-storage.js'
-import { StorageFileNotFoundError, type WalletStorage } from '../../lib/external-storage/storage.js'
+import { AiohaProviderBase, type KeySignerProvider } from './provider.js'
+import { AiohaClient } from '../rpc.js'
+import { SimpleEventEmitter } from '../lib/event-emitter.js'
+import { error, loginError } from '../lib/errors.js'
+import { GoogleDriveError, GoogleDriveStorage, type GoogleTokenProvider } from '../lib/external-storage/google-drive-storage.js'
+import { StorageFileNotFoundError, type WalletStorage } from '../lib/external-storage/storage.js'
 import {
   createEmptyWallet,
   getRoleDefinitions,
@@ -15,7 +15,7 @@ import {
   setWalletKey,
   type WalletData,
   type WalletRole
-} from '../../lib/external-storage/wallet-data.js'
+} from '../lib/external-storage/wallet-data.js'
 import {
   AccountDiscStream,
   DiscoverOptions,
@@ -31,7 +31,7 @@ import {
   SignOperationResult,
   SignOperationResultObj,
   SignOperationResultObjHF26
-} from '../../types.js'
+} from '../types.js'
 
 /** Default name to register the provider under with Aioha. */
 export const GOOGLE_DRIVE_PROVIDER_NAME = 'googledrive'
@@ -128,11 +128,7 @@ export class GoogleDriveProvider extends AiohaProviderBase {
   private unlockPromise?: Promise<WalletData>
   private injectedKeys = new Map<KeyTypes, string>()
 
-  constructor(
-    options: GoogleDriveProviderOptions,
-    rpc: AiohaClient = new AiohaClient(),
-    emitter?: SimpleEventEmitter
-  ) {
+  constructor(options: GoogleDriveProviderOptions, rpc: AiohaClient = new AiohaClient(), emitter?: SimpleEventEmitter) {
     super(rpc, emitter)
     if (!options?.passwordProvider) throw new Error('passwordProvider is required')
     if (!options.signer) throw new Error('signer is required')
@@ -174,9 +170,7 @@ export class GoogleDriveProvider extends AiohaProviderBase {
     }
     const credentials = await this.passwordProvider(typeof raw === 'undefined')
     const encryptionKeyWif =
-      'password' in credentials
-        ? await this.signer.deriveWalletEncryptionKey(credentials.password)
-        : credentials.encryptionKey
+      'password' in credentials ? await this.signer.deriveWalletEncryptionKey(credentials.password) : credentials.encryptionKey
     // Throws for malformed WIFs before attempting decryption
     await this.signer.getPublicKey(encryptionKeyWif)
     let wallet = createEmptyWallet()
@@ -474,5 +468,5 @@ export class GoogleDriveProvider extends AiohaProviderBase {
 
 export { GoogleDriveError, GoogleDriveStorage, StorageFileNotFoundError }
 export type { GoogleTokenProvider, KeySignerProvider, WalletStorage }
-export type { WalletKeyProvider } from '../provider.js'
-export { createGoogleDriveTokenProvider, GOOGLE_DRIVE_APPDATA_SCOPE } from '../../lib/external-storage/google-oauth.js'
+export type { WalletKeyProvider } from './provider.js'
+export { createGoogleDriveTokenProvider, GOOGLE_DRIVE_APPDATA_SCOPE } from '../lib/external-storage/google-oauth.js'

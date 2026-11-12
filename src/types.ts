@@ -9,6 +9,7 @@ export enum Providers {
   Ledger = 'ledger',
   PeakVault = 'peakvault',
   MetaMaskSnap = 'metamasksnap',
+  GoogleDrive = 'googledrive',
   ViewOnly = 'viewonly',
   Custom = 'custom'
 }
