@@ -468,5 +468,4 @@ export class GoogleDriveProvider extends AiohaProviderBase {
 
 export { GoogleDriveError, GoogleDriveStorage, StorageFileNotFoundError }
 export type { GoogleTokenProvider, KeySignerProvider, WalletStorage }
-export type { WalletKeyProvider } from './provider.js'
 export { createGoogleDriveTokenProvider, GOOGLE_DRIVE_APPDATA_SCOPE } from '../lib/external-storage/google-oauth.js'
