@@ -4,7 +4,7 @@ import { AiohaProviderBase, type KeySignerProvider } from './provider.js'
 import { AiohaClient } from '../rpc.js'
 import { SimpleEventEmitter } from '../lib/event-emitter.js'
 import { error, loginError } from '../lib/errors.js'
-import { GoogleDriveError, GoogleDriveStorage, type GoogleTokenProvider } from '../lib/external-storage/google-drive-storage.js'
+import { GoogleDriveStorage, type GoogleTokenProvider } from '../lib/external-storage/google-drive-storage.js'
 import { StorageFileNotFoundError, type WalletStorage } from '../lib/external-storage/storage.js'
 import {
   createEmptyWallet,
@@ -74,8 +74,6 @@ export interface GoogleDriveProviderOptions {
   signer: KeySignerProvider
   /** Wallet file name in external storage. @default 'wallet.json' */
   storageFileName?: string
-  /** Provider name returned by getLoginInfo(). Automatically set by registerCustomProvider(). */
-  providerName?: string
 }
 
 export interface PersistentLoginGoogleDrive extends PersistentLoginBase {
@@ -121,7 +119,6 @@ export class GoogleDriveProvider extends AiohaProviderBase {
   private readonly passwordProvider: GoogleDrivePasswordProvider
   private readonly fileName: string
 
-  private providerName: string
   private publicKey?: string
   private wallet?: WalletData
   private encryptionKeyWif?: string
@@ -137,15 +134,10 @@ export class GoogleDriveProvider extends AiohaProviderBase {
     else throw new Error('either storage or tokenProvider is required')
     this.passwordProvider = options.passwordProvider
     this.fileName = options.storageFileName ?? 'wallet.json'
-    this.providerName = options.providerName ?? Providers.Custom
 
     this.signer = options.signer
     this.signer.setEventEmitter(this.eventEmitter)
     this.signer.setChainId(this.rpc.chainId)
-  }
-
-  setProviderName(name: string) {
-    this.providerName = name
   }
 
   setEventEmitter(emitter: SimpleEventEmitter) {
@@ -226,16 +218,16 @@ export class GoogleDriveProvider extends AiohaProviderBase {
     try {
       const wif = await this.ensureKey(keyType, username)
       const result = await this.signer.login(username, options)
-      if (!result.success) return { ...result, provider: this.providerName }
+      if (!result.success) return { ...result, provider: Providers.GoogleDrive }
       this.publicKey = result.publicKey ?? (await this.signer.getPublicKey(wif))
       return {
         ...result,
-        provider: this.providerName,
+        provider: Providers.GoogleDrive,
         username: result.username ?? username,
         publicKey: this.publicKey
       }
     } catch (e) {
-      return loginError(5000, e instanceof Error ? e.message : 'failed to login', this.providerName)
+      return loginError(5000, e instanceof Error ? e.message : 'failed to login', Providers.GoogleDrive)
     }
   }
 
@@ -244,16 +236,16 @@ export class GoogleDriveProvider extends AiohaProviderBase {
     try {
       const wif = await this.ensureKey(keyType, username)
       const result = await this.signer.loginAndDecryptMemo(username, options)
-      if (!result.success) return { ...result, provider: this.providerName }
+      if (!result.success) return { ...result, provider: Providers.GoogleDrive }
       this.publicKey = result.publicKey ?? (await this.signer.getPublicKey(wif))
       return {
         ...result,
-        provider: this.providerName,
+        provider: Providers.GoogleDrive,
         username: result.username ?? username,
         publicKey: this.publicKey
       }
     } catch (e) {
-      return loginError(5000, e instanceof Error ? e.message : 'failed to login', this.providerName)
+      return loginError(5000, e instanceof Error ? e.message : 'failed to login', Providers.GoogleDrive)
     }
   }
 
@@ -279,7 +271,7 @@ export class GoogleDriveProvider extends AiohaProviderBase {
 
   getLoginInfo(): PersistentLoginGoogleDrive | undefined {
     if (!this.getUser()) return undefined
-    return { provider: this.providerName, pubKey: this.publicKey }
+    return { provider: Providers.GoogleDrive, pubKey: this.publicKey }
   }
 
   loadLogin(username: string, info: PersistentLogin): boolean {
@@ -466,6 +458,5 @@ export class GoogleDriveProvider extends AiohaProviderBase {
   }
 }
 
-export { GoogleDriveError, GoogleDriveStorage, StorageFileNotFoundError }
 export type { GoogleTokenProvider, KeySignerProvider, WalletStorage }
 export { createGoogleDriveTokenProvider, GOOGLE_DRIVE_APPDATA_SCOPE } from '../lib/external-storage/google-oauth.js'

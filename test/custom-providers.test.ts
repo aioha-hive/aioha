@@ -190,9 +190,9 @@ describe('Multiple custom providers', () => {
   })
 
   it('passes the registered name to the provider', () => {
-    const named = new FakeProvider('googledrive')
-    aioha.registerCustomProvider('googledrive', named)
-    expect(named.registeredName).toBe('googledrive')
+    const named = new FakeProvider('vault')
+    aioha.registerCustomProvider('vault', named)
+    expect(named.registeredName).toBe('vault')
 
     const legacy = new FakeProvider(Providers.Custom)
     const otherAioha = new Aioha()

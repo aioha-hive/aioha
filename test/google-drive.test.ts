@@ -6,7 +6,7 @@ import { transactionDigest } from '@aioha/tx-digest'
 import { Aioha } from '../src/index.js'
 import { AiohaClient } from '../src/rpc.js'
 import { SimpleEventEmitter } from '../src/lib/event-emitter.js'
-import { KeyTypes } from '../src/types.js'
+import { KeyTypes, Providers } from '../src/types.js'
 import {
   GOOGLE_DRIVE_PROVIDER_NAME,
   GoogleDriveProvider,
@@ -349,7 +349,7 @@ describe('GoogleDriveProvider', () => {
     expect(login.success).toBe(true)
     if (!login.success) return
     expect(login.username).toBe('alice')
-    expect(login.provider).toBe('custom')
+    expect(login.provider).toBe(Providers.GoogleDrive)
     expect(login.publicKey).toBe(getPublicKeyFromWif(ALICE_WIF))
     expect(provider.getUser()).toBe('alice')
     expect(passwordProvider).toHaveBeenCalledWith(false)
@@ -555,7 +555,7 @@ describe('GoogleDriveProvider', () => {
     await provider.storeKey(KeyTypes.Posting, 'alice', ALICE_WIF)
     await provider.login('alice', {})
     const info = provider.getLoginInfo()
-    expect(info).toEqual({ provider: 'custom', pubKey: getPublicKeyFromWif(ALICE_WIF) })
+    expect(info).toEqual({ provider: Providers.GoogleDrive, pubKey: getPublicKeyFromWif(ALICE_WIF) })
 
     const restored = createProvider(storage)
     expect(restored.loadLogin('alice', info!)).toBe(true)
@@ -675,29 +675,39 @@ describe('GoogleDriveProvider with Google Drive storage', () => {
 })
 
 describe('Aioha integration', () => {
-  it('registers, logs in, switches accounts and reports the registered provider name', async () => {
+  it('registers as a built-in provider, logs in, switches accounts and reports the built-in name', async () => {
     const storage = new MemoryStorage()
-    const provider = createProvider(storage)
+    const passwordProvider = async () => ({ password: PASSWORD })
+    const provider = createProvider(storage, passwordProvider)
     await provider.storeKey(KeyTypes.Posting, 'alice', ALICE_WIF)
     await provider.storeKey(KeyTypes.Posting, 'bob', BOB_WIF)
 
     const aioha = new Aioha()
-    aioha.registerCustomProvider(GOOGLE_DRIVE_PROVIDER_NAME, provider)
-    expect(aioha.isProviderRegistered(GOOGLE_DRIVE_PROVIDER_NAME)).toBe(true)
+    await aioha.registerGoogleDrive({ storage, passwordProvider, signer: new PlaintextKeyProvider() })
+    expect(aioha.isProviderRegistered(Providers.GoogleDrive)).toBe(true)
+    expect(aioha.getProviders()).toContain(Providers.GoogleDrive)
+    expect(() => aioha.registerCustomProvider(GOOGLE_DRIVE_PROVIDER_NAME, provider)).toThrow(
+      /reserved for a built-in provider/
+    )
 
-    const alice = await aioha.login(GOOGLE_DRIVE_PROVIDER_NAME, 'alice', { msg: 'Login' })
+    // Built-in providers require an explicit key type
+    const missingKeyType = await aioha.login(Providers.GoogleDrive, 'alice', { msg: 'Login' })
+    expect(missingKeyType.success).toBe(false)
+    if (!missingKeyType.success) expect(missingKeyType.errorCode).toBe(5003)
+
+    const alice = await aioha.login(Providers.GoogleDrive, 'alice', { msg: 'Login', keyType: KeyTypes.Posting })
     expect(alice.success).toBe(true)
-    expect(aioha.getCurrentProvider()).toBe(GOOGLE_DRIVE_PROVIDER_NAME)
+    expect(aioha.getCurrentProvider()).toBe(Providers.GoogleDrive)
     expect(aioha.getCurrentUser()).toBe('alice')
     expect(aioha.getPublicKey()).toBe(getPublicKeyFromWif(ALICE_WIF))
-    expect(provider.getLoginInfo()!.provider).toBe(GOOGLE_DRIVE_PROVIDER_NAME)
+    expect(aioha.getPI().getLoginInfo()!.provider).toBe(Providers.GoogleDrive)
 
-    const bob = await aioha.login(GOOGLE_DRIVE_PROVIDER_NAME, 'bob', {})
+    const bob = await aioha.login(Providers.GoogleDrive, 'bob', { keyType: KeyTypes.Posting })
     expect(bob.success).toBe(true)
-    expect(aioha.getOtherLogins()).toEqual({ alice: GOOGLE_DRIVE_PROVIDER_NAME })
+    expect(aioha.getOtherLogins()).toEqual({ alice: Providers.GoogleDrive })
     expect(aioha.switchUser('alice')).toBe(true)
     expect(aioha.getCurrentUser()).toBe('alice')
-    expect(aioha.getCurrentProvider()).toBe(GOOGLE_DRIVE_PROVIDER_NAME)
+    expect(aioha.getCurrentProvider()).toBe(Providers.GoogleDrive)
   })
 })
 
