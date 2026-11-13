@@ -33,9 +33,6 @@ import {
   SignOperationResultObjHF26
 } from '../types.js'
 
-/** Default name to register the provider under with Aioha. */
-export const GOOGLE_DRIVE_PROVIDER_NAME = 'googledrive'
-
 /** Either a password used to derive the wallet encryption key, or the WIF encryption key itself. */
 export type GoogleDrivePasswordCredentials = { password: string } | { encryptionKey: string }
 

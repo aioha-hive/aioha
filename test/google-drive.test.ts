@@ -8,7 +8,6 @@ import { AiohaClient } from '../src/rpc.js'
 import { SimpleEventEmitter } from '../src/lib/event-emitter.js'
 import { KeyTypes, Providers } from '../src/types.js'
 import {
-  GOOGLE_DRIVE_PROVIDER_NAME,
   GoogleDriveProvider,
   createGoogleDriveTokenProvider,
   type GoogleDriveProviderOptions
@@ -686,7 +685,7 @@ describe('Aioha integration', () => {
     await aioha.registerGoogleDrive({ storage, passwordProvider, signer: new PlaintextKeyProvider() })
     expect(aioha.isProviderRegistered(Providers.GoogleDrive)).toBe(true)
     expect(aioha.getProviders()).toContain(Providers.GoogleDrive)
-    expect(() => aioha.registerCustomProvider(GOOGLE_DRIVE_PROVIDER_NAME, provider)).toThrow(
+    expect(() => aioha.registerCustomProvider(Providers.GoogleDrive, provider)).toThrow(
       /reserved for a built-in provider/
     )
 
