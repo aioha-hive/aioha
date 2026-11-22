@@ -60,12 +60,15 @@ export class HiveSigner extends AiohaProviderBase {
     return new Promise((rs) => {
       this.emitLoginReq()
       const loginURL = this.getLoginURL(options, username ?? undefined)
+      // Only a token written by the callback page during this login counts, not
+      // one left in storage from an earlier session.
+      const [prevToken] = this.getItems(LS_TOKEN)
       const hsWindow = window.open(loginURL)
       let hsInterval = setInterval(() => {
         if (hsWindow && hsWindow.closed) {
           clearInterval(hsInterval)
           const [token, loggedInUser] = this.getItems(LS_TOKEN, LS_USER)
-          if (token && loggedInUser) {
+          if (token && loggedInUser && token !== prevToken) {
             this.provider.setAccessToken(token)
             this.username = loggedInUser
             rs({
@@ -117,12 +120,15 @@ export class HiveSigner extends AiohaProviderBase {
   }
 
   async logout(): Promise<void> {
+    // Revoking fails for a token HiveSigner already refuses (expired or revoked).
+    // Clear the local login regardless, otherwise the dead token stays in storage
+    // and the next login() picks it up again.
     try {
       await this.provider.revokeToken()
-      this.rmItems([LS_TOKEN, LS_EXP, LS_USER])
-      this.provider.removeAccessToken()
-      delete this.username
     } catch {}
+    this.rmItems([LS_TOKEN, LS_EXP, LS_USER])
+    this.provider.removeAccessToken()
+    delete this.username
   }
 
   getLoginURL(options: LoginOptions, username?: string) {
